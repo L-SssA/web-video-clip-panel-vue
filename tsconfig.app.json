@@ -8,17 +8,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@": ["./src/*"]
-    }
-  },
-  "include": [
-    "packages/**/*.ts",
-    "packages/**/*.tsx",
-    "packages/**/*.vue",
-    "apps/**/*.ts",
-    "apps/**/*.tsx",
-    "apps/**/*.vue"
-  ]
+    "noFallthroughCasesInSwitch": true
+  }
 }
