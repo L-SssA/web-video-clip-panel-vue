@@ -1,7 +1,9 @@
 <template>
-  <div>Hi 这个项目没问题</div>
+  <VideoClipPanel></VideoClipPanel>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { VideoClipPanel } from "@web-vcp/components";
+</script>
 
 <style scoped lang="scss"></style>

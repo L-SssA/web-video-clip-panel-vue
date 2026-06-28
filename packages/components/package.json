@@ -1,5 +1,5 @@
 {
-  "name": "@web-vcp/{{name}}",
+  "name": "@web-vcp/components",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,10 @@
     }
   },
   "scripts": {
-    "build": "vue-tsc -b && vite build"
+    "build": "vue-tsc -b && vite build",
+    "watch": "vue-tsc -b && vite build --watch"
   },
-  "dependencies": {}
+  "dependencies": {
+    "pixi.js": "^8.19.0"
+  }
 }

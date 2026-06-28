@@ -1,3 +1,4 @@
+import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 import dts from "unplugin-dts/vite";
 import { defineConfig } from "vite";
@@ -6,8 +7,11 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [
     dts({
+      processor: "vue",
+      tsconfigPath: "./tsconfig.app.json",
       bundleTypes: true,
     }),
+    vue(),
   ],
   resolve: {
     alias: {
@@ -17,8 +21,16 @@ export default defineConfig({
   build: {
     lib: {
       entry: "src/index.ts",
-      name: "{{name}}",
+      name: "components",
       fileName: (format) => `index.${format}.js`,
+    },
+    rolldownOptions: {
+      external: ["vue"],
+      output: {
+        globals: {
+          vue: "Vue",
+        },
+      },
     },
   },
 });
