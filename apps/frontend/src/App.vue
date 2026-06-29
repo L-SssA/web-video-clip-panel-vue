@@ -1,5 +1,5 @@
 <template>
-  <VideoClipPanel></VideoClipPanel>
+  <VideoClipPanel theme="dark"></VideoClipPanel>
 </template>
 
 <script setup lang="ts">

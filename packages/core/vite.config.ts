@@ -17,7 +17,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: "src/index.ts",
-      name: "{{name}}",
+      name: "core",
       fileName: (format) => `index.${format}.js`,
       cssFileName: "style",
     },

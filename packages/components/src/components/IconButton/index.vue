@@ -1,14 +1,7 @@
 <template>
-  <i class="icon-btn" :class="[iconClass, { 'icon-btn-disabled': disabled }]" @click="handleClick">
-    <ElPopover
-      placement="bottom"
-      trigger="hover"
-      :content="tipsText"
-      :disabled="!tipsText"
-      :effect="effect"
-      width="fit-content"
-      :popper-style="{ minWidth: '0' }"
-    >
+  <i class="icon-btn" :class="[iconClass, { 'icon-btn-disabled': disabled }]" @click="!disabled && emits('click')">
+    <ElPopover placement="bottom" trigger="hover" :content="tipsText" :disabled="!tipsText" :effect="effect"
+      width="fit-content" :popper-style="{ minWidth: '0' }">
       <template #reference>
         <div class="tips-box"></div>
       </template>
@@ -36,11 +29,6 @@ const props = defineProps({
   },
 });
 const emits = defineEmits(["click"]);
-
-const handleClick = () => {
-  if (props.disabled) return;
-  emits("click");
-};
 </script>
 
 <style scoped lang="scss">
@@ -52,7 +40,7 @@ const handleClick = () => {
 
   &.icon-btn-disabled {
     cursor: not-allowed;
-    color: #454545;
+    color: var(--vcp-color-light);
   }
 
   &:not(.icon-btn-disabled):hover {

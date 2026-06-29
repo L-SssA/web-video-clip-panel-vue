@@ -15,6 +15,7 @@ declare module 'vue' {
     IconButton: typeof import('./src/components/IconButton/index.vue')['default']
     ToolbarLayout: typeof import('./src/components/VcpToolbar/ToolbarLayout.vue')['default']
     VcpToolbar: typeof import('./src/components/VcpToolbar/index.vue')['default']
+    VcpTracksPanel: typeof import('./src/components/VcpTracksPanel/index.vue')['default']
     VideoClipPanel: typeof import('./src/components/VideoClipPanel.vue')['default']
   }
 }
