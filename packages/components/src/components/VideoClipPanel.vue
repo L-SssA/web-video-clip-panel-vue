@@ -1,7 +1,11 @@
 <template>
-  <div>Hi 这个引入没问题!!</div>
+  <div class="vcp-container">
+    <VcpToolbar class="vcp-toolbar" />
+  </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import VcpToolbar from "@/components/VcpToolbar/index.vue";
+</script>
 
 <style scoped lang="scss"></style>

@@ -16,6 +16,7 @@
     "fmt:check": "oxfmt --check"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.58.9",
     "@turbo/gen": "^2.10.0",
     "@types/node": "^24.13.2",
     "@vitejs/plugin-vue": "^6.0.7",

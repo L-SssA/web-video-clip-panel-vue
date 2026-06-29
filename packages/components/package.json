@@ -10,13 +10,19 @@
     ".": {
       "import": "./dist/index.es.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./style.css": "./dist/style.css"
   },
   "scripts": {
     "build": "vue-tsc -b && vite build",
     "watch": "vue-tsc -b && vite build --watch"
   },
   "dependencies": {
-    "pixi.js": "^8.19.0"
+    "element-plus": "^2.14.2",
+    "pixi.js": "^8.19.0",
+    "remixicon": "^4.9.1"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.39"
   }
 }
