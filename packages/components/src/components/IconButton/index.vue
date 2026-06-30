@@ -2,7 +2,7 @@
   <i class="icon-btn" :class="[iconClass, { 'icon-btn-disabled': disabled, 'actived': active }]"
     @click="!disabled && emits('click')">
     <ElPopover placement="bottom" trigger="hover" :content="tipsText" :disabled="!tipsText" :effect="effect"
-      width="fit-content" :popper-style="{ minWidth: '0' }">
+      width="fit-content" :popper-style="{ minWidth: '0', ...themeStyle }">
       <template #reference>
         <div class="tips-box"></div>
       </template>
@@ -11,10 +11,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
+import { themeStyles } from "@/config/iconButtonStyles";
+import { ElPopover } from "element-plus";
+
 const props = defineProps({
   iconClass: {
     type: String,
-    required: true,
+    default: "",
   },
   disabled: {
     type: Boolean,
@@ -34,6 +38,8 @@ const props = defineProps({
   }
 });
 const emits = defineEmits(["click"]);
+
+const themeStyle = computed(() => themeStyles[props.effect] || "");
 </script>
 
 <style scoped lang="scss">

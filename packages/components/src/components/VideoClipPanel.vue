@@ -6,11 +6,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRef } from "vue";
+import { computed, provide, reactive, toRef } from "vue";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { useTheme } from "@web-vcp/core";
+import { vcpCtxKey } from "@/provides/vcpContext.ts";
+import type { VcpCtx } from "@/types/vcpContext.ts";
 
 const props = defineProps({
   height: {
@@ -30,7 +32,11 @@ const { cssProps } = useTheme(theme);
 const styleList = computed(() => ({
   height: typeof props.height === "number" ? `${props.height}px` : props.height,
   ...cssProps.value
-})); 
+}));
+
+provide<VcpCtx>(vcpCtxKey, reactive({
+  theme
+}))
 </script>
 
 <style scoped lang="scss">
