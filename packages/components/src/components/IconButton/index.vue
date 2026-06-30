@@ -1,5 +1,6 @@
 <template>
-  <i class="icon-btn" :class="[iconClass, { 'icon-btn-disabled': disabled }]" @click="!disabled && emits('click')">
+  <i class="icon-btn" :class="[iconClass, { 'icon-btn-disabled': disabled, 'actived': active }]"
+    @click="!disabled && emits('click')">
     <ElPopover placement="bottom" trigger="hover" :content="tipsText" :disabled="!tipsText" :effect="effect"
       width="fit-content" :popper-style="{ minWidth: '0' }">
       <template #reference>
@@ -27,6 +28,10 @@ const props = defineProps({
     type: String,
     default: "dark",
   },
+  active: {
+    type: Boolean,
+    default: false,
+  }
 });
 const emits = defineEmits(["click"]);
 </script>
@@ -34,9 +39,12 @@ const emits = defineEmits(["click"]);
 <style scoped lang="scss">
 .icon-btn {
   cursor: pointer;
-  margin: 0 10px;
   font-size: 20px;
   position: relative;
+
+  &.actived {
+    color: var(--vcp-color-active);
+  }
 
   &.icon-btn-disabled {
     cursor: not-allowed;

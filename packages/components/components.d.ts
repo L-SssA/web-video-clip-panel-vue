@@ -12,6 +12,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ElPopover: typeof import('element-plus/es')['ElPopover']
+    ElSlider: typeof import('element-plus/es')['ElSlider']
     IconButton: typeof import('./src/components/IconButton/index.vue')['default']
     ToolbarLayout: typeof import('./src/components/VcpToolbar/ToolbarLayout.vue')['default']
     VcpToolbar: typeof import('./src/components/VcpToolbar/index.vue')['default']

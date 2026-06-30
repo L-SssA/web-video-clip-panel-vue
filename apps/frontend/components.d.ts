@@ -12,10 +12,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ElButton: typeof import('element-plus/es')['ElButton']
-    ElInput: typeof import('element-plus/es')['ElInput']
-    ElInputNumber: typeof import('element-plus/es')['ElInputNumber']
     ElPopover: typeof import('element-plus/es')['ElPopover']
-    ElSwitch: typeof import('element-plus/es')['ElSwitch']
-    IconButton: typeof import('./src/components/IconButton/index.vue')['default']
   }
 }
