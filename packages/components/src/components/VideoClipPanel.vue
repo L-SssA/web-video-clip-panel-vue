@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, toRef } from "vue";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
@@ -24,7 +24,8 @@ const props = defineProps({
   }
 });
 
-const { cssProps } = useTheme(props.theme);
+const theme = toRef(props, 'theme')
+const { cssProps } = useTheme(theme);
 
 const styleList = computed(() => ({
   height: typeof props.height === "number" ? `${props.height}px` : props.height,
