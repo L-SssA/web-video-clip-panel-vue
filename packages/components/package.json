@@ -18,8 +18,8 @@
     "watch": "vue-tsc -b && vite build --watch"
   },
   "dependencies": {
+    "@web-vcp/core": "workspace:*",
     "element-plus": "^2.14.2",
-    "pixi.js": "^8.19.0",
     "remixicon": "^4.9.1"
   },
   "peerDependencies": {

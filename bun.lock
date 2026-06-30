@@ -37,8 +37,8 @@
       "name": "@web-vcp/components",
       "version": "0.0.0",
       "dependencies": {
+        "@web-vcp/core": "workspace:*",
         "element-plus": "^2.14.2",
-        "pixi.js": "^8.19.0",
         "remixicon": "^4.9.1",
       },
       "peerDependencies": {
@@ -48,6 +48,12 @@
     "packages/core": {
       "name": "@web-vcp/core",
       "version": "0.0.0",
+      "dependencies": {
+        "pixi.js": "^8.19.0",
+      },
+      "peerDependencies": {
+        "vue": "^3.5.39",
+      },
     },
   },
   "packages": {
@@ -443,7 +449,7 @@
 
     "dotenv": ["dotenv@17.4.2", "", {}, "sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw=="],
 
-    "earcut": ["earcut@3.0.2", "", {}, "sha512-X7hshQbLyMJ/3RPhyObLARM2sNxxmRALLKx1+NVFFnQ9gKzmCrxm9+uLIAdBcvc8FNLpctqlQ2V6AE92Ol9UDQ=="],
+    "earcut": ["earcut@3.1.1", "", {}, "sha512-zD5UNOQNJMiAERoZwDJsgVrngtBS7nnJwUHdVgiaqMAH5usYw4ig0p1nO1MhEfbNFNFFNPTCC5gqmdJ2yt7NvQ=="],
 
     "element-plus": ["element-plus@2.14.2", "", { "dependencies": { "@ctrl/tinycolor": "^4.2.0", "@element-plus/icons-vue": "^2.3.2", "@floating-ui/dom": "^1.7.6", "@popperjs/core": "npm:@sxzz/popperjs-es@^2.11.8", "@types/lodash": "^4.17.24", "@types/lodash-es": "^4.17.12", "@vueuse/core": "14.3.0", "async-validator": "^4.2.5", "dayjs": "^1.11.20", "lodash": "^4.18.1", "lodash-es": "^4.18.1", "lodash-unified": "^1.0.3", "memoize-one": "^6.0.0", "normalize-wheel-es": "^1.2.0", "vue-component-type-helpers": "^3.3.3" }, "peerDependencies": { "vue": "^3.3.7" } }, "sha512-eNH9uP3wQoNqieEIHXiNvIVv+zO5sZDU0CAZq5b0zqSN06DD0/V9xIq1R/qm3rw5k3nBTM1JvpxhCfRbaFLzDQ=="],
 

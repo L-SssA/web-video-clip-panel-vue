@@ -10,7 +10,7 @@ import { computed } from "vue";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@web-vcp/core";
 
 const props = defineProps({
   height: {

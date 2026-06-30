@@ -5,14 +5,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 
-import { PixiHelper } from '@/utils/PixiHelper';
+import { PixiHelper } from '@web-vcp/core';
 
 const tracksPanelRef = ref<HTMLElement | null>(null)
 let pixiHelper: PixiHelper = new PixiHelper()
 
-function setupPixi() {
+async function setupPixi() {
   if (tracksPanelRef.value) {
-    pixiHelper.init(tracksPanelRef.value, { backgroundAlpha: 0 })
+    await pixiHelper.init(tracksPanelRef.value, { backgroundAlpha: 0 })
+    await pixiHelper.renderBunny()
   }
 }
 

@@ -1,4 +1,3 @@
 import "remixicon/fonts/remixicon.css";
-import VideoClipPanel from "./components/VideoClipPanel.vue";
 
-export { VideoClipPanel };
+export { default as VideoClipPanel } from "./components/VideoClipPanel.vue";

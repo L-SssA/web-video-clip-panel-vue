@@ -10,10 +10,11 @@
   "scripts": {
     "dev": "turbo run dev --filter './apps/frontend'",
     "build": "turbo run build --filter './packages/*'",
-    "watch": "turbo run watch --filter './packages/*'",
+    "watch": "npm run build && turbo run watch --filter './packages/*'",
     "newpack": "turbo gen newpack --args",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "clean": "node scripts/clean.js"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.58.9",

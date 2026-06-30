@@ -6,7 +6,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [
     dts({
-      bundleTypes: true,
+      tsconfigPath: "./tsconfig.app.json",
+      // bundleTypes: true,
     }),
   ],
   resolve: {
@@ -20,6 +21,15 @@ export default defineConfig({
       name: "core",
       fileName: (format) => `index.${format}.js`,
       cssFileName: "style",
+    },
+    rolldownOptions: {
+      external: ["vue", "pixi.js"],
+      output: {
+        globals: {
+          vue: "Vue",
+          "pixi.js": "pixi.js",
+        },
+      },
     },
   },
 });

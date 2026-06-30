@@ -1,8 +1,8 @@
 // 主轨道的 ID
-export const MainTrackId = "main-line-001";
+export const MAIN_TRACK_ID = "main-line-001";
 
 // 轨道高度
-export const TrackLineHeightMap = {
+export const DEFAULT_TRACK_HEIGHT = {
   video: 64,
   audio: 46,
   text: 22,
@@ -10,7 +10,7 @@ export const TrackLineHeightMap = {
 };
 
 // 轨道颜色
-export const TrackColorMap = {
+export const DEFAULT_TRACK_COLOR = {
   video: "#4A90E2",
   audio: "#3A8F7B",
   text: "#A83245",
@@ -18,16 +18,18 @@ export const TrackColorMap = {
 };
 
 // 自动吸附距离（px）
-export const AutoAdsorbWidth = 10;
+export const AUTO_ADSORB_WIDTH = 10;
 
-export const ChromakeyOptions = {
-  keyColor: [0, 135, 60] as [number, number, number],
-  similarity: 0.3,
+// 扣绿选项
+export const DEFAULT_CHROMAKEY_OPTIONS = {
+  keyColor: [0, 255, 0] as [number, number, number],
+  similarity: 0.4,
   smoothness: 0.05,
+  spill: 0.05,
 };
 
 // 相当于一个改变时间轴间隔配置的断点
-export const TimelineGapOptions = [
+export const TIMELINE_GAP_OPTIONS = [
   { breakPoint: 0.5, count: 10, frames: 60 },
   { breakPoint: 1, count: 10, frames: 30 },
   { breakPoint: 1.5, count: 10, frames: 15 },
@@ -41,5 +43,5 @@ export const TimelineGapOptions = [
   { breakPoint: Infinity, count: 2, frames: 1 }, // 默认值
 ];
 
-// 抽帧最大宽高（之一）
-export const MaxPreviewSize = 900;
+// 抽帧最大宽度（px）
+export const MAX_PREVIEW_SIZE = 100;
