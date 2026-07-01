@@ -6,11 +6,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, reactive, toRef } from "vue";
+import { computed, provide, toRef } from "vue";
+import { useTheme, Timeline } from "@web-vcp/core";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
-import { useTheme } from "@web-vcp/core";
 import { vcpCtxKey } from "@/provides/vcpContext.ts";
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
@@ -28,15 +28,17 @@ const props = defineProps({
 
 const theme = toRef(props, 'theme')
 const { cssProps } = useTheme(theme);
+let timeline: Timeline = new Timeline(50)
 
 const styleList = computed(() => ({
   height: typeof props.height === "number" ? `${props.height}px` : props.height,
   ...cssProps.value
 }));
 
-provide<VcpCtx>(vcpCtxKey, reactive({
-  theme
-}))
+provide<VcpCtx>(vcpCtxKey, {
+  theme,
+  timeline
+})
 </script>
 
 <style scoped lang="scss">

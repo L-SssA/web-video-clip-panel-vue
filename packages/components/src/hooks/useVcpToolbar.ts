@@ -14,7 +14,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-arrow-go-back-fill",
         tipsText: "撤销（'Ctrl' + 'Z'键）",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         click: () => console.log("undo"),
@@ -26,7 +26,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-arrow-go-forward-fill",
         tipsText: "重做（'Ctrl' + 'Y'键）",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         click: () => console.log("redo"),
@@ -38,7 +38,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-delete-bin-6-line",
         tipsText: "删除（'Delete'键）",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         click: () => console.log("delete"),
@@ -50,7 +50,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-file-copy-fill",
         tipsText: "复制",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         click: () => console.log("copy"),
@@ -62,7 +62,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-scissors-cut-fill",
         tipsText: "裁剪",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         click: () => console.log("cut"),
@@ -74,7 +74,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-volume-mute-line",
         tipsText: "声音",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         click: () => console.log("mute"),
@@ -86,7 +86,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-picture-in-picture-2-line",
         tipsText: "替换资源",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         click: () => console.log("replace"),
@@ -101,7 +101,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-play-large-line",
         tipsText: "播放",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
         onClick: () => console.log("play"),
@@ -116,7 +116,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-stacked-view",
         tipsText: "自动吸附",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
         style: { transform: "rotateZ(-90deg)" },
       },
       events: {
@@ -129,10 +129,10 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-indeterminate-circle-line",
         tipsText: "缩小轨道（'ctrl'键 + '-'键/鼠标滚轮向下）",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
-        click: () => console.log("zoomOut"),
+        click: () => ctx.timeline.scale.value--,
       },
     },
     {
@@ -141,9 +141,11 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         showTooltip: false,
         class: "vcp-toolbar__slider",
-        value: 50,
+        modelValue: ctx.timeline.scale.value,
       },
-      events: {},
+      events: {
+        "update:modelValue": (val: number) => (ctx.timeline.scale.value = val),
+      },
     },
     {
       key: "zoomIn",
@@ -151,10 +153,10 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         iconClass: "ri-add-circle-line",
         tipsText: "放大轨道（'ctrl'键 + '+'键/鼠标滚轮向上）",
-        effect: ctx.theme,
+        effect: ctx.theme.value,
       },
       events: {
-        click: () => console.log("zoomIn"),
+        click: () => ctx.timeline.scale.value++,
       },
     },
   ]);
