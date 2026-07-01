@@ -4,7 +4,7 @@ import { ref, watch } from "vue";
 
 import { TIMELINE_GAP_OPTIONS } from "@/config/constant";
 
-import { EventCallback } from "./EventCallback";
+import { EventCallback } from "./eventCallback";
 
 export class Timeline {
   // 时间线缩放值 default 50
