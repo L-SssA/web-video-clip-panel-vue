@@ -3,4 +3,6 @@ export interface TimelineStyles {
   lineWidth: number;
   fontColor: string;
   fontSize: number;
+  cursorLineColor: string;
+  cursorLineWidth: number;
 }

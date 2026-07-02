@@ -79,23 +79,32 @@ export function createTimelineInPixi(
   ctx: typeof Timeline.prototype.ctx,
   styles: Partial<TimelineStyles> = {},
 ) {
+  const { fps, gapWidth, gapsPerLabel, framesPerGap, defaultOffset, cursorLinePosition } = ctx;
   const container = new Container();
   const graphics = new Graphics();
-  const { lineColor = "#555555", lineWidth = 2, fontColor = "#888888", fontSize = 12 } = styles;
+  const {
+    lineColor = "#555555",
+    lineWidth = 2,
+    fontColor = "#888888",
+    fontSize = 12,
+    cursorLineColor = "#f5f5f5",
+    cursorLineWidth = 2,
+  } = styles;
   // 绘制顶部横线
   graphics.moveTo(0, 0).lineTo(app.screen.width, 0).stroke({ color: lineColor, width: lineWidth });
   // 绘制刻度线
-  const gapCounts = Math.floor(app.screen.width / ctx.gapWidth);
+  const gapCounts = Math.floor(app.screen.width / gapWidth);
   for (let i = 0; i < gapCounts; i++) {
-    const offsetX = Math.floor(i * ctx.gapWidth) + 60;
+    // 绘制刻度
+    const offsetX = Math.floor(i * gapWidth) + defaultOffset;
     graphics
       .moveTo(offsetX, 0)
-      .lineTo(offsetX, i % ctx.gapsPerLabel === 0 ? 20 : 6)
+      .lineTo(offsetX, i % gapsPerLabel === 0 ? 20 : 6)
       .stroke({ color: lineColor, width: lineWidth });
     // 绘制刻度标签
-    if (i % ctx.gapsPerLabel === 0 && i !== 0) {
+    if (i % gapsPerLabel === 0 && i !== 0) {
       const text = new BitmapText({
-        text: getTrackDurationFormatted(i * ctx.framesPerGap),
+        text: getTrackDurationFormatted(i * framesPerGap, fps),
         style: {
           fontFamily: "ui-monospace",
           fontSize: `${fontSize}px`,
@@ -105,6 +114,29 @@ export function createTimelineInPixi(
       text.position.set(offsetX + 6, 20 - fontSize);
       container.addChild(text);
     }
+  }
+  if (cursorLinePosition >= 0) {
+    // 游标线
+    graphics
+      .moveTo(cursorLinePosition + defaultOffset, 0)
+      .lineTo(cursorLinePosition + defaultOffset, app.screen.height)
+      .stroke({ color: cursorLineColor, width: cursorLineWidth });
+    // 游标
+    const path = [
+      cursorLinePosition + defaultOffset + cursorLineWidth / 2 + 4,
+      0,
+      cursorLinePosition + defaultOffset + cursorLineWidth / 2 + 4,
+      10,
+      cursorLinePosition + defaultOffset,
+      16,
+      cursorLinePosition + defaultOffset - cursorLineWidth / 2 - 4,
+      10,
+      cursorLinePosition + defaultOffset - cursorLineWidth / 2 - 4,
+      0,
+    ];
+    console.log(path, defaultOffset);
+
+    graphics.poly(path).fill(cursorLineColor);
   }
   container.addChild(graphics);
   return container;

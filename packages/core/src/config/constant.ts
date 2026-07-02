@@ -30,17 +30,17 @@ export const DEFAULT_CHROMAKEY_OPTIONS = {
 
 // 相当于一个改变时间轴间隔配置的断点
 export const TIMELINE_GAP_OPTIONS = [
-  { breakPoint: 0.5, count: 10, frames: 60 },
-  { breakPoint: 1, count: 10, frames: 30 },
-  { breakPoint: 1.5, count: 10, frames: 15 },
-  { breakPoint: 3, count: 10, frames: 9 },
-  { breakPoint: 5, count: 10, frames: 6 },
-  { breakPoint: 10, count: 10, frames: 3 },
-  { breakPoint: 20, count: 5, frames: 3 },
-  { breakPoint: 25, count: 10, frames: 1 },
-  { breakPoint: 32, count: 5, frames: 1 },
-  { breakPoint: 40, count: 3, frames: 1 },
-  { breakPoint: Infinity, count: 2, frames: 1 }, // 默认值
+  { breakPoint: 0.5, gaps: 10, frames: 60 },
+  { breakPoint: 1, gaps: 10, frames: 30 },
+  { breakPoint: 1.5, gaps: 10, frames: 15 },
+  { breakPoint: 3, gaps: 10, frames: 9 },
+  { breakPoint: 5, gaps: 10, frames: 6 },
+  { breakPoint: 10, gaps: 10, frames: 3 },
+  { breakPoint: 20, gaps: 5, frames: 3 },
+  { breakPoint: 25, gaps: 10, frames: 1 },
+  { breakPoint: 32, gaps: 5, frames: 1 },
+  { breakPoint: 40, gaps: 3, frames: 1 },
+  { breakPoint: Infinity, gaps: 2, frames: 1 }, // 默认值
 ];
 
 // 抽帧最大宽度（px）

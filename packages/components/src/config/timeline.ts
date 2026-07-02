@@ -5,6 +5,8 @@ export const darkStyles = {
   lineWidth: 2,
   fontColor: "#888888",
   fontSize: 12,
+  cursorLineColor: "#f5f5f5",
+  cursorLineWidth: 2,
 };
 
 export const defaultStyles = {
@@ -12,6 +14,8 @@ export const defaultStyles = {
   lineWidth: 2,
   fontColor: "#888888",
   fontSize: 12,
+  cursorLineColor: "#333333",
+  cursorLineWidth: 2,
 };
 
 export const timelineStylesMap: Record<string, TimelineStyles> = {
