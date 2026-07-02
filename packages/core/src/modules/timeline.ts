@@ -1,12 +1,8 @@
 import type { Ref } from "vue";
 
-import { Application, Container, Graphics, BitmapText } from "pixi.js";
 import { ref, watch } from "vue";
 
-import type { TimelineStyles } from "@/types/timeline";
-
 import { TIMELINE_GAP_OPTIONS } from "@/config/constant";
-import { getTrackDurationFormatted } from "@/utils/tools";
 
 import { EventCallback } from "./eventCallback";
 
@@ -87,40 +83,4 @@ export class Timeline {
     this.unwatch();
     this.updateEvent.clearEvent();
   }
-}
-
-export function createTimelineInPixi(
-  app: Application,
-  ctx: typeof Timeline.prototype.ctx,
-  styles: Partial<TimelineStyles> = {},
-) {
-  const container = new Container();
-  const graphics = new Graphics();
-  const { lineColor = "#555555", lineWidth = 2, fontColor = "#888888", fontSize = 12 } = styles;
-  // 绘制顶部横线
-  graphics.moveTo(0, 0).lineTo(app.screen.width, 0).stroke({ color: lineColor, width: lineWidth });
-  // 绘制刻度线
-  const gapCounts = Math.floor(app.screen.width / ctx.gapWidth);
-  for (let i = 0; i < gapCounts; i++) {
-    const offsetX = Math.floor(i * ctx.gapWidth) + 60;
-    graphics
-      .moveTo(offsetX, 0)
-      .lineTo(offsetX, i % ctx.gapsPerLabel === 0 ? 20 : 6)
-      .stroke({ color: lineColor, width: lineWidth });
-    // 绘制刻度标签
-    if (i % ctx.gapsPerLabel === 0 && i !== 0) {
-      const text = new BitmapText({
-        text: getTrackDurationFormatted(i * ctx.framesPerGap),
-        style: {
-          fontFamily: "ui-monospace",
-          fontSize: `${fontSize}px`,
-          fill: fontColor,
-        },
-      });
-      text.position.set(offsetX + 6, 20 - fontSize);
-      container.addChild(text);
-    }
-  }
-  container.addChild(graphics);
-  return container;
 }
