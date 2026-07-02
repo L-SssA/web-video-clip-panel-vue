@@ -46,17 +46,19 @@ const {
 
     :deep() {
       .el-slider__runway {
-        background-color: #454545;
+        background-color: var(--vcp-color-light);
       }
 
       .el-slider__bar {
-        background-color: #ffffff;
+        background-color: var(--vcp-color);
       }
 
       .el-slider__button {
         border: none;
         width: 12px;
         height: 12px;
+        background-color: var(--vcp-color);
+        margin-bottom: 1px;
       }
     }
   }

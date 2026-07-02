@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.app.json",
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "types": ["./src/types/*"],
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]

@@ -1,4 +1,4 @@
-import type { ApplicationOptions } from "pixi.js";
+import type { ApplicationOptions, Container, ContainerChild } from "pixi.js";
 
 import { Application, extensions, CullerPlugin, ResizePlugin } from "pixi.js";
 
@@ -10,8 +10,13 @@ export class PixiHelper {
   // pixi 应用
   private app: Application;
 
+  // 是否初始化完成
   get isInitialized() {
     return this.initialized;
+  }
+
+  get pixiApp() {
+    return this.app;
   }
 
   constructor() {
@@ -45,5 +50,13 @@ export class PixiHelper {
     extensions.add(ResizePlugin);
     // 离屏自动剔除渲染插件
     extensions.add(CullerPlugin);
+  }
+
+  /**
+   * 绘制子对象
+   * @param child
+   */
+  draw(child: Container<ContainerChild>) {
+    this.app.stage.addChild(child);
   }
 }
