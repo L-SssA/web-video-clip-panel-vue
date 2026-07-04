@@ -1,19 +1,12 @@
-import { type ApplicationOptions, type ContainerChild } from "pixi.js";
-import {
-  Application,
-  extensions,
-  CullerPlugin,
-  ResizePlugin,
-  BitmapText,
-  Container,
-  Graphics,
-} from "pixi.js";
+import type { ApplicationOptions, ContainerChild } from "pixi.js";
+
+import { Application, extensions, CullerPlugin, ResizePlugin, Container } from "pixi.js";
 
 import type { TimelineStyles } from "@/types/timeline";
 
-import { getTrackDurationFormatted } from "@/utils/tools";
-
 import type { Timeline } from "./timeline";
+
+import { TimelinePixiHelper } from "./timelinePixiHelper";
 
 export class PixiHelper {
   // 是否初始化完成
@@ -22,6 +15,8 @@ export class PixiHelper {
   private el: HTMLElement | null = null;
   // pixi 应用
   private app: Application;
+  // timeline pixi 助手
+  private timelinePixiHelper: TimelinePixiHelper;
 
   // 是否初始化完成
   get isInitialized() {
@@ -34,6 +29,7 @@ export class PixiHelper {
 
   constructor() {
     this.app = new Application();
+    this.timelinePixiHelper = new TimelinePixiHelper(this);
   }
 
   /**
@@ -58,7 +54,7 @@ export class PixiHelper {
   /**
    * 注册插件
    */
-  registerExtensions() {
+  private registerExtensions() {
     // 自动缩放插件
     extensions.add(ResizePlugin);
     // 离屏自动剔除渲染插件
@@ -72,72 +68,13 @@ export class PixiHelper {
   draw(child: Container<ContainerChild>) {
     this.app.stage.addChild(child);
   }
-}
 
-export function createTimelineInPixi(
-  app: Application,
-  ctx: typeof Timeline.prototype.ctx,
-  styles: Partial<TimelineStyles> = {},
-) {
-  const { fps, gapWidth, gapsPerLabel, framesPerGap, defaultOffset, cursorLinePosition } = ctx;
-  const container = new Container();
-  const graphics = new Graphics();
-  const {
-    lineColor = "#555555",
-    lineWidth = 2,
-    fontColor = "#888888",
-    fontSize = 12,
-    cursorLineColor = "#f5f5f5",
-    cursorLineWidth = 2,
-  } = styles;
-  // 绘制顶部横线
-  graphics.moveTo(0, 0).lineTo(app.screen.width, 0).stroke({ color: lineColor, width: lineWidth });
-  // 绘制刻度线
-  const gapCounts = Math.floor(app.screen.width / gapWidth);
-  for (let i = 0; i < gapCounts; i++) {
-    // 绘制刻度
-    const offsetX = Math.floor(i * gapWidth) + defaultOffset;
-    graphics
-      .moveTo(offsetX, 0)
-      .lineTo(offsetX, i % gapsPerLabel === 0 ? 20 : 6)
-      .stroke({ color: lineColor, width: lineWidth });
-    // 绘制刻度标签
-    if (i % gapsPerLabel === 0 && i !== 0) {
-      const text = new BitmapText({
-        text: getTrackDurationFormatted(i * framesPerGap, fps),
-        style: {
-          fontFamily: "ui-monospace",
-          fontSize: `${fontSize}px`,
-          fill: fontColor,
-        },
-      });
-      text.position.set(offsetX + 6, 20 - fontSize);
-      container.addChild(text);
-    }
+  /**
+   * 绘制时间线
+   * @param ctx
+   * @param styles
+   */
+  drawTimeline(ctx: typeof Timeline.prototype.ctx, styles: Partial<TimelineStyles> = {}) {
+    this.timelinePixiHelper.drawTimeline(ctx, styles);
   }
-  if (cursorLinePosition >= 0) {
-    // 游标线
-    graphics
-      .moveTo(cursorLinePosition + defaultOffset, 0)
-      .lineTo(cursorLinePosition + defaultOffset, app.screen.height)
-      .stroke({ color: cursorLineColor, width: cursorLineWidth });
-    // 游标
-    const path = [
-      cursorLinePosition + defaultOffset + cursorLineWidth / 2 + 4,
-      0,
-      cursorLinePosition + defaultOffset + cursorLineWidth / 2 + 4,
-      10,
-      cursorLinePosition + defaultOffset,
-      16,
-      cursorLinePosition + defaultOffset - cursorLineWidth / 2 - 4,
-      10,
-      cursorLinePosition + defaultOffset - cursorLineWidth / 2 - 4,
-      0,
-    ];
-    console.log(path, defaultOffset);
-
-    graphics.poly(path).fill(cursorLineColor);
-  }
-  container.addChild(graphics);
-  return container;
 }

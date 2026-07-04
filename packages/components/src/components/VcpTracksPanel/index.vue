@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue';
-import { PixiHelper, createTimelineInPixi } from '@web-vcp/core';
+import { PixiHelper } from '@web-vcp/core';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxKey } from '@/provides/vcpContext';
@@ -15,7 +15,6 @@ const ctx = inject<VcpCtx>(vcpCtxKey, {} as VcpCtx);
 
 const tracksPanelRef = ref<HTMLElement | null>(null)
 let pixiHelper: PixiHelper = new PixiHelper()
-let lastTimeline: any
 let resizeUnlistener: () => void
 
 
@@ -25,9 +24,7 @@ const timelineStyles = computed(() => {
 
 function drawTimeline(timelineCtx: typeof ctx.timeline.ctx) {
   if (!pixiHelper.isInitialized) return
-  if (lastTimeline) lastTimeline?.destroy()
-  lastTimeline = createTimelineInPixi(pixiHelper.pixiApp, timelineCtx, timelineStyles.value)
-  pixiHelper.draw(lastTimeline)
+  pixiHelper.drawTimeline(timelineCtx, timelineStyles.value)
 }
 
 async function setupPixi() {
