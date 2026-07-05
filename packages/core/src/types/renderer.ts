@@ -10,7 +10,7 @@ export interface TimelineContext {
   gapWidth: number;
   gapsPerLabel: number;
   framesPerGap: number;
-  defaultOffset: number;
+  marginLeft: number;
   cursorLinePosition: number;
 }
 

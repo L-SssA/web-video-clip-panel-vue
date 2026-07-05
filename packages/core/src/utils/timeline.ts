@@ -32,12 +32,12 @@ export function buildTimelineGapsAndLabels(
   ctx: TimelineContext,
   styles: Partial<TimelineStyles> = {},
 ) {
-  const { fps, gapWidth, gapsPerLabel, framesPerGap, defaultOffset } = ctx;
+  const { fps, gapWidth, gapsPerLabel, framesPerGap, marginLeft } = ctx;
   const { lineColor = "#555555", lineWidth = 2, fontColor = "#888888", fontSize = 12 } = styles;
   const gapCounts = Math.floor(app.screen.width / gapWidth);
   for (let i = 0; i < gapCounts; i++) {
     // 绘制刻度
-    const offsetX = Math.floor(i * gapWidth) + defaultOffset;
+    const offsetX = Math.floor(i * gapWidth) + marginLeft;
     graphics
       .moveTo(offsetX, 0)
       .lineTo(offsetX, i % gapsPerLabel === 0 ? 20 : 6)
@@ -69,7 +69,7 @@ export function buildCursorLine(
   styles: Partial<TimelineStyles> = {},
 ) {
   const { cursorLineColor = "#f5f5f5", cursorLineWidth = 2 } = styles;
-  const { cursorLinePosition, defaultOffset } = ctx;
+  const { cursorLinePosition, marginLeft } = ctx;
   // 游标线
   graphics
     .moveTo(0, 0)
@@ -89,6 +89,6 @@ export function buildCursorLine(
     0,
   ];
   graphics.poly(path).fill({ color: cursorLineColor });
-  graphics.position.set(cursorLinePosition + defaultOffset, 0);
+  graphics.position.set(cursorLinePosition + marginLeft, 0);
   return graphics;
 }

@@ -117,10 +117,11 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         iconClass: "ri-stacked-view",
         tipsText: "自动吸附",
         effect: ctx.theme.value,
+        active: ctx.timeline.enableAutoAdsorb.value,
         style: { transform: "rotateZ(-90deg)" },
       },
       events: {
-        click: () => console.log("autoAdsorb"),
+        click: () => (ctx.timeline.enableAutoAdsorb.value = !ctx.timeline.enableAutoAdsorb.value),
       },
     },
     {

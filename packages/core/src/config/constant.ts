@@ -1,3 +1,15 @@
+// 默认时间线缩放
+export const DEFAULT_TIMELINE_SCALE = 50;
+
+// 默认帧率
+export const DEFAULT_FPS = 30;
+
+// 时间轴默认左侧偏移量（px）
+export const TIMELINE_DEFAULT_OFFSET = 60;
+
+// 自动吸附距离（px）
+export const AUTO_ADSORB_WIDTH = 10;
+
 // 主轨道的 ID
 export const MAIN_TRACK_ID = "main-line-001";
 
@@ -16,9 +28,6 @@ export const DEFAULT_TRACK_COLOR = {
   text: "#A83245",
   image: "#A57DBB",
 };
-
-// 自动吸附距离（px）
-export const AUTO_ADSORB_WIDTH = 10;
 
 // 扣绿选项
 export const DEFAULT_CHROMAKEY_OPTIONS = {

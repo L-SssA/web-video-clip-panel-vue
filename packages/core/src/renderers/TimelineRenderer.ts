@@ -143,7 +143,7 @@ export class TimelineRenderer extends BaseRenderer {
       ctx.gapWidth !== cacheCtx.gapWidth ||
       ctx.gapsPerLabel !== cacheCtx.gapsPerLabel ||
       ctx.framesPerGap !== cacheCtx.framesPerGap ||
-      ctx.defaultOffset !== cacheCtx.defaultOffset
+      ctx.marginLeft !== cacheCtx.marginLeft
     ) {
       checkers.redrawTimeline = true;
     }
@@ -232,7 +232,7 @@ export class TimelineRenderer extends BaseRenderer {
       buildCursorLine(this.cursorGraphics, this.app, ctx, styles);
     } else {
       // 如果有缓存，则只更新位置
-      this.cursorGraphics.position.set(ctx.cursorLinePosition + ctx.defaultOffset, 0);
+      this.cursorGraphics.position.set(ctx.cursorLinePosition + ctx.marginLeft, 0);
     }
   }
 }

@@ -2,7 +2,13 @@ import type { Ref } from "vue";
 
 import { computed, ref, watch } from "vue";
 
-import { TIMELINE_GAP_OPTIONS } from "@/config/constant";
+import {
+  AUTO_ADSORB_WIDTH,
+  DEFAULT_FPS,
+  DEFAULT_TIMELINE_SCALE,
+  TIMELINE_DEFAULT_OFFSET,
+  TIMELINE_GAP_OPTIONS,
+} from "@/config/constant";
 
 import { EventCallback } from "../utils/eventCallback";
 
@@ -27,7 +33,12 @@ export class Timeline {
   // 时间线中每个间隔包含的帧数
   readonly framesPerGap: Ref<number> = ref(0);
   // 时间线默认位移(px) default 60
-  readonly defaultOffset: number;
+  readonly marginLeft: Ref<number>;
+
+  // 启用自动吸附 default true
+  readonly enableAutoAdsorb: Ref<boolean> = ref(true);
+  // 自动吸附的检测距离
+  readonly autoAdsorbDistance: Ref<number>;
 
   // 更新事件管理
   private updateEvent = new EventCallback();
@@ -47,15 +58,21 @@ export class Timeline {
       gapWidth: this.gapWidth.value,
       gapsPerLabel: this.gapsPerLabel.value,
       framesPerGap: this.framesPerGap.value,
-      defaultOffset: this.defaultOffset,
+      marginLeft: this.marginLeft.value,
       cursorLinePosition: this.cursorLinePosition.value,
     };
   }
 
-  constructor(scale: number = 50, fps: number = 30, defaultOffset: number = 60) {
+  constructor(
+    scale: number = DEFAULT_TIMELINE_SCALE,
+    fps: number = DEFAULT_FPS,
+    marginLeft: number = TIMELINE_DEFAULT_OFFSET,
+    autoAdsorbDistance: number = AUTO_ADSORB_WIDTH,
+  ) {
     this.scale = ref(scale);
     this.fps = ref(fps);
-    this.defaultOffset = defaultOffset;
+    this.marginLeft = ref(marginLeft);
+    this.autoAdsorbDistance = ref(autoAdsorbDistance);
 
     // 计算游标线位置
     this.cursorLinePosition = computed(() => {
@@ -69,7 +86,7 @@ export class Timeline {
 
     // 监听 scale 和 fps 变化，更新各项指标
     this.unwatch = watch(
-      [this.scale, this.fps],
+      [this.scale, this.fps, this.marginLeft, this.autoAdsorbDistance],
       () => {
         this.calcTimelineGapWidth();
         this.updateEvent.triggerEvent(this.ctx);
