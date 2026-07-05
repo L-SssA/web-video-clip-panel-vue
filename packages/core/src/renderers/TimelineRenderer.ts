@@ -16,6 +16,7 @@ export class TimelineRenderer extends BaseRenderer {
   private headGraphics: Graphics | null = null;
   private gapsContainer: Container | null = null;
   private gapsGraphics: Graphics | null = null;
+  private gapsBackground: Graphics | null = null;
   private cursorGraphics: Graphics | null = null;
 
   // 数据缓存（用于对比是否需要重绘）
@@ -188,12 +189,20 @@ export class TimelineRenderer extends BaseRenderer {
     if (!this.gapsContainer) {
       const container = new Container();
       const graphics = new Graphics();
+      const bgGraphics = new Graphics(); // 用于交互的背景
+      container.addChild(bgGraphics);
       container.addChild(graphics);
-      buildTimelineGapsAndLabels(container, graphics, this.app, ctx, styles);
+      buildTimelineGapsAndLabels(container, graphics, bgGraphics, this.app, ctx, styles);
       this.gapsContainer = container;
       this.gapsGraphics = graphics;
+      this.gapsBackground = bgGraphics;
       this.container?.addChild(container);
-    } else if (redraw && this.gapsGraphics && this.gapsContainer) {
+
+      container.eventMode = "static";
+      container.on("pointerdown", (event) => {
+        console.log("click", event);
+      });
+    } else if (redraw && this.gapsGraphics && this.gapsContainer && this.gapsBackground) {
       // 清除旧的文本标签（保留 graphics）
       this.gapsContainer.children.slice(1).forEach((child) => {
         if (child instanceof BitmapText) {
@@ -201,7 +210,14 @@ export class TimelineRenderer extends BaseRenderer {
         }
       });
       this.gapsGraphics.clear();
-      buildTimelineGapsAndLabels(this.gapsContainer, this.gapsGraphics, this.app, ctx, styles);
+      buildTimelineGapsAndLabels(
+        this.gapsContainer,
+        this.gapsGraphics,
+        this.gapsBackground,
+        this.app,
+        ctx,
+        styles,
+      );
     }
   }
 

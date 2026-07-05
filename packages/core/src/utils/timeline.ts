@@ -28,6 +28,7 @@ export function buildTimelineHead(
 export function buildTimelineGapsAndLabels(
   container: Container,
   graphics: Graphics,
+  bgGraphics: Graphics,
   app: Application,
   ctx: TimelineContext,
   styles: Partial<TimelineStyles> = {},
@@ -56,6 +57,10 @@ export function buildTimelineGapsAndLabels(
       container.addChild(text);
     }
   }
+  bgGraphics.rect(marginLeft, 0, app.screen.width - marginLeft, 30).fill({
+    color: 0x000000,
+    alpha: 0,
+  });
 }
 
 /**
