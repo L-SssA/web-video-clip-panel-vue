@@ -4,14 +4,18 @@ import { computed, ref, watch } from "vue";
 
 import { TIMELINE_GAP_OPTIONS } from "@/config/constant";
 
-import { EventCallback } from "./eventCallback";
+import { EventCallback } from "../utils/eventCallback";
 
+/**
+ * 时间线数据模型
+ * 纯粹的数据管理，不包含任何渲染逻辑
+ */
 export class Timeline {
   // 帧率 default 30
   readonly fps: Ref<number>;
   // 当前时刻(秒) default 0
   readonly currentTime: Ref<number> = ref(0);
-  // 游标线位置
+  // 游标线位置（计算属性）
   readonly cursorLinePosition: Ref<number>;
 
   // 时间线缩放值 default 50
@@ -23,13 +27,16 @@ export class Timeline {
   // 时间线中每个间隔包含的帧数
   readonly framesPerGap: Ref<number> = ref(0);
   // 时间线默认位移(px) default 60
-  readonly defaultOffset: number = 60;
+  readonly defaultOffset: number;
 
   // 更新事件管理
   private updateEvent = new EventCallback();
   // 监听器，用于停止watch
   private unwatch: Function;
 
+  /**
+   * 获取时间线上下文数据
+   */
   get ctx() {
     return {
       // 时间相关
@@ -49,10 +56,12 @@ export class Timeline {
     this.scale = ref(scale);
     this.fps = ref(fps);
     this.defaultOffset = defaultOffset;
+
+    // 计算游标线位置
     this.cursorLinePosition = computed(() => {
       // currentTime(秒) * fps -> 帧数
       // 帧数 / framesPerGap -> 刻度数
-      // 刻度数 / gapWidth -> 实际坐标
+      // 刻度数 * gapWidth -> 实际坐标
       return (
         ((this.currentTime.value * this.fps.value) / this.framesPerGap.value) * this.gapWidth.value
       );
@@ -70,9 +79,34 @@ export class Timeline {
   }
 
   /**
+   * 设置当前时间
+   * @param time 时间（秒）
+   */
+  setCurrentTime(time: number): void {
+    this.currentTime.value = time;
+    this.updateEvent.triggerEvent(this.ctx);
+  }
+
+  /**
+   * 设置缩放值
+   * @param scale 缩放值
+   */
+  setScale(scale: number): void {
+    this.scale.value = scale;
+  }
+
+  /**
+   * 设置帧率
+   * @param fps 帧率
+   */
+  setFps(fps: number): void {
+    this.fps.value = fps;
+  }
+
+  /**
    * 计算时间线间隔宽度、间隔标签间隔和每个间隔包含的帧数
    */
-  calcTimelineGapWidth() {
+  calcTimelineGapWidth(): void {
     // 根据缩放值，调整时间线间隔变化率
     const singleFrameWidth =
       this.scale.value > 50 ? 2 + (this.scale.value - 50) * 0.76 : 0.2 + this.scale.value * 0.036;
@@ -88,25 +122,25 @@ export class Timeline {
 
   /**
    * 添加更新回调
-   * @param callback
+   * @param callback 回调函数
    */
-  onUpdate(callback: Function) {
+  onUpdate(callback: Function): void {
     if (this.updateEvent.hasEvent(callback)) return;
-    this.updateEvent.onEvent(callback, true, this.ctx);
+    this.updateEvent.onEvent(callback);
   }
 
   /**
    * 移除更新回调
-   * @param callback
+   * @param callback 回调函数
    */
-  offUpdate(callback: Function) {
+  offUpdate(callback: Function): void {
     this.updateEvent.offEvent(callback);
   }
 
   /**
    * 释放资源
    */
-  release() {
+  release(): void {
     this.unwatch();
     this.updateEvent.clearEvent();
   }

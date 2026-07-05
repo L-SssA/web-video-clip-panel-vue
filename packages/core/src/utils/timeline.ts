@@ -2,7 +2,7 @@ import type { Application, Graphics, Container } from "pixi.js";
 
 import { BitmapText } from "pixi.js";
 
-import type { Timeline } from "@/modules/timeline";
+import type { TimelineContext } from "@/types/renderer";
 import type { TimelineStyles } from "@/types/timeline";
 
 import { getTrackDurationFormatted } from "./tools";
@@ -29,7 +29,7 @@ export function buildTimelineGapsAndLabels(
   container: Container,
   graphics: Graphics,
   app: Application,
-  ctx: typeof Timeline.prototype.ctx,
+  ctx: TimelineContext,
   styles: Partial<TimelineStyles> = {},
 ) {
   const { fps, gapWidth, gapsPerLabel, framesPerGap, defaultOffset } = ctx;
@@ -65,7 +65,7 @@ export function buildTimelineGapsAndLabels(
 export function buildCursorLine(
   graphics: Graphics,
   app: Application,
-  ctx: typeof Timeline.prototype.ctx,
+  ctx: TimelineContext,
   styles: Partial<TimelineStyles> = {},
 ) {
   const { cursorLineColor = "#f5f5f5", cursorLineWidth = 2 } = styles;

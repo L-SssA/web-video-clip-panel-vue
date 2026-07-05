@@ -4,7 +4,6 @@
 
 <script setup lang="ts">
 import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue';
-import { PixiHelper } from '@web-vcp/core';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxKey } from '@/provides/vcpContext';
@@ -14,39 +13,48 @@ import { useWindowResize } from '@/hooks/useWindowResize';
 const ctx = inject<VcpCtx>(vcpCtxKey, {} as VcpCtx);
 
 const tracksPanelRef = ref<HTMLElement | null>(null)
-let pixiHelper: PixiHelper = new PixiHelper()
-let resizeUnlistener: () => void
 
 
 const timelineStyles = computed(() => {
   return timelineStylesMap[ctx.theme.value] || defaultStyles
 })
 
-function drawTimeline(timelineCtx: typeof ctx.timeline.ctx) {
-  if (!pixiHelper.isInitialized) return
-  pixiHelper.drawTimeline(timelineCtx, timelineStyles.value)
+function handleTimelineUpdate() {
+  ctx.rendererManager.render('timeline', ctx.timeline.ctx, timelineStyles.value)
 }
 
 async function setupPixi() {
-  if (tracksPanelRef.value) {
-    await pixiHelper.init(tracksPanelRef.value, { backgroundAlpha: 0 })
-    ctx.timeline.onUpdate(drawTimeline)
-    resizeUnlistener = useWindowResize(() => drawTimeline(ctx.timeline.ctx))
-  }
+  if (!tracksPanelRef.value) return
+  // 初始化渲染器
+  await ctx.rendererManager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
+  ctx.rendererManager.renderAll({
+    timeline: ctx.timeline.ctx,
+  }, {
+    timeline: timelineStyles.value,
+  })
 }
 
-
-watch(ctx.theme, () => {
-  drawTimeline(ctx.timeline.ctx)
-})
 
 onMounted(() => {
   setupPixi()
 })
 
+// 窗口resize时重新渲染
+let resizeUnlistener = useWindowResize(() => {
+  handleTimelineUpdate()
+})
+// 主题变化时重新渲染
+watch(ctx.theme, () => {
+  handleTimelineUpdate()
+})
+// 时间线变化时重新渲染
+ctx.timeline.onUpdate(handleTimelineUpdate)
+
 onUnmounted(() => {
-  ctx.timeline.offUpdate(drawTimeline)
-  resizeUnlistener?.()
+  ctx.timeline.offUpdate(handleTimelineUpdate)
+  resizeUnlistener()
+  // 销毁渲染器
+  ctx.rendererManager.destroy()
 })
 
 </script>

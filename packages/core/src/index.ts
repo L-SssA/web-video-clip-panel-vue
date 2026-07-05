@@ -1,6 +1,17 @@
+// 类型导出
 export type { TimelineStyles } from "./types/timeline";
+export type { TimelineContext, IRenderer } from "./types/renderer";
 
-export { Timeline } from "./modules/timeline";
-export { PixiHelper } from "./modules/pixiHelper";
+// 数据层导出
+export { Timeline } from "./data/Timeline";
 
+// 渲染器导出
+export { BaseRenderer } from "./renderers/BaseRenderer";
+export { TimelineRenderer } from "./renderers/TimelineRenderer";
+
+// 管理器导出
+export { PixiAppManager } from "./managers/PixiAppManager";
+export { RendererManager } from "./managers/RendererManager";
+
+// Hooks 导出
 export { useTheme } from "./hooks/useTheme";
