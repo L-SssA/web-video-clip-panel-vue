@@ -12,6 +12,3 @@ export { TimelineRenderer } from "./renderers/TimelineRenderer";
 // 管理器导出
 export { PixiAppManager } from "./managers/PixiAppManager";
 export { RendererManager } from "./managers/RendererManager";
-
-// Hooks 导出
-export { useTheme } from "./hooks/useTheme";

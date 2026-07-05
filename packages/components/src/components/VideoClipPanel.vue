@@ -7,12 +7,15 @@
 
 <script setup lang="ts">
 import { computed, provide, toRef } from "vue";
-import { useTheme, Timeline, RendererManager, TimelineRenderer } from "@web-vcp/core";
+import { Timeline, RendererManager, TimelineRenderer } from "@web-vcp/core";
+
+import type { VcpCtx } from "@/types/vcpContext.ts";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { vcpCtxKey } from "@/provides/vcpContext.ts";
-import type { VcpCtx } from "@/types/vcpContext.ts";
+import { useTheme } from "@/hooks/useTheme";
+
 
 const props = defineProps({
   height: {
