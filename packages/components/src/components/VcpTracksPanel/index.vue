@@ -11,10 +11,7 @@ import { useWindowResize } from '@/hooks/useWindowResize';
 import { timelineRenderer as timelineRendererKey, vcpCtx } from '@/config/symbols';
 
 const ctx = inject<VcpCtx>(vcpCtx, {} as VcpCtx);
-
 const tracksPanelRef = ref<HTMLElement | null>(null)
-
-
 const timelineStyles = computed(() => {
   return timelineStylesMap[ctx.theme.value] || defaultStyles
 })
@@ -34,11 +31,6 @@ async function setupPixi() {
   })
 }
 
-
-onMounted(() => {
-  setupPixi()
-})
-
 // 窗口resize时重新渲染
 let resizeUnlistener = useWindowResize(() => {
   handleTimelineUpdate()
@@ -49,6 +41,14 @@ watch(ctx.theme, () => {
 })
 // 时间线变化时重新渲染
 ctx.timeline.onUpdate(handleTimelineUpdate)
+
+ctx.timelineRenderer.on("timelineClick", ((event) => {
+  ctx.timeline.setCurrentTimeByPixel(event.global.x);
+}));
+
+onMounted(() => {
+  setupPixi()
+})
 
 onUnmounted(() => {
   ctx.timeline.offUpdate(handleTimelineUpdate)

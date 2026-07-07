@@ -16,7 +16,7 @@ import { EventCallback } from "../utils/eventCallback";
  * 时间线数据模型
  * 纯粹的数据管理，不包含任何渲染逻辑
  */
-export class Timeline {
+export class TimelineData {
   // 帧率 default 30
   readonly fps: Ref<number>;
   // 当前时刻(秒) default 0
@@ -96,15 +96,6 @@ export class Timeline {
   }
 
   /**
-   * 设置当前时间
-   * @param time 时间（秒）
-   */
-  setCurrentTime(time: number): void {
-    this.currentTime.value = time;
-    this.updateEvent.triggerEvent(this.ctx);
-  }
-
-  /**
    * 设置缩放值
    * @param scale 缩放值
    */
@@ -135,6 +126,20 @@ export class Timeline {
       this.framesPerGap.value = option.frames;
     }
     this.gapWidth.value = this.framesPerGap.value * singleFrameWidth;
+  }
+
+  /**
+   * 根据像素位置设置当前时间
+   * @param pixel 像素位置
+   */
+  setCurrentTimeByPixel(pixel: number): void {
+    // 计算像素位置相对于时间线的偏移量
+    const offsetX = Math.max(pixel - this.marginLeft.value, 0);
+    // 计算一帧所占的宽度，用于限定当前时间每次移动的宽度是一帧的宽度的倍数
+    const singleFrameWidth = this.gapWidth.value / this.framesPerGap.value;
+    this.currentTime.value = Math.round(offsetX / singleFrameWidth) / this.fps.value;
+    // 触发更新事件
+    this.updateEvent.triggerEvent(this.ctx);
   }
 
   /**

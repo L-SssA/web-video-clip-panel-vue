@@ -1,8 +1,10 @@
 import { Application, BitmapText, Container, Graphics } from "pixi.js";
 
+import type { TimelineEvents } from "@/types/events";
 import type { TimelineContext } from "@/types/renderer";
 import type { TimelineStyles } from "@/types/timeline";
 
+import { EventCallback } from "@/utils/eventCallback";
 import { buildCursorLine, buildTimelineGapsAndLabels, buildTimelineHead } from "@/utils/timeline";
 
 import { BaseRenderer } from "./BaseRenderer";
@@ -16,8 +18,10 @@ export class TimelineRenderer extends BaseRenderer {
   private headGraphics: Graphics | null = null;
   private gapsContainer: Container | null = null;
   private gapsGraphics: Graphics | null = null;
-  private gapsBackground: Graphics | null = null;
+  private gapsBackgroundGraphics: Graphics | null = null;
   private cursorGraphics: Graphics | null = null;
+
+  private eventsMap = new Map<string, EventCallback>();
 
   // 数据缓存（用于对比是否需要重绘）
   private dataCache?: {
@@ -85,6 +89,10 @@ export class TimelineRenderer extends BaseRenderer {
 
     // 清空缓存
     this.dataCache = undefined;
+
+    // 清理事件
+    this.eventsMap.forEach((eventCallback) => eventCallback.clearEvent());
+    this.eventsMap.clear();
 
     super.destroy();
   }
@@ -193,14 +201,12 @@ export class TimelineRenderer extends BaseRenderer {
       buildTimelineGapsAndLabels(container, graphics, bgGraphics, this.app, ctx, styles);
       this.gapsContainer = container;
       this.gapsGraphics = graphics;
-      this.gapsBackground = bgGraphics;
+      this.gapsBackgroundGraphics = bgGraphics;
       this.container?.addChild(container);
-
+      // 注册交互事件
       container.eventMode = "static";
-      container.on("pointerdown", (event) => {
-        console.log("click", event);
-      });
-    } else if (redraw && this.gapsGraphics && this.gapsContainer && this.gapsBackground) {
+      container.on("pointerdown", (event) => this.triggerEvent("timelineClick", event, container));
+    } else if (redraw && this.gapsGraphics && this.gapsContainer && this.gapsBackgroundGraphics) {
       // 清除旧的文本标签（保留 graphics）
       this.gapsContainer.children.slice(1).forEach((child) => {
         if (child instanceof BitmapText) {
@@ -211,7 +217,7 @@ export class TimelineRenderer extends BaseRenderer {
       buildTimelineGapsAndLabels(
         this.gapsContainer,
         this.gapsGraphics,
-        this.gapsBackground,
+        this.gapsBackgroundGraphics,
         this.app,
         ctx,
         styles,
@@ -247,6 +253,40 @@ export class TimelineRenderer extends BaseRenderer {
     } else {
       // 如果有缓存，则只更新位置
       this.cursorGraphics.position.set(ctx.cursorLinePosition + ctx.marginLeft, 0);
+    }
+  }
+
+  /**
+   * 绑定事件
+   * @param event 事件名
+   * @param func 回调函数
+   */
+  public on<K extends keyof TimelineEvents>(event: K, func: TimelineEvents[K]) {
+    if (!this.eventsMap.has(event)) {
+      this.eventsMap.set(event, new EventCallback());
+    }
+    this.eventsMap.get(event)?.onEvent(func);
+  }
+
+  /**
+   * 解绑事件
+   * @param event 事件名
+   * @param func 回调函数
+   */
+  public off<K extends keyof TimelineEvents>(event: K, func: TimelineEvents[K]) {
+    if (this.eventsMap.has(event)) {
+      this.eventsMap.get(event)?.offEvent(func);
+    }
+  }
+
+  /**
+   * 触发事件
+   * @param event 事件名
+   * @param data 事件数据
+   */
+  private triggerEvent(event: string, ...args: any[]) {
+    if (this.eventsMap.has(event)) {
+      this.eventsMap.get(event)?.triggerEvent(...args);
     }
   }
 }

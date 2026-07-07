@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { computed, provide, toRef } from "vue";
-import { Timeline, RendererManager, TimelineRenderer } from "@web-vcp/core";
+import { TimelineData, RendererManager, TimelineRenderer } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
@@ -15,7 +15,6 @@ import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { useTheme } from "@/hooks/useTheme";
 import { vcpCtx, timelineRenderer as timelineRendererKey } from "@/config/symbols";
-
 
 const props = defineProps({
   height: {
@@ -38,7 +37,7 @@ const styleList = computed(() => ({
 }));
 
 // 创建时间线数据模型
-const timeline = new Timeline(50, 30);
+const timeline = new TimelineData(50, 30);
 
 // 创建渲染器管理器
 const rendererManager = new RendererManager();
@@ -47,11 +46,10 @@ const rendererManager = new RendererManager();
 const timelineRenderer = new TimelineRenderer();
 rendererManager.register(timelineRendererKey, timelineRenderer);
 
-
-
 provide<VcpCtx>(vcpCtx, {
   theme,
   timeline,
+  timelineRenderer,
   rendererManager
 })
 </script>
