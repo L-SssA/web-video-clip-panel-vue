@@ -20,13 +20,11 @@ export class TimelineRenderer extends BaseRenderer {
   private cursorGraphics: Graphics | null = null;
 
   // 数据缓存（用于对比是否需要重绘）
-  private dataCache: {
-    timeline?: {
-      ctx: TimelineContext;
-      styles: Partial<TimelineStyles>;
-      app: { width: number; height: number };
-    };
-  } = {};
+  private dataCache?: {
+    ctx: TimelineContext;
+    styles: Partial<TimelineStyles>;
+    app: { width: number; height: number };
+  };
 
   init(app: Application, container?: Container): void {
     super.init(app, container);
@@ -56,7 +54,7 @@ export class TimelineRenderer extends BaseRenderer {
     this.drawCursorLine(ctx, styles, redrawCursorLine);
 
     // 更新缓存
-    this.dataCache.timeline = {
+    this.dataCache = {
       ctx,
       styles,
       app: {
@@ -86,7 +84,7 @@ export class TimelineRenderer extends BaseRenderer {
     }
 
     // 清空缓存
-    this.dataCache = {};
+    this.dataCache = undefined;
 
     super.destroy();
   }
@@ -105,11 +103,11 @@ export class TimelineRenderer extends BaseRenderer {
     redrawCursorLine: boolean;
   } {
     // 未缓存，直接更新
-    if (!this.dataCache.timeline) {
+    if (!this.dataCache) {
       return { redrawTimelineHead: true, redrawTimeline: true, redrawCursorLine: true };
     }
 
-    const { ctx: cacheCtx, styles: cacheStyles, app: cacheApp } = this.dataCache.timeline;
+    const { ctx: cacheCtx, styles: cacheStyles, app: cacheApp } = this.dataCache;
 
     // app 大小改变需要重建
     if (this.app?.screen.width !== cacheApp.width || this.app?.screen.height !== cacheApp.height) {

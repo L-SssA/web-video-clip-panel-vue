@@ -18,11 +18,11 @@
 <script setup lang="ts">
 import { inject } from "vue";
 import ToolbarLayout from "./ToolbarLayout.vue";
-import { vcpCtxKey } from "@/provides/vcpContext.ts";
 import type { VcpCtx } from "@/types/vcpContext.ts";
 import { useVcpToolbar } from "@/hooks/useVcpToolbar.ts";
+import { vcpCtx } from "@/config/symbols.ts";
 
-const ctx = inject<VcpCtx>(vcpCtxKey, {} as VcpCtx);
+const ctx = inject<VcpCtx>(vcpCtx, {} as VcpCtx);
 const {
   leftToolbarConfigs,
   centerToolbarConfigs,

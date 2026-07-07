@@ -13,8 +13,8 @@ import type { VcpCtx } from "@/types/vcpContext.ts";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
-import { vcpCtxKey } from "@/provides/vcpContext.ts";
 import { useTheme } from "@/hooks/useTheme";
+import { vcpCtx, timelineRenderer as timelineRendererKey } from "@/config/symbols";
 
 
 const props = defineProps({
@@ -40,16 +40,16 @@ const styleList = computed(() => ({
 // 创建时间线数据模型
 const timeline = new Timeline(50, 30);
 
-
 // 创建渲染器管理器
 const rendererManager = new RendererManager();
 
 // 注册时间线渲染器
 const timelineRenderer = new TimelineRenderer();
-rendererManager.register('timeline', timelineRenderer);
+rendererManager.register(timelineRendererKey, timelineRenderer);
 
 
-provide<VcpCtx>(vcpCtxKey, {
+
+provide<VcpCtx>(vcpCtx, {
   theme,
   timeline,
   rendererManager
