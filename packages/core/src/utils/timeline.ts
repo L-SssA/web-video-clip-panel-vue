@@ -2,8 +2,7 @@ import type { Application, Graphics, Container } from "pixi.js";
 
 import { BitmapText, Rectangle } from "pixi.js";
 
-import type { TimelineContext } from "@/types/renderer";
-import type { TimelineStyles } from "@/types/timeline";
+import type { TimelineStyles, TimelineContext } from "@/types/timeline";
 
 import { getTrackDurationFormatted } from "./tools";
 

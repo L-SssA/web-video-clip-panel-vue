@@ -84,3 +84,8 @@ export interface VideoTrackLine extends BaseTrackLine<VideoTrackItem> {}
 export type TrackLine = ImageTrackLine | TextTrackLine | AudioTrackLine | VideoTrackLine;
 
 export type pictureTrackLine = ImageTrackLine | VideoTrackLine;
+
+/**
+ * 轨道线上下文数据
+ */
+export interface TrackLineContext {}

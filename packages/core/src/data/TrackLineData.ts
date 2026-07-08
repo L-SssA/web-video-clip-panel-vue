@@ -2,6 +2,7 @@ import type { ComputedRef } from "vue";
 
 import { computed, ref } from "vue";
 
+import type { TrackLineContext } from "@/types/trackline";
 import type {
   AudioTrackLine,
   pictureTrackLine,
@@ -26,6 +27,10 @@ export class TrackLineData {
   private audioTrackLineList = ref<AudioTrackLine[]>([]);
   // 按类型顺序排列轨道
   readonly mergeTrackLineList: ComputedRef<TrackLine[]>;
+
+  get ctx(): TrackLineContext {
+    return {};
+  }
 
   constructor() {
     // 所有轨道合并，用于显示

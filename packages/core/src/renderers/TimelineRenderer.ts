@@ -1,8 +1,7 @@
 import { Application, BitmapText, Container, Graphics } from "pixi.js";
 
 import type { TimelineEvents } from "@/types/events";
-import type { TimelineContext } from "@/types/renderer";
-import type { TimelineStyles } from "@/types/timeline";
+import type { TimelineStyles, TimelineContext } from "@/types/timeline";
 
 import { EventCallback } from "@/utils/eventCallback";
 import { buildCursorLine, buildTimelineGapsAndLabels, buildTimelineHead } from "@/utils/timeline";

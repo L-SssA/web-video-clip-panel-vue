@@ -1,20 +1,6 @@
 import type { Application, Container } from "pixi.js";
 
 /**
- * 时间线上下文数据
- */
-export interface TimelineContext {
-  fps: number;
-  currentTime: number;
-  scale: number;
-  gapWidth: number;
-  gapsPerLabel: number;
-  framesPerGap: number;
-  marginLeft: number;
-  cursorLinePosition: number;
-}
-
-/**
  * 渲染器接口
  */
 export interface IRenderer {

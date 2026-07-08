@@ -2,6 +2,8 @@ import type { Ref } from "vue";
 
 import { computed, ref, watch } from "vue";
 
+import type { TimelineContext } from "@/types/timeline";
+
 import {
   AUTO_ADSORB_WIDTH,
   DEFAULT_FPS,
@@ -48,7 +50,7 @@ export class TimelineData {
   /**
    * 获取时间线上下文数据
    */
-  get ctx() {
+  get ctx(): TimelineContext {
     return {
       // 时间相关
       fps: this.fps.value,

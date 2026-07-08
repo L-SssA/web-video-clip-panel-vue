@@ -7,14 +7,14 @@
 
 <script setup lang="ts">
 import { computed, provide, toRef } from "vue";
-import { TimelineData, RendererManager, TimelineRenderer } from "@web-vcp/core";
+import { TimelineData, RendererManager, TimelineRenderer, TrackLineRenderer } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { useTheme } from "@/hooks/useTheme";
-import { vcpCtx, timelineRenderer as timelineRendererKey } from "@/config/symbols";
+import { vcpCtx, timelineRenderer as timelineRendererKey, tracklineRenderer } from "@/config/symbols";
 
 const props = defineProps({
   height: {
@@ -45,6 +45,9 @@ const rendererManager = new RendererManager();
 // 注册时间线渲染器
 const timelineRenderer = new TimelineRenderer();
 rendererManager.register(timelineRendererKey, timelineRenderer);
+// 注册轨道渲染器
+const trackLineRenderer = new TrackLineRenderer();
+rendererManager.register(tracklineRenderer, trackLineRenderer);
 
 provide<VcpCtx>(vcpCtx, {
   theme,
