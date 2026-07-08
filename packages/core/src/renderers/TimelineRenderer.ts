@@ -18,10 +18,10 @@ export class TimelineRenderer extends BaseRenderer {
   private headGraphics: Graphics | null = null;
   private gapsContainer: Container | null = null;
   private gapsGraphics: Graphics | null = null;
-  private gapsBackgroundGraphics: Graphics | null = null;
   private cursorGraphics: Graphics | null = null;
 
   private eventsMap = new Map<string, EventCallback>();
+  private dragCursorLine = false;
 
   // 数据缓存（用于对比是否需要重绘）
   private dataCache?: {
@@ -56,6 +56,12 @@ export class TimelineRenderer extends BaseRenderer {
     this.drawGapsAndLabels(ctx, styles, redrawTimeline);
     // 绘制游标线
     this.drawCursorLine(ctx, styles, redrawCursorLine);
+
+    if (!this.dataCache) {
+      // 表示第一次渲染
+      // 绑定事件
+      this.mountEvents();
+    }
 
     // 更新缓存
     this.dataCache = {
@@ -195,18 +201,12 @@ export class TimelineRenderer extends BaseRenderer {
     if (!this.gapsContainer) {
       const container = new Container();
       const graphics = new Graphics();
-      const bgGraphics = new Graphics(); // 用于交互的背景
-      container.addChild(bgGraphics);
       container.addChild(graphics);
-      buildTimelineGapsAndLabels(container, graphics, bgGraphics, this.app, ctx, styles);
+      buildTimelineGapsAndLabels(container, graphics, this.app, ctx, styles);
       this.gapsContainer = container;
       this.gapsGraphics = graphics;
-      this.gapsBackgroundGraphics = bgGraphics;
       this.container?.addChild(container);
-      // 注册交互事件
-      container.eventMode = "static";
-      container.on("pointerdown", (event) => this.triggerEvent("timelineClick", event, container));
-    } else if (redraw && this.gapsGraphics && this.gapsContainer && this.gapsBackgroundGraphics) {
+    } else if (redraw && this.gapsGraphics && this.gapsContainer) {
       // 清除旧的文本标签（保留 graphics）
       this.gapsContainer.children.slice(1).forEach((child) => {
         if (child instanceof BitmapText) {
@@ -214,14 +214,7 @@ export class TimelineRenderer extends BaseRenderer {
         }
       });
       this.gapsGraphics.clear();
-      buildTimelineGapsAndLabels(
-        this.gapsContainer,
-        this.gapsGraphics,
-        this.gapsBackgroundGraphics,
-        this.app,
-        ctx,
-        styles,
-      );
+      buildTimelineGapsAndLabels(this.gapsContainer, this.gapsGraphics, this.app, ctx, styles);
     }
   }
 
@@ -258,6 +251,39 @@ export class TimelineRenderer extends BaseRenderer {
 
   /**
    * 绑定事件
+   */
+  mountEvents() {
+    // 全局事件
+    if (this.app) {
+      this.app.stage.eventMode = "static";
+      this.app.stage.on("pointermove", (event) => {
+        this.dragCursorLine && this.triggerEvent("cursorLineMove", event);
+      });
+      this.app.stage.on("pointerup", () => {
+        this.dragCursorLine = false;
+      });
+      this.app.stage.on("pointerupoutside", () => {
+        this.dragCursorLine = false;
+      });
+    }
+
+    /* 绑定时间线相关事件 */
+    if (this.gapsContainer) {
+      this.gapsContainer.eventMode = "static";
+      this.gapsContainer.on("pointerdown", (event) => this.triggerEvent("timelineClick", event));
+    }
+
+    /* 绑定游标线相关事件 */
+    if (this.cursorGraphics) {
+      this.cursorGraphics.eventMode = "static";
+      this.cursorGraphics.on("pointerdown", () => {
+        this.dragCursorLine = true;
+      });
+    }
+  }
+
+  /**
+   * 绑定事件
    * @param event 事件名
    * @param func 回调函数
    */
@@ -284,7 +310,10 @@ export class TimelineRenderer extends BaseRenderer {
    * @param event 事件名
    * @param data 事件数据
    */
-  private triggerEvent(event: string, ...args: any[]) {
+  private triggerEvent<K extends keyof TimelineEvents>(
+    event: K,
+    ...args: Parameters<TimelineEvents[K]>
+  ) {
     if (this.eventsMap.has(event)) {
       this.eventsMap.get(event)?.triggerEvent(...args);
     }

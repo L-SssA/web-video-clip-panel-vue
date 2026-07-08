@@ -44,7 +44,8 @@ export class PixiAppManager {
     }
 
     this.el = el;
-    await this.app.init({ ...options, resizeTo: this.el });
+    await this.app.init({ resizeTo: this.el, ...options });
+    this.app.stage.hitArea = this.app.screen;
 
     this.registerExtensions();
 

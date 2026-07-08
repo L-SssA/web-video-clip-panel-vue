@@ -1,6 +1,6 @@
 import type { Application, Graphics, Container } from "pixi.js";
 
-import { BitmapText } from "pixi.js";
+import { BitmapText, Rectangle } from "pixi.js";
 
 import type { TimelineContext } from "@/types/renderer";
 import type { TimelineStyles } from "@/types/timeline";
@@ -28,7 +28,6 @@ export function buildTimelineHead(
 export function buildTimelineGapsAndLabels(
   container: Container,
   graphics: Graphics,
-  bgGraphics: Graphics,
   app: Application,
   ctx: TimelineContext,
   styles: Partial<TimelineStyles> = {},
@@ -56,11 +55,8 @@ export function buildTimelineGapsAndLabels(
       text.position.set(offsetX + 6, 20 - fontSize);
       container.addChild(text);
     }
+    container.hitArea = new Rectangle(marginLeft, 0, app.screen.width - marginLeft, 30);
   }
-  bgGraphics.rect(marginLeft, 0, app.screen.width - marginLeft, 30).fill({
-    color: 0x000000,
-    alpha: 0,
-  });
 }
 
 /**

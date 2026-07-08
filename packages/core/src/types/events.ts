@@ -6,4 +6,5 @@ import type { FederatedPointerEvent } from "pixi.js";
 export interface TimelineEvents {
   /** 时间线点击事件 */
   timelineClick: (event: FederatedPointerEvent) => void;
+  cursorLineMove: (event: FederatedPointerEvent) => void;
 }

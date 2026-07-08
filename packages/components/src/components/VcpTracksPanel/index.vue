@@ -16,6 +16,7 @@ const timelineStyles = computed(() => {
   return timelineStylesMap[ctx.theme.value] || defaultStyles
 })
 
+// 节流处理时间线更新
 function handleTimelineUpdate() {
   ctx.rendererManager.render(timelineRendererKey, ctx.timeline.ctx, timelineStyles.value)
 }
@@ -45,6 +46,10 @@ ctx.timeline.onUpdate(handleTimelineUpdate)
 ctx.timelineRenderer.on("timelineClick", ((event) => {
   ctx.timeline.setCurrentTimeByPixel(event.global.x);
 }));
+ctx.timelineRenderer.on("cursorLineMove", ((event) => {
+  ctx.timeline.setCurrentTimeByPixel(event.global.x);
+}));
+
 
 onMounted(() => {
   setupPixi()
