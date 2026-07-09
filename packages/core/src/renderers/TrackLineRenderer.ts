@@ -1,4 +1,4 @@
-import type { Application, Container } from "pixi.js";
+import { type Application, type Container } from "pixi.js";
 
 import type { TrackLineContext } from "@/types/trackline";
 
@@ -13,6 +13,11 @@ export class TrackLineRenderer extends BaseRenderer {
     super.init(app, container);
   }
 
+  /**
+   * 执行渲染
+   * @param data 渲染数据
+   * @param styles 渲染样式
+   */
   render(data: TrackLineContext, styles: any): void {
     console.log("TrackLineRenderer", data, styles);
   }

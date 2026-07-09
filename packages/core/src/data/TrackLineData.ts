@@ -10,7 +10,11 @@ import type {
   TrackLine,
 } from "@/types/trackline";
 
-import { MAIN_TRACK_ID } from "@/config/constant";
+import {
+  DEFAULT_TRACKLINE_GAP_HEIGHT,
+  DEFAULT_TRACKLINE_MARGIN_TOP,
+  MAIN_TRACK_ID,
+} from "@/config/constant";
 
 import { BaseData } from "./BaseData";
 
@@ -31,7 +35,9 @@ export class TrackLineData extends BaseData {
   private audioTrackLineList = ref<AudioTrackLine[]>([]);
 
   // 轨道默认上边距
-  readonly marginTop: Ref<number> = ref(0);
+  readonly marginTop: Ref<number>;
+  // 轨道默认行间距
+  readonly gapHeight: Ref<number>;
 
   // 监听器，用于停止watch
   private unwatch: Function;
@@ -40,11 +46,17 @@ export class TrackLineData extends BaseData {
     return {
       mergeTrackLineList: this.mergeTrackLineList.value,
       marginTop: this.marginTop.value,
+      gapHeight: this.gapHeight.value,
     };
   }
 
-  constructor() {
+  constructor(
+    marginTop: number = DEFAULT_TRACKLINE_MARGIN_TOP,
+    gapHeight: number = DEFAULT_TRACKLINE_GAP_HEIGHT,
+  ) {
     super();
+    this.marginTop = ref(marginTop);
+    this.gapHeight = ref(gapHeight);
 
     // 所有轨道合并，用于显示
     this.mergeTrackLineList = computed(() => [

@@ -17,8 +17,8 @@ const timelineStyles = computed(() => {
 })
 
 // 节流处理时间线更新
-function handleTimelineUpdate() {
-  ctx.rendererManager.render(timelineRendererKey, ctx.timeline.ctx, timelineStyles.value)
+async function handleTimelineUpdate() {
+  await ctx.rendererManager.render(timelineRendererKey, ctx.timeline.ctx, timelineStyles.value)
 }
 
 async function setupPixi() {

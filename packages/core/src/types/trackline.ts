@@ -88,4 +88,8 @@ export type pictureTrackLine = ImageTrackLine | VideoTrackLine;
 /**
  * 轨道线上下文数据
  */
-export interface TrackLineContext {}
+export interface TrackLineContext {
+  mergeTrackLineList: TrackLine[];
+  marginTop: number;
+  gapHeight: number;
+}

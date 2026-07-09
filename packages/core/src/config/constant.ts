@@ -10,6 +10,12 @@ export const TIMELINE_DEFAULT_OFFSET = 60;
 // 自动吸附距离（px）
 export const AUTO_ADSORB_WIDTH = 10;
 
+// 轨道默认上边距（px）
+export const DEFAULT_TRACKLINE_MARGIN_TOP = 30;
+
+// 轨道默认行间距（px）
+export const DEFAULT_TRACKLINE_GAP_HEIGHT = 10;
+
 // 主轨道的 ID
 export const MAIN_TRACK_ID = "main-line-001";
 

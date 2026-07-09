@@ -77,7 +77,7 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  render(name: string, data: any, styles: any): void {
+  async render(name: string, data: any, styles: any): Promise<void> {
     const renderer = this.renderers.get(name);
     if (!renderer) {
       console.warn(`Renderer "${name}" is not registered`);
@@ -90,7 +90,7 @@ export class RendererManager {
     }
 
     try {
-      renderer.render(data, styles);
+      await renderer.render(data, styles);
     } catch (error) {
       console.error(`Failed to render with "${name}":`, error);
     }
