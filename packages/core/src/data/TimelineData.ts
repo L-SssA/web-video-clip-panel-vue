@@ -12,13 +12,13 @@ import {
   TIMELINE_GAP_OPTIONS,
 } from "@/config/constant";
 
-import { EventCallback } from "../utils/eventCallback";
+import { BaseData } from "./BaseData";
 
 /**
  * 时间线数据模型
  * 纯粹的数据管理，不包含任何渲染逻辑
  */
-export class TimelineData {
+export class TimelineData extends BaseData {
   // 帧率 default 30
   readonly fps: Ref<number>;
   // 当前时刻(秒) default 0
@@ -42,8 +42,6 @@ export class TimelineData {
   // 自动吸附的检测距离
   readonly autoAdsorbDistance: Ref<number>;
 
-  // 更新事件管理
-  private updateEvent = new EventCallback();
   // 监听器，用于停止watch
   private unwatch: Function;
 
@@ -71,6 +69,7 @@ export class TimelineData {
     marginLeft: number = TIMELINE_DEFAULT_OFFSET,
     autoAdsorbDistance: number = AUTO_ADSORB_WIDTH,
   ) {
+    super();
     this.scale = ref(scale);
     this.fps = ref(fps);
     this.marginLeft = ref(marginLeft);
@@ -95,22 +94,6 @@ export class TimelineData {
       },
       { immediate: true },
     );
-  }
-
-  /**
-   * 设置缩放值
-   * @param scale 缩放值
-   */
-  setScale(scale: number): void {
-    this.scale.value = scale;
-  }
-
-  /**
-   * 设置帧率
-   * @param fps 帧率
-   */
-  setFps(fps: number): void {
-    this.fps.value = fps;
   }
 
   /**
@@ -145,27 +128,10 @@ export class TimelineData {
   }
 
   /**
-   * 添加更新回调
-   * @param callback 回调函数
-   */
-  onUpdate(callback: Function): void {
-    if (this.updateEvent.hasEvent(callback)) return;
-    this.updateEvent.onEvent(callback);
-  }
-
-  /**
-   * 移除更新回调
-   * @param callback 回调函数
-   */
-  offUpdate(callback: Function): void {
-    this.updateEvent.offEvent(callback);
-  }
-
-  /**
    * 释放资源
    */
   release(): void {
     this.unwatch();
-    this.updateEvent.clearEvent();
+    super.release();
   }
 }

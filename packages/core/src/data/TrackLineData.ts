@@ -1,6 +1,6 @@
-import type { ComputedRef } from "vue";
+import type { ComputedRef, Ref } from "vue";
 
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import type { TrackLineContext } from "@/types/trackline";
 import type {
@@ -12,7 +12,11 @@ import type {
 
 import { MAIN_TRACK_ID } from "@/config/constant";
 
-export class TrackLineData {
+import { BaseData } from "./BaseData";
+
+export class TrackLineData extends BaseData {
+  // 按类型顺序排列轨道
+  readonly mergeTrackLineList: ComputedRef<TrackLine[]>;
   // 画面轨道列表
   private pictureTrackLineList = ref<pictureTrackLine[]>([]);
   // 主轨道（video track）
@@ -25,19 +29,40 @@ export class TrackLineData {
   });
   // 音频轨道列表
   private audioTrackLineList = ref<AudioTrackLine[]>([]);
-  // 按类型顺序排列轨道
-  readonly mergeTrackLineList: ComputedRef<TrackLine[]>;
+
+  // 轨道默认上边距
+  readonly marginTop: Ref<number> = ref(0);
+
+  // 监听器，用于停止watch
+  private unwatch: Function;
 
   get ctx(): TrackLineContext {
-    return {};
+    return {
+      mergeTrackLineList: this.mergeTrackLineList.value,
+      marginTop: this.marginTop.value,
+    };
   }
 
   constructor() {
+    super();
+
     // 所有轨道合并，用于显示
     this.mergeTrackLineList = computed(() => [
       ...this.pictureTrackLineList.value,
       this.mainTrackLine.value,
       ...this.audioTrackLineList.value,
     ]);
+
+    this.unwatch = watch([this.mergeTrackLineList, this.marginTop], () => {
+      this.updateEvent.triggerEvent(this.ctx);
+    });
+  }
+
+  /**
+   * 释放资源
+   */
+  release(): void {
+    this.unwatch();
+    super.release();
   }
 }
