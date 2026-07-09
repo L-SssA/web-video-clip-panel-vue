@@ -62,13 +62,13 @@ export class RendererManager {
 
     const app = this.pixiAppManager.appInstance;
 
-    for (const [name, renderer] of this.renderers) {
-      try {
-        await renderer.init(app);
-      } catch (error) {
-        console.error(`Failed to initialize renderer "${name}":`, error);
-      }
-    }
+    await Promise.allSettled(
+      Array.from(this.renderers.entries()).map(async ([name, renderer]) =>
+        renderer
+          .init(app)
+          .catch((error) => Promise.reject(`Failed to initialize renderer "${name}": ${error}`)),
+      ),
+    );
   }
 
   /**
@@ -101,16 +101,18 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  renderAll(dataMap: any = {}, stylesMap: any = {}): void {
+  async renderAll(dataMap: any = {}, stylesMap: any = {}): Promise<void> {
+    const promises = [];
     for (const [name, renderer] of this.renderers) {
       if (renderer.isInitialized) {
         try {
-          renderer.render(dataMap[name] || {}, stylesMap[name] || {});
+          promises.push(renderer.render(dataMap[name] || {}, stylesMap[name] || {}));
         } catch (error) {
           console.error(`Failed to render with "${name}":`, error);
         }
       }
     }
+    await Promise.allSettled(promises);
   }
 
   /**

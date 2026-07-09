@@ -20,7 +20,7 @@ export abstract class BaseRenderer implements IRenderer {
    * @param app Pixi应用实例
    * @param container 可选的容器
    */
-  init(app: Application, container?: Container): void {
+  async init(app: Application, container?: Container): Promise<void> {
     if (this._isInitialized) {
       console.warn("Renderer has already been initialized");
       return;
@@ -38,7 +38,7 @@ export abstract class BaseRenderer implements IRenderer {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  abstract render(data: any, styles: any): void;
+  abstract render(data: any, styles: any): Promise<void>;
 
   /**
    * 清理资源

@@ -25,7 +25,7 @@ async function setupPixi() {
   if (!tracksPanelRef.value) return
   // 初始化渲染器
   await ctx.rendererManager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
-  ctx.rendererManager.renderAll({
+  await ctx.rendererManager.renderAll({
     timeline: ctx.timeline.ctx,
   }, {
     timeline: timelineStyles.value,

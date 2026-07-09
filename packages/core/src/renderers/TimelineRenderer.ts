@@ -29,8 +29,8 @@ export class TimelineRenderer extends BaseRenderer {
     app: { width: number; height: number };
   };
 
-  init(app: Application, container?: Container): void {
-    super.init(app, container);
+  async init(app: Application, container?: Container): Promise<void> {
+    await super.init(app, container);
   }
 
   /**
@@ -38,7 +38,7 @@ export class TimelineRenderer extends BaseRenderer {
    * @param ctx 时间线上下文数据
    * @param styles 时间线样式
    */
-  render(ctx: TimelineContext, styles: Partial<TimelineStyles> = {}): void {
+  async render(ctx: TimelineContext, styles: Partial<TimelineStyles> = {}): Promise<void> {
     if (!this.isInitialized || !this.app) {
       console.warn("TimelineRenderer is not initialized");
       return;

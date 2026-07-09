@@ -9,14 +9,14 @@ export interface IRenderer {
    * @param app Pixi应用实例
    * @param container 可选的容器
    */
-  init(app: Application, container?: Container): void;
+  init(app: Application, container?: Container): Promise<void>;
 
   /**
    * 执行渲染
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  render(data: any, styles: any): void;
+  render(data: any, styles: any): Promise<void>;
 
   /**
    * 清理资源
