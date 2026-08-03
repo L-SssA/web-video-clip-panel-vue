@@ -8,7 +8,7 @@ import {
   AUTO_ADSORB_WIDTH,
   DEFAULT_FPS,
   DEFAULT_TIMELINE_SCALE,
-  TIMELINE_DEFAULT_OFFSET,
+  DEFAULT_TIMELINE_MARGIN_LEFT,
   TIMELINE_GAP_OPTIONS,
 } from "@/config/constant";
 
@@ -35,7 +35,7 @@ export class TimelineData extends BaseData {
   // 时间线中每个间隔包含的帧数
   readonly framesPerGap: Ref<number> = ref(0);
   // 时间线默认位移(px) default 60
-  readonly marginLeft: Ref<number>;
+  readonly marginLeft: number;
 
   // 启用自动吸附 default true
   readonly enableAutoAdsorb: Ref<boolean> = ref(true);
@@ -58,7 +58,7 @@ export class TimelineData extends BaseData {
       gapWidth: this.gapWidth.value,
       gapsPerLabel: this.gapsPerLabel.value,
       framesPerGap: this.framesPerGap.value,
-      marginLeft: this.marginLeft.value,
+      marginLeft: this.marginLeft,
       cursorLinePosition: this.cursorLinePosition.value,
     };
   }
@@ -66,14 +66,14 @@ export class TimelineData extends BaseData {
   constructor(
     scale: number = DEFAULT_TIMELINE_SCALE,
     fps: number = DEFAULT_FPS,
-    marginLeft: number = TIMELINE_DEFAULT_OFFSET,
     autoAdsorbDistance: number = AUTO_ADSORB_WIDTH,
+    marginLeft: number = DEFAULT_TIMELINE_MARGIN_LEFT,
   ) {
     super();
     this.scale = ref(scale);
     this.fps = ref(fps);
-    this.marginLeft = ref(marginLeft);
     this.autoAdsorbDistance = ref(autoAdsorbDistance);
+    this.marginLeft = marginLeft;
 
     // 计算游标线位置
     this.cursorLinePosition = computed(() => {
@@ -87,7 +87,7 @@ export class TimelineData extends BaseData {
 
     // 监听 scale 和 fps 变化，更新各项指标
     this.unwatch = watch(
-      [this.scale, this.fps, this.marginLeft, this.autoAdsorbDistance],
+      [this.scale, this.fps, this.autoAdsorbDistance],
       () => {
         this.calcTimelineGapWidth();
         this.updateEvent.triggerEvent(this.ctx);
@@ -119,7 +119,7 @@ export class TimelineData extends BaseData {
    */
   setCurrentTimeByPixel(pixel: number): void {
     // 计算像素位置相对于时间线的偏移量
-    const offsetX = Math.max(pixel - this.marginLeft.value, 0);
+    const offsetX = Math.max(pixel - this.marginLeft, 0);
     // 计算一帧所占的宽度，用于限定当前时间每次移动的宽度是一帧的宽度的倍数
     const singleFrameWidth = this.gapWidth.value / this.framesPerGap.value;
     this.currentTime.value = Math.round(offsetX / singleFrameWidth) / this.fps.value;

@@ -1,7 +1,9 @@
+import type { Container, Graphics, Sprite } from "pixi.js";
+
 export type SourceType = "video" | "audio" | "text" | "image";
 
 export interface BaseTrackItem {
-  id: string; // 轨道片段ID
+  id: string | Symbol; // 轨道片段ID
   parentId: string; // 父级轨道ID
   type: SourceType; // 轨道片段类型
   name: string; // 轨道片段名称
@@ -66,7 +68,7 @@ export interface VideoTrackItem extends BaseTrackItem {
 export type TrackItem = ImageTrackItem | TextTrackItem | AudioTrackItem | VideoTrackItem;
 
 export interface BaseTrackLine<T extends TrackItem = TrackItem> {
-  id: string;
+  id: string | Symbol;
   type: T["type"];
   data: T[];
   main?: boolean;
@@ -92,4 +94,28 @@ export interface TrackLineContext {
   mergeTrackLineList: TrackLine[];
   marginTop: number;
   gapHeight: number;
+  marginLeft: number;
+  trackHeights: Record<string, number>;
+}
+
+/**
+ * 轨道样式
+ */
+export interface TrackLineStyles {
+  icons: Record<string, string>;
+  iconColor: string;
+  iconSize: number;
+  backgroundColor: string;
+  trackItemColors: Record<string, string>;
+}
+
+/**
+ * 轨道图形缓存
+ */
+export interface TrackLineGraphicsCache {
+  container: Container;
+  iconSprite: Sprite;
+  backgroundGraphics: Graphics;
+  tracklineContainer: Container;
+  trackitems: Container[];
 }

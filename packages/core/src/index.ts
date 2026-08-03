@@ -18,3 +18,6 @@ export { RendererManager } from "./managers/RendererManager";
 
 // 工具导出
 export * from "./utils/tools";
+
+// 默认值导出
+export * from "./config/constant";

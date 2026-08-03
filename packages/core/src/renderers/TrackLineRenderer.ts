@@ -1,13 +1,11 @@
-import type { Application, Container, Texture } from "pixi.js";
+import type { Application } from "pixi.js";
 
-import { Assets, Sprite } from "pixi.js";
+import { Texture, Container, Assets } from "pixi.js";
 
-import type { TrackLineContext } from "@/types/trackline";
+import type { TrackLineContext, TrackLineGraphicsCache, TrackLineStyles } from "@/types/trackline";
 
-import AudioIcon from "@/assets/images/AudioIcon.png";
-import ImageIcon from "@/assets/images/ImageIcon.png";
-import TextIcon from "@/assets/images/TextIcon.png";
-import VideoIcon from "@/assets/images/VideoIcon.png";
+import { DEFAULT_COMMON_TRACK_HEIGHT, DEFAULT_ICONS_SOURCES } from "@/config/constant";
+import { buildTrackLine } from "@/utils/trackline";
 
 import { BaseRenderer } from "./BaseRenderer";
 
@@ -16,12 +14,15 @@ import { BaseRenderer } from "./BaseRenderer";
  * 负责视频轨道的渲染
  */
 export class TrackLineRenderer extends BaseRenderer {
+  // 图标缓存
   private textures: Record<string, Texture | null> = {
     videoIcon: null,
     audioIcon: null,
     textIcon: null,
     imageIcon: null,
   };
+  // 图形实例缓存
+  private cacheGraphics: Map<string | Symbol, TrackLineGraphicsCache> = new Map();
 
   async init(app: Application, container?: Container): Promise<void> {
     await super.init(app, container);
@@ -32,29 +33,72 @@ export class TrackLineRenderer extends BaseRenderer {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async render(data: TrackLineContext, styles: any): Promise<void> {
-    const { marginTop = 30, gapHeight = 10 } = data;
-    const { iconColor = "#555555" } = styles;
+  async render(data: TrackLineContext, styles: Partial<TrackLineStyles> = {}): Promise<void> {
     await this.loadIconTextures(styles);
-    const icon = new Sprite(this.textures.videoIcon as Texture);
-    icon.tint = iconColor;
-    icon.anchor.set(0.5);
-    icon.width = 28;
-    icon.height = 28;
-    icon.position.set(30, marginTop + gapHeight);
-    this.container?.addChild(icon);
+    this.drawTrackLine(data, styles);
   }
 
   /**
    * 加载图标
    * @param styles
    */
-  async loadIconTextures(styles: any) {
-    await Promise.all([
-      (this.textures.videoIcon = await Assets.load(styles.videoIcon || VideoIcon)),
-      (this.textures.audioIcon = await Assets.load(styles.audioIcon || AudioIcon)),
-      (this.textures.textIcon = await Assets.load(styles.textIcon || TextIcon)),
-      (this.textures.imageIcon = await Assets.load(styles.imageIcon || ImageIcon)),
-    ]);
+  async loadIconTextures(styles: Partial<TrackLineStyles>) {
+    const promises: Promise<any>[] = [];
+    for (const key of Object.keys(this.textures) as Array<keyof typeof this.textures>) {
+      const source = styles.icons?.[key] || DEFAULT_ICONS_SOURCES[key];
+      if (!source) continue;
+      if (this.textures[key]?.label === source) continue;
+      if (this.textures[key]) {
+        this.textures[key].destroy();
+        this.textures[key] = null;
+      }
+      promises.push(Assets.load(source).then((t) => (this.textures[key] = t)));
+    }
+    await Promise.allSettled(promises);
+  }
+
+  private drawTrackLine(data: TrackLineContext, styles: Partial<TrackLineStyles>) {
+    if (!this.app) return;
+
+    const { mergeTrackLineList, trackHeights, gapHeight } = data;
+    let tracklineTopOffset = 0;
+    for (let i = 0; i < mergeTrackLineList.length; i++) {
+      const trackline = mergeTrackLineList[i];
+      const cacheGraphics = this.cacheGraphics.get(trackline.id);
+      if (cacheGraphics) {
+        const { container, iconSprite, backgroundGraphics, tracklineContainer, trackitems } =
+          cacheGraphics;
+
+        buildTrackLine(
+          trackline,
+          this.app,
+          data,
+          styles,
+          tracklineTopOffset,
+          container,
+          iconSprite,
+          backgroundGraphics,
+          tracklineContainer,
+          trackitems,
+        );
+      } else {
+        const { container, iconSprite, backgroundGraphics, tracklineContainer, trackitems } =
+          buildTrackLine(trackline, this.app, data, styles, tracklineTopOffset);
+
+        iconSprite.texture = this.textures[`${trackline.type}Icon`] || Texture.EMPTY;
+        this.container?.addChild(container);
+
+        // 缓存图形实例
+        this.cacheGraphics.set(trackline.id, {
+          container,
+          iconSprite,
+          backgroundGraphics,
+          tracklineContainer,
+          trackitems,
+        });
+      }
+      tracklineTopOffset +=
+        (trackHeights[trackline.type] || DEFAULT_COMMON_TRACK_HEIGHT) + gapHeight;
+    }
   }
 }

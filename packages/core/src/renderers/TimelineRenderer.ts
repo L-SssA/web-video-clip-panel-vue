@@ -18,6 +18,7 @@ export class TimelineRenderer extends BaseRenderer {
   private gapsContainer: Container | null = null;
   private gapsGraphics: Graphics | null = null;
   private cursorGraphics: Graphics | null = null;
+  private timelineLabels: BitmapText[] = [];
 
   private eventsMap = new Map<string, EventCallback>();
   private dragCursorLine = false;
@@ -50,7 +51,7 @@ export class TimelineRenderer extends BaseRenderer {
     );
 
     // 绘制顶部横线
-    this.drawHead(styles, redrawTimelineHead);
+    this.drawTimelineHead(styles, redrawTimelineHead);
     // 绘制刻度线
     this.drawGapsAndLabels(ctx, styles, redrawTimeline);
     // 绘制游标线
@@ -168,19 +169,15 @@ export class TimelineRenderer extends BaseRenderer {
    * @param styles 时间线样式
    * @param redraw 是否重新绘制
    */
-  private drawHead(styles: Partial<TimelineStyles> = {}, redraw: boolean = false): void {
+  private drawTimelineHead(styles: Partial<TimelineStyles> = {}, redraw: boolean = false): void {
     if (!this.app) return;
 
     if (!this.headGraphics) {
-      // 创建实例
-      const graphics = new Graphics();
-      buildTimelineHead(graphics, this.app, styles);
-      this.headGraphics = graphics;
-      // 绘制到容器
-      this.container?.addChild(graphics);
+      const { timelineHead } = buildTimelineHead(this.app, styles);
+      this.headGraphics = timelineHead;
+      this.container?.addChild(timelineHead);
     } else if (redraw && this.headGraphics) {
-      this.headGraphics.clear();
-      buildTimelineHead(this.headGraphics, this.app, styles);
+      buildTimelineHead(this.app, styles, this.headGraphics);
     }
   }
 
@@ -198,22 +195,24 @@ export class TimelineRenderer extends BaseRenderer {
     if (!this.app) return;
 
     if (!this.gapsContainer) {
-      const container = new Container();
-      const graphics = new Graphics();
-      container.addChild(graphics);
-      buildTimelineGapsAndLabels(container, graphics, this.app, ctx, styles);
-      this.gapsContainer = container;
-      this.gapsGraphics = graphics;
-      this.container?.addChild(container);
+      const { timelineGapsAndLabels, timelineGaps, textList } = buildTimelineGapsAndLabels(
+        this.app,
+        ctx,
+        styles,
+      );
+      this.gapsContainer = timelineGapsAndLabels;
+      this.gapsGraphics = timelineGaps;
+      this.timelineLabels = textList;
+      this.container?.addChild(timelineGapsAndLabels);
     } else if (redraw && this.gapsGraphics && this.gapsContainer) {
-      // 清除旧的文本标签（保留 graphics）
-      this.gapsContainer.children.slice(1).forEach((child) => {
-        if (child instanceof BitmapText) {
-          child.destroy();
-        }
-      });
-      this.gapsGraphics.clear();
-      buildTimelineGapsAndLabels(this.gapsContainer, this.gapsGraphics, this.app, ctx, styles);
+      buildTimelineGapsAndLabels(
+        this.app,
+        ctx,
+        styles,
+        this.gapsContainer,
+        this.gapsGraphics,
+        this.timelineLabels,
+      );
     }
   }
 
@@ -235,13 +234,11 @@ export class TimelineRenderer extends BaseRenderer {
 
     // 如果未创建实例，则先创建实例
     if (!this.cursorGraphics) {
-      const graphics = new Graphics();
-      buildCursorLine(graphics, this.app, ctx, styles);
-      this.cursorGraphics = graphics;
-      this.container?.addChild(graphics);
+      const { cursorLine } = buildCursorLine(this.app, ctx, styles);
+      this.cursorGraphics = cursorLine;
+      this.container?.addChild(cursorLine);
     } else if (redraw && this.cursorGraphics) {
-      this.cursorGraphics.clear();
-      buildCursorLine(this.cursorGraphics, this.app, ctx, styles);
+      buildCursorLine(this.app, ctx, styles, this.cursorGraphics);
     } else {
       // 如果有缓存，则只更新位置
       this.cursorGraphics.position.set(ctx.cursorLinePosition + ctx.marginLeft, 0);

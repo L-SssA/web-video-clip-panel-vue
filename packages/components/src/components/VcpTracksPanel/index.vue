@@ -8,7 +8,7 @@ import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { VcpCtx } from '@/types/vcpContext';
 import { defaultStyles, timelineStylesMap } from '@/config/timeline';
 import { useWindowResize } from '@/hooks/useWindowResize';
-import { timelineRenderer as timelineRendererKey, vcpCtx } from '@/config/symbols';
+import { timelineRendererName, tracklineRendererName, vcpCtx } from '@/config/symbols';
 
 const ctx = inject<VcpCtx>(vcpCtx, {} as VcpCtx);
 const tracksPanelRef = ref<HTMLElement | null>(null)
@@ -18,7 +18,8 @@ const timelineStyles = computed(() => {
 
 // 节流处理时间线更新
 async function handleTimelineUpdate() {
-  await ctx.rendererManager.render(timelineRendererKey, ctx.timeline.ctx, timelineStyles.value)
+  await ctx.rendererManager.render(timelineRendererName, ctx.timeline.ctx, timelineStyles.value)
+  await ctx.rendererManager.render(tracklineRendererName, ctx.trackline.ctx)
 }
 
 async function setupPixi() {
@@ -26,9 +27,10 @@ async function setupPixi() {
   // 初始化渲染器
   await ctx.rendererManager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
   await ctx.rendererManager.renderAll({
-    timeline: ctx.timeline.ctx,
+    [timelineRendererName]: ctx.timeline.ctx,
+    [tracklineRendererName]: ctx.trackline.ctx
   }, {
-    timeline: timelineStyles.value,
+    [timelineRendererName]: timelineStyles.value,
   })
 }
 

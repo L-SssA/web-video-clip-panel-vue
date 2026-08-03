@@ -7,14 +7,14 @@
 
 <script setup lang="ts">
 import { computed, provide, toRef } from "vue";
-import { TimelineData, RendererManager, TimelineRenderer, TrackLineRenderer } from "@web-vcp/core";
+import { TimelineData, RendererManager, TimelineRenderer, TrackLineRenderer, TrackLineData } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { useTheme } from "@/hooks/useTheme";
-import { vcpCtx, timelineRenderer as timelineRendererKey, tracklineRenderer } from "@/config/symbols";
+import { vcpCtx, timelineRendererName, tracklineRendererName } from "@/config/symbols";
 
 const props = defineProps({
   height: {
@@ -37,21 +37,24 @@ const styleList = computed(() => ({
 }));
 
 // 创建时间线数据模型
-const timeline = new TimelineData(50, 30);
+const timeline = new TimelineData();
+// 创建轨道数据模型
+const trackline = new TrackLineData()
 
 // 创建渲染器管理器
 const rendererManager = new RendererManager();
 
 // 注册时间线渲染器
 const timelineRenderer = new TimelineRenderer();
-rendererManager.register(timelineRendererKey, timelineRenderer);
+rendererManager.register(timelineRendererName, timelineRenderer);
 // 注册轨道渲染器
 const trackLineRenderer = new TrackLineRenderer();
-rendererManager.register(tracklineRenderer, trackLineRenderer);
+rendererManager.register(tracklineRendererName, trackLineRenderer);
 
 provide<VcpCtx>(vcpCtx, {
   theme,
   timeline,
+  trackline,
   timelineRenderer,
   rendererManager
 })

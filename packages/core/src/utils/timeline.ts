@@ -1,6 +1,6 @@
-import type { Application, Graphics, Container } from "pixi.js";
+import type { Application } from "pixi.js";
 
-import { BitmapText, Rectangle } from "pixi.js";
+import { BitmapText, Rectangle, Graphics, Container } from "pixi.js";
 
 import type { TimelineStyles, TimelineContext } from "@/types/timeline";
 
@@ -11,13 +11,20 @@ import { getTrackDurationFormatted } from "./tools";
  * @param styles 时间线样式
  */
 export function buildTimelineHead(
-  graphics: Graphics,
   app: Application,
   styles: Partial<TimelineStyles> = {},
+  graphics: Graphics = new Graphics(),
 ) {
+  // 先做清理
+  graphics.clear();
+
   const { lineColor = "#555555", lineWidth = 2 } = styles;
   // 绘制顶部横线
   graphics.moveTo(0, 0).lineTo(app.screen.width, 0).stroke({ color: lineColor, width: lineWidth });
+
+  return {
+    timelineHead: graphics,
+  };
 }
 
 /**
@@ -25,19 +32,25 @@ export function buildTimelineHead(
  * @param styles 时间线样式
  */
 export function buildTimelineGapsAndLabels(
-  container: Container,
-  graphics: Graphics,
   app: Application,
   ctx: TimelineContext,
   styles: Partial<TimelineStyles> = {},
+  container: Container = new Container(),
+  linegraphics: Graphics = new Graphics(),
+  textList: BitmapText[] = [],
 ) {
+  // 先做清理
+  linegraphics.clear();
+  textList.forEach((child) => child.destroy());
+  textList.splice(0);
+
   const { fps, gapWidth, gapsPerLabel, framesPerGap, marginLeft } = ctx;
   const { lineColor = "#555555", lineWidth = 2, fontColor = "#888888", fontSize = 12 } = styles;
   const gapCounts = Math.floor(app.screen.width / gapWidth);
   for (let i = 0; i < gapCounts; i++) {
     // 绘制刻度
     const offsetX = Math.floor(i * gapWidth) + marginLeft;
-    graphics
+    linegraphics
       .moveTo(offsetX, 0)
       .lineTo(offsetX, i % gapsPerLabel === 0 ? 20 : 6)
       .stroke({ color: lineColor, width: lineWidth });
@@ -52,10 +65,17 @@ export function buildTimelineGapsAndLabels(
         },
       });
       text.position.set(offsetX + 6, 20 - fontSize);
-      container.addChild(text);
+      textList.push(text);
     }
-    container.hitArea = new Rectangle(marginLeft, 0, app.screen.width - marginLeft, 30);
   }
+  container.hitArea = new Rectangle(marginLeft, 0, app.screen.width - marginLeft, 30);
+  container.addChild(linegraphics, ...textList);
+
+  return {
+    timelineGapsAndLabels: container,
+    timelineGaps: linegraphics,
+    textList: textList,
+  };
 }
 
 /**
@@ -63,11 +83,14 @@ export function buildTimelineGapsAndLabels(
  * @param styles 游标线样式
  */
 export function buildCursorLine(
-  graphics: Graphics,
   app: Application,
   ctx: TimelineContext,
   styles: Partial<TimelineStyles> = {},
+  graphics: Graphics = new Graphics(),
 ) {
+  // 先做清理
+  graphics.clear();
+
   const { cursorLineColor = "#f5f5f5", cursorLineWidth = 2 } = styles;
   const { cursorLinePosition, marginLeft } = ctx;
   // 游标线
@@ -90,5 +113,8 @@ export function buildCursorLine(
   ];
   graphics.poly(path).fill({ color: cursorLineColor });
   graphics.position.set(cursorLinePosition + marginLeft, 0);
-  return graphics;
+  graphics.zIndex = 100;
+  return {
+    cursorLine: graphics,
+  };
 }

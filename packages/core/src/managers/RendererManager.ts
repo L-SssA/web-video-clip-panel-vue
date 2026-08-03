@@ -77,7 +77,7 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async render(name: string, data: any, styles: any): Promise<void> {
+  async render(name: string, data: Record<string, any>, styles?: any): Promise<void> {
     const renderer = this.renderers.get(name);
     if (!renderer) {
       console.warn(`Renderer "${name}" is not registered`);
@@ -101,7 +101,10 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async renderAll(dataMap: any = {}, stylesMap: any = {}): Promise<void> {
+  async renderAll(
+    dataMap: Record<string, any> = {},
+    stylesMap: Record<string, any> = {},
+  ): Promise<void> {
     const promises = [];
     for (const [name, renderer] of this.renderers) {
       if (renderer.isInitialized) {
