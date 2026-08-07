@@ -3,33 +3,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue';
+import { inject, onMounted, onUnmounted, ref, watch } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext';
-import { defaultStyles, timelineStylesMap } from '@/config/timeline';
 import { useWindowResize } from '@/hooks/useWindowResize';
-import { timelineRendererName, vcpCtx } from '@/config/symbols';
+import { vcpCtx } from '@/config/symbols';
 
 const ctx = inject<VcpCtx>(vcpCtx, {} as VcpCtx);
 const tracksPanelRef = ref<HTMLElement | null>(null)
-const timelineStyles = computed(() => {
-  return timelineStylesMap[ctx.theme.value] || defaultStyles
-})
+
 
 // 节流处理时间线更新
 async function handleDataUpdate() {
-  await ctx.rendererManager.renderAll(ctx.dataManager.ctx, {
-    [timelineRendererName]: timelineStyles.value,
-  })
+  await ctx.rendererManager.renderAll(ctx.dataManager.ctx)
 }
 
 async function setupPixi() {
   if (!tracksPanelRef.value) return
   // 初始化渲染器
   await ctx.rendererManager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
-  await ctx.rendererManager.renderAll(ctx.dataManager.ctx, {
-    [timelineRendererName]: timelineStyles.value,
-  })
+  await ctx.rendererManager.renderAll(ctx.dataManager.ctx)
 }
 
 // 窗口resize时重新渲染

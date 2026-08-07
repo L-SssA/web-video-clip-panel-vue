@@ -2,7 +2,6 @@ import { Application, BitmapText, Container, Graphics } from "pixi.js";
 
 import type { DataManagerContext } from "@/types/data";
 import type { TimelineEvents } from "@/types/events";
-import type { TimelineStyles } from "@/types/timeline";
 
 import { EventCallback } from "@/utils/eventCallback";
 import { buildCursorLine, buildTimelineGapsAndLabels, buildTimelineHead } from "@/utils/timeline";
@@ -27,7 +26,6 @@ export class TimelineRenderer extends BaseRenderer {
   // 数据缓存（用于对比是否需要重绘）
   private dataCache?: {
     ctx: DataManagerContext;
-    styles: Partial<TimelineStyles>;
     app: { width: number; height: number };
   };
 
@@ -40,23 +38,20 @@ export class TimelineRenderer extends BaseRenderer {
    * @param ctx 时间线上下文数据
    * @param styles 时间线样式
    */
-  async render(ctx: DataManagerContext, styles: Partial<TimelineStyles> = {}): Promise<void> {
+  async render(ctx: DataManagerContext): Promise<void> {
     if (!this.isInitialized || !this.app) {
       console.warn("TimelineRenderer is not initialized");
       return;
     }
 
-    const { redrawTimelineHead, redrawTimeline, redrawCursorLine } = this.checkTimelineUpdate(
-      ctx,
-      styles,
-    );
+    const { redrawTimelineHead, redrawTimeline, redrawCursorLine } = this.checkTimelineUpdate(ctx);
 
     // 绘制顶部横线
-    this.drawTimelineHead(styles, redrawTimelineHead);
+    this.drawTimelineHead(ctx, redrawTimelineHead);
     // 绘制刻度线
-    this.drawGapsAndLabels(ctx, styles, redrawTimeline);
+    this.drawGapsAndLabels(ctx, redrawTimeline);
     // 绘制游标线
-    this.drawCursorLine(ctx, styles, redrawCursorLine);
+    this.drawCursorLine(ctx, redrawCursorLine);
 
     if (!this.dataCache) {
       // 表示第一次渲染
@@ -67,7 +62,6 @@ export class TimelineRenderer extends BaseRenderer {
     // 更新缓存
     this.dataCache = {
       ctx,
-      styles,
       app: {
         width: this.app.screen.width,
         height: this.app.screen.height,
@@ -107,12 +101,8 @@ export class TimelineRenderer extends BaseRenderer {
   /**
    * 检查时间线是否需要更新
    * @param ctx 时间线上下文
-   * @param styles 时间线样式
    */
-  private checkTimelineUpdate(
-    ctx: DataManagerContext,
-    styles: Partial<TimelineStyles> = {},
-  ): {
+  private checkTimelineUpdate(ctx: DataManagerContext): {
     redrawTimelineHead: boolean;
     redrawTimeline: boolean;
     redrawCursorLine: boolean;
@@ -122,7 +112,7 @@ export class TimelineRenderer extends BaseRenderer {
       return { redrawTimelineHead: true, redrawTimeline: true, redrawCursorLine: true };
     }
 
-    const { ctx: cacheCtx, styles: cacheStyles, app: cacheApp } = this.dataCache;
+    const { ctx: cacheCtx, app: cacheApp } = this.dataCache;
 
     // app 大小改变需要重建
     if (this.app?.screen.width !== cacheApp.width || this.app?.screen.height !== cacheApp.height) {
@@ -136,16 +126,22 @@ export class TimelineRenderer extends BaseRenderer {
     };
 
     // 样式不一致需要重建
-    if (styles.lineColor !== cacheStyles.lineColor || styles.lineWidth !== cacheStyles.lineWidth) {
+    if (
+      ctx.timeline.styles.lineColor !== cacheCtx.timeline.styles.lineColor ||
+      ctx.timeline.styles.lineWidth !== cacheCtx.timeline.styles.lineWidth
+    ) {
       checkers.redrawTimelineHead = true;
       checkers.redrawTimeline = true;
     }
-    if (styles.fontColor !== cacheStyles.fontColor || styles.fontSize !== cacheStyles.fontSize) {
+    if (
+      ctx.timeline.styles.fontColor !== cacheCtx.timeline.styles.fontColor ||
+      ctx.timeline.styles.fontSize !== cacheCtx.timeline.styles.fontSize
+    ) {
       checkers.redrawTimeline = true;
     }
     if (
-      styles.cursorLineColor !== cacheStyles.cursorLineColor ||
-      styles.cursorLineWidth !== cacheStyles.cursorLineWidth
+      ctx.timeline.styles.cursorLineColor !== cacheCtx.timeline.styles.cursorLineColor ||
+      ctx.timeline.styles.cursorLineWidth !== cacheCtx.timeline.styles.cursorLineWidth
     ) {
       checkers.redrawCursorLine = true;
     }
@@ -167,39 +163,33 @@ export class TimelineRenderer extends BaseRenderer {
 
   /**
    * 绘制时间线顶部横线
-   * @param styles 时间线样式
+   * @param ctx 时间线上下文
    * @param redraw 是否重新绘制
    */
-  private drawTimelineHead(styles: Partial<TimelineStyles> = {}, redraw: boolean = false): void {
+  private drawTimelineHead(ctx: DataManagerContext, redraw: boolean = false): void {
     if (!this.app) return;
 
     if (!this.headGraphics) {
-      const { timelineHead } = buildTimelineHead(this.app, styles);
+      const { timelineHead } = buildTimelineHead(this.app, ctx);
       this.headGraphics = timelineHead;
       this.container?.addChild(timelineHead);
     } else if (redraw && this.headGraphics) {
-      buildTimelineHead(this.app, styles, this.headGraphics);
+      buildTimelineHead(this.app, ctx, this.headGraphics);
     }
   }
 
   /**
    * 绘制时间线刻度线和标签
    * @param ctx 时间线上下文
-   * @param styles 时间线样式
    * @param redraw 是否重新绘制
    */
-  private drawGapsAndLabels(
-    ctx: DataManagerContext,
-    styles: Partial<TimelineStyles> = {},
-    redraw: boolean = false,
-  ): void {
+  private drawGapsAndLabels(ctx: DataManagerContext, redraw: boolean = false): void {
     if (!this.app) return;
 
     if (!this.gapsContainer) {
       const { timelineGapsAndLabels, timelineGaps, textList } = buildTimelineGapsAndLabels(
         this.app,
         ctx,
-        styles,
       );
       this.gapsContainer = timelineGapsAndLabels;
       this.gapsGraphics = timelineGaps;
@@ -209,7 +199,6 @@ export class TimelineRenderer extends BaseRenderer {
       buildTimelineGapsAndLabels(
         this.app,
         ctx,
-        styles,
         this.gapsContainer,
         this.gapsGraphics,
         this.timelineLabels,
@@ -220,14 +209,9 @@ export class TimelineRenderer extends BaseRenderer {
   /**
    * 绘制游标线
    * @param ctx 时间线上下文
-   * @param styles 时间线样式
    * @param redraw 是否重新绘制
    */
-  private drawCursorLine(
-    ctx: DataManagerContext,
-    styles: Partial<TimelineStyles> = {},
-    redraw: boolean = false,
-  ): void {
+  private drawCursorLine(ctx: DataManagerContext, redraw: boolean = false): void {
     if (!this.app) return;
 
     // 如果游标线位置小于0则不绘制
@@ -235,11 +219,11 @@ export class TimelineRenderer extends BaseRenderer {
 
     // 如果未创建实例，则先创建实例
     if (!this.cursorGraphics) {
-      const { cursorLine } = buildCursorLine(this.app, ctx, styles);
+      const { cursorLine } = buildCursorLine(this.app, ctx);
       this.cursorGraphics = cursorLine;
       this.container?.addChild(cursorLine);
     } else if (redraw && this.cursorGraphics) {
-      buildCursorLine(this.app, ctx, styles, this.cursorGraphics);
+      buildCursorLine(this.app, ctx, this.cursorGraphics);
     } else {
       // 如果有缓存，则只更新位置
       this.cursorGraphics.position.set(

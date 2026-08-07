@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, toRef } from "vue";
+import { computed, provide, toRef, watch } from "vue";
 import { RendererManager, TimelineRenderer, TrackLineRenderer, DataManager } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
@@ -15,6 +15,8 @@ import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { useTheme } from "@/hooks/useTheme";
 import { vcpCtx, timelineRendererName, tracklineRendererName } from "@/config/symbols";
+import { defaultStyles as timelineDefaultStyles, timelineStylesMap } from '@/config/timeline';
+import { defaultStyles as tracklineDefaultStyles, tracklineStylesMap } from "@/config/trackline";
 
 const props = defineProps({
   height: {
@@ -48,6 +50,15 @@ rendererManager.register(timelineRendererName, timelineRenderer);
 // 注册轨道渲染器
 const trackLineRenderer = new TrackLineRenderer();
 rendererManager.register(tracklineRendererName, trackLineRenderer);
+
+
+watch(theme, (newTheme) => {
+  dataManager.timeline.updateStyles(timelineStylesMap[newTheme] || timelineDefaultStyles)
+  dataManager.trackline.updateStyles(tracklineStylesMap[newTheme] || tracklineDefaultStyles)
+}, {
+  immediate: true
+})
+
 
 provide<VcpCtx>(vcpCtx, {
   theme,

@@ -1,14 +1,4 @@
 /**
- * 时间线数据选项
- */
-export interface TimelineDataOptions {
-  scale: number;
-  fps: number;
-  autoAdsorbDistance: number;
-  marginLeft: number;
-}
-
-/**
  * 时间线样式
  */
 export interface TimelineStyles {
@@ -32,4 +22,16 @@ export interface TimelineContext {
   framesPerGap: number;
   marginLeft: number;
   cursorLinePosition: number;
+  styles: TimelineStyles;
+}
+
+/**
+ * 时间线数据选项
+ */
+export interface TimelineDataOptions {
+  scale: number;
+  fps: number;
+  autoAdsorbDistance: number;
+  marginLeft: number;
+  styles: Partial<TimelineStyles>;
 }

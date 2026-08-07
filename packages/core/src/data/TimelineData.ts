@@ -2,7 +2,7 @@ import type { Ref } from "vue";
 
 import { computed, ref, watch } from "vue";
 
-import type { TimelineContext, TimelineDataOptions } from "@/types/timeline";
+import type { TimelineContext, TimelineDataOptions, TimelineStyles } from "@/types/timeline";
 
 import {
   AUTO_ADSORB_WIDTH,
@@ -10,6 +10,7 @@ import {
   DEFAULT_TIMELINE_SCALE,
   DEFAULT_TIMELINE_MARGIN_LEFT,
   TIMELINE_GAP_OPTIONS,
+  DEFAULT_TIMELINE_STYLES,
 } from "@/config/constant";
 
 import { BaseData } from "./BaseData";
@@ -42,6 +43,9 @@ export class TimelineData extends BaseData {
   // 自动吸附的检测距离
   readonly autoAdsorbDistance: Ref<number>;
 
+  // 样式
+  readonly styles: Ref<TimelineStyles>;
+
   // 监听器，用于停止watch
   private unwatch: Function;
 
@@ -60,6 +64,7 @@ export class TimelineData extends BaseData {
       framesPerGap: this.framesPerGap.value,
       marginLeft: this.marginLeft,
       cursorLinePosition: this.cursorLinePosition.value,
+      styles: this.styles.value,
     };
   }
 
@@ -75,12 +80,16 @@ export class TimelineData extends BaseData {
       fps = DEFAULT_FPS,
       autoAdsorbDistance = AUTO_ADSORB_WIDTH,
       marginLeft = DEFAULT_TIMELINE_MARGIN_LEFT,
+      styles,
     } = options;
 
     this.scale = ref(scale);
     this.fps = ref(fps);
     this.autoAdsorbDistance = ref(autoAdsorbDistance);
     this.marginLeft = marginLeft;
+
+    this.styles = ref(DEFAULT_TIMELINE_STYLES);
+    this.updateStyles(styles);
 
     // 计算游标线位置
     this.cursorLinePosition = computed(() => {
@@ -101,6 +110,10 @@ export class TimelineData extends BaseData {
       },
       { immediate: true },
     );
+  }
+
+  updateStyles(styles?: Partial<TimelineStyles>): void {
+    this.styles.value = { ...this.styles.value, ...styles };
   }
 
   /**

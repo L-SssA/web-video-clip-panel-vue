@@ -14,10 +14,10 @@ export const defaultStyles = {
   lineWidth: 2,
   fontColor: "#888888",
   fontSize: 12,
-  cursorLineColor: "#333333",
+  cursorLineColor: "#686868",
   cursorLineWidth: 2,
 };
 
-export const timelineStylesMap: Record<string, TimelineStyles> = {
+export const timelineStylesMap: Record<string, Partial<TimelineStyles>> = {
   dark: darkStyles,
 };

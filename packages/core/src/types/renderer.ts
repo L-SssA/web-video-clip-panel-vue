@@ -16,7 +16,7 @@ export interface IRenderer {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  render(data: any, styles: any): Promise<void>;
+  render(data: any): Promise<void>;
 
   /**
    * 清理资源

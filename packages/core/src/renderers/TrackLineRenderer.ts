@@ -3,7 +3,7 @@ import type { Application } from "pixi.js";
 import { Texture, Container, Assets } from "pixi.js";
 
 import type { DataManagerContext } from "@/types/data";
-import type { TrackLineGraphicsCache, TrackLineStyles } from "@/types/trackline";
+import type { TrackLineGraphicsCache } from "@/types/trackline";
 
 import { DEFAULT_COMMON_TRACK_HEIGHT, DEFAULT_ICONS_SOURCES } from "@/config/constant";
 import { buildTrackLine } from "@/utils/trackline";
@@ -32,18 +32,18 @@ export class TrackLineRenderer extends BaseRenderer {
   /**
    * 执行渲染
    * @param data 渲染数据
-   * @param styles 渲染样式
    */
-  async render(data: DataManagerContext, styles: Partial<TrackLineStyles> = {}): Promise<void> {
-    await this.loadIconTextures(styles);
-    this.drawTrackLine(data, styles);
+  async render(data: DataManagerContext): Promise<void> {
+    await this.loadIconTextures(data);
+    this.drawTrackLine(data);
   }
 
   /**
    * 加载图标
    * @param styles
    */
-  async loadIconTextures(styles: Partial<TrackLineStyles>) {
+  async loadIconTextures(data: DataManagerContext) {
+    const { styles } = data.trackline;
     const promises: Promise<any>[] = [];
     for (const key of Object.keys(this.textures) as Array<keyof typeof this.textures>) {
       const source = styles.icons?.[key] || DEFAULT_ICONS_SOURCES[key];
@@ -58,7 +58,7 @@ export class TrackLineRenderer extends BaseRenderer {
     await Promise.allSettled(promises);
   }
 
-  private drawTrackLine(data: DataManagerContext, styles: Partial<TrackLineStyles>) {
+  private drawTrackLine(data: DataManagerContext) {
     if (!this.app) return;
 
     const { mergeTrackLineList, trackHeights, gapHeight } = data.trackline;
@@ -74,7 +74,6 @@ export class TrackLineRenderer extends BaseRenderer {
           trackline,
           this.app,
           data,
-          styles,
           tracklineTopOffset,
           container,
           iconSprite,
@@ -84,7 +83,7 @@ export class TrackLineRenderer extends BaseRenderer {
         );
       } else {
         const { container, iconSprite, backgroundGraphics, tracklineContainer, trackitems } =
-          buildTrackLine(trackline, this.app, data, styles, tracklineTopOffset);
+          buildTrackLine(trackline, this.app, data, tracklineTopOffset);
 
         iconSprite.texture = this.textures[`${trackline.type}Icon`] || Texture.EMPTY;
         this.container?.addChild(container);

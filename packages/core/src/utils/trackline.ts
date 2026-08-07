@@ -6,7 +6,6 @@ import type {
   ImageTrackItem,
   TrackItem,
   TrackLine,
-  TrackLineStyles,
   VideoTrackItem,
 } from "@/types/trackline";
 
@@ -29,7 +28,6 @@ export function buildTrackLine(
   trackline: TrackLine,
   app: Application,
   ctx: DataManagerContext,
-  styles: Partial<TrackLineStyles>,
   tracklineTopOffset: number = 0,
   container: Container = new Container(),
   iconSprite: Sprite = new Sprite(),
@@ -47,6 +45,7 @@ export function buildTrackLine(
     marginTop = DEFAULT_TRACKLINE_MARGIN_TOP,
     marginLeft = DEFAULT_TRACKLINE_MARGIN_LEFT,
     trackHeights,
+    styles,
   } = ctx.trackline;
   const {
     iconColor = "#888888",
@@ -85,7 +84,7 @@ export function buildTrackLine(
   // 绘制轨道片段
   for (let i = 0; i < trackline.data.length; i++) {
     const trackitem = trackline.data[i];
-    const trackitemContainer = buildTrackItem(trackitem, ctx, styles);
+    const trackitemContainer = buildTrackItem(trackitem, ctx);
     trackitems.push(trackitemContainer);
   }
   if (trackitems.length) tracklineContainer.addChild(...trackitems);
@@ -99,12 +98,8 @@ export function buildTrackLine(
   };
 }
 
-export function buildTrackItem(
-  trackitem: TrackItem,
-  ctx: DataManagerContext,
-  styles: Partial<TrackLineStyles>,
-) {
-  const { trackHeights } = ctx.trackline;
+export function buildTrackItem(trackitem: TrackItem, ctx: DataManagerContext) {
+  const { trackHeights, styles } = ctx.trackline;
   const { fps, framesPerGap, gapWidth } = ctx.timeline;
   const { trackItemColors = DEFAULT_TRACK_COLOR } = styles;
   const { type, start, end, name } = trackitem;

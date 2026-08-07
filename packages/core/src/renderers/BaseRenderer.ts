@@ -36,9 +36,8 @@ export abstract class BaseRenderer implements IRenderer {
   /**
    * 执行渲染（子类必须实现）
    * @param data 渲染数据
-   * @param styles 渲染样式
    */
-  abstract render(data: any, styles: any): Promise<void>;
+  abstract render(data: any): Promise<void>;
 
   /**
    * 清理资源

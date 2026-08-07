@@ -3,7 +3,6 @@ import type { Application } from "pixi.js";
 import { BitmapText, Rectangle, Graphics, Container } from "pixi.js";
 
 import type { DataManagerContext } from "@/types/data";
-import type { TimelineStyles } from "@/types/timeline";
 
 import { getTrackDurationFormatted } from "./tools";
 
@@ -13,13 +12,13 @@ import { getTrackDurationFormatted } from "./tools";
  */
 export function buildTimelineHead(
   app: Application,
-  styles: Partial<TimelineStyles> = {},
+  ctx: DataManagerContext,
   graphics: Graphics = new Graphics(),
 ) {
   // 先做清理
   graphics.clear();
 
-  const { lineColor = "#555555", lineWidth = 2 } = styles;
+  const { lineColor = "#555555", lineWidth = 2 } = ctx.timeline.styles;
   // 绘制顶部横线
   graphics.moveTo(0, 0).lineTo(app.screen.width, 0).stroke({ color: lineColor, width: lineWidth });
 
@@ -35,7 +34,6 @@ export function buildTimelineHead(
 export function buildTimelineGapsAndLabels(
   app: Application,
   ctx: DataManagerContext,
-  styles: Partial<TimelineStyles> = {},
   container: Container = new Container(),
   linegraphics: Graphics = new Graphics(),
   textList: BitmapText[] = [],
@@ -45,7 +43,7 @@ export function buildTimelineGapsAndLabels(
   textList.forEach((child) => child.destroy());
   textList.splice(0);
 
-  const { fps, gapWidth, gapsPerLabel, framesPerGap, marginLeft } = ctx.timeline;
+  const { fps, gapWidth, gapsPerLabel, framesPerGap, marginLeft, styles } = ctx.timeline;
   const { lineColor = "#555555", lineWidth = 2, fontColor = "#888888", fontSize = 12 } = styles;
   const gapCounts = Math.floor(app.screen.width / gapWidth);
   for (let i = 0; i < gapCounts; i++) {
@@ -86,14 +84,13 @@ export function buildTimelineGapsAndLabels(
 export function buildCursorLine(
   app: Application,
   ctx: DataManagerContext,
-  styles: Partial<TimelineStyles> = {},
   graphics: Graphics = new Graphics(),
 ) {
   // 先做清理
   graphics.clear();
 
+  const { cursorLinePosition, marginLeft, styles } = ctx.timeline;
   const { cursorLineColor = "#f5f5f5", cursorLineWidth = 2 } = styles;
-  const { cursorLinePosition, marginLeft } = ctx.timeline;
   // 游标线
   graphics
     .moveTo(0, 0)

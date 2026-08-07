@@ -79,7 +79,7 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async render(name: string, data: DataManager["ctx"], styles?: any): Promise<void> {
+  async render(name: string, data: DataManager["ctx"]): Promise<void> {
     const renderer = this.renderers.get(name);
     if (!renderer) {
       console.warn(`Renderer "${name}" is not registered`);
@@ -92,7 +92,7 @@ export class RendererManager {
     }
 
     try {
-      await renderer.render(data, styles);
+      await renderer.render(data);
     } catch (error) {
       console.error(`Failed to render with "${name}":`, error);
     }
@@ -103,12 +103,12 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async renderAll(data: DataManager["ctx"], stylesMap: Record<string, any> = {}): Promise<void> {
+  async renderAll(data: DataManager["ctx"]): Promise<void> {
     const promises = [];
     for (const [name, renderer] of this.renderers) {
       if (renderer.isInitialized) {
         try {
-          promises.push(renderer.render(data || {}, stylesMap[name] || {}));
+          promises.push(renderer.render(data || {}));
         } catch (error) {
           console.error(`Failed to render with "${name}":`, error);
         }

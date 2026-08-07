@@ -1,5 +1,6 @@
 // 类型导出
 export type { TimelineStyles, TimelineContext } from "./types/timeline";
+export type { TrackLineStyles, TrackLineContext } from "./types/trackline";
 export type { IRenderer } from "./types/renderer";
 export type { TimelineEvents } from "./types/events";
 

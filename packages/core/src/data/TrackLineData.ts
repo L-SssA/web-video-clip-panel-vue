@@ -2,7 +2,7 @@ import type { ComputedRef, Ref } from "vue";
 
 import { computed, ref, watch } from "vue";
 
-import type { TrackLineContext, TrackLineDataOptions } from "@/types/trackline";
+import type { TrackLineContext, TrackLineDataOptions, TrackLineStyles } from "@/types/trackline";
 import type {
   AudioTrackLine,
   pictureTrackLine,
@@ -15,6 +15,7 @@ import {
   DEFAULT_TRACKLINE_GAP_HEIGHT,
   DEFAULT_TRACKLINE_MARGIN_LEFT,
   DEFAULT_TRACKLINE_MARGIN_TOP,
+  DEFAULT_TRACKLINE_STYLES,
   MAIN_TRACK_ID,
 } from "@/config/constant";
 
@@ -43,6 +44,9 @@ export class TrackLineData extends BaseData {
   // 轨道默认左侧偏移量
   readonly marginLeft: number;
 
+  // 样式
+  readonly styles: Ref<TrackLineStyles>;
+
   // 监听器，用于停止watch
   private unwatch: Function;
   private trackHeights: Record<string, number>;
@@ -54,6 +58,7 @@ export class TrackLineData extends BaseData {
       gapHeight: this.gapHeight,
       marginLeft: this.marginLeft,
       trackHeights: this.trackHeights,
+      styles: this.styles.value,
     };
   }
 
@@ -69,6 +74,7 @@ export class TrackLineData extends BaseData {
       gapHeight = DEFAULT_TRACKLINE_GAP_HEIGHT,
       marginLeft = DEFAULT_TRACKLINE_MARGIN_LEFT,
       trackHeights = DEFAULT_TRACK_HEIGHTS,
+      styles,
     } = options;
 
     this.marginTop = marginTop;
@@ -76,6 +82,8 @@ export class TrackLineData extends BaseData {
     this.marginLeft = marginLeft;
 
     this.trackHeights = { ...DEFAULT_TRACK_HEIGHTS, ...trackHeights };
+    this.styles = ref(DEFAULT_TRACKLINE_STYLES);
+    this.updateStyles(styles);
 
     // 所有轨道合并，用于显示
     this.mergeTrackLineList = computed(() => [
@@ -87,6 +95,10 @@ export class TrackLineData extends BaseData {
     this.unwatch = watch(this.observeList, () => {
       this.updateEvent.triggerEvent(this.ctx);
     });
+  }
+
+  updateStyles(styles: Partial<TrackLineStyles> = {}): void {
+    this.styles.value = { ...this.styles.value, ...styles };
   }
 
   /**

@@ -1,27 +1,6 @@
 import type { Container, Graphics, Sprite } from "pixi.js";
 
 /**
- * 轨道数据选项
- */
-export interface TrackLineDataOptions {
-  marginTop: number;
-  gapHeight: number;
-  marginLeft: number;
-  trackHeights: Record<string, number>;
-}
-
-/**
- * 轨道线上下文数据
- */
-export interface TrackLineContext {
-  mergeTrackLineList: TrackLine[];
-  marginTop: number;
-  gapHeight: number;
-  marginLeft: number;
-  trackHeights: Record<string, number>;
-}
-
-/**
  * 轨道样式
  */
 export interface TrackLineStyles {
@@ -33,6 +12,18 @@ export interface TrackLineStyles {
 }
 
 /**
+ * 轨道线上下文数据
+ */
+export interface TrackLineContext {
+  mergeTrackLineList: TrackLine[];
+  marginTop: number;
+  gapHeight: number;
+  marginLeft: number;
+  trackHeights: Record<string, number>;
+  styles: TrackLineStyles;
+}
+
+/**
  * 轨道图形缓存
  */
 export interface TrackLineGraphicsCache {
@@ -41,6 +32,17 @@ export interface TrackLineGraphicsCache {
   backgroundGraphics: Graphics;
   tracklineContainer: Container;
   trackitems: Container[];
+}
+
+/**
+ * 轨道数据选项
+ */
+export interface TrackLineDataOptions {
+  marginTop: number;
+  gapHeight: number;
+  marginLeft: number;
+  trackHeights: Record<string, number>;
+  styles: Partial<TrackLineStyles>;
 }
 
 export type SourceType = "video" | "audio" | "text" | "image";
