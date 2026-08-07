@@ -2,7 +2,7 @@ import type { Ref } from "vue";
 
 import { computed, ref, watch } from "vue";
 
-import type { TimelineContext } from "@/types/timeline";
+import type { TimelineContext, TimelineDataOptions } from "@/types/timeline";
 
 import {
   AUTO_ADSORB_WIDTH,
@@ -63,13 +63,20 @@ export class TimelineData extends BaseData {
     };
   }
 
-  constructor(
-    scale: number = DEFAULT_TIMELINE_SCALE,
-    fps: number = DEFAULT_FPS,
-    autoAdsorbDistance: number = AUTO_ADSORB_WIDTH,
-    marginLeft: number = DEFAULT_TIMELINE_MARGIN_LEFT,
-  ) {
+  get observeList(): Ref[] {
+    return [this.scale, this.fps, this.autoAdsorbDistance, this.currentTime];
+  }
+
+  constructor(options: Partial<TimelineDataOptions> = {}) {
     super();
+
+    const {
+      scale = DEFAULT_TIMELINE_SCALE,
+      fps = DEFAULT_FPS,
+      autoAdsorbDistance = AUTO_ADSORB_WIDTH,
+      marginLeft = DEFAULT_TIMELINE_MARGIN_LEFT,
+    } = options;
+
     this.scale = ref(scale);
     this.fps = ref(fps);
     this.autoAdsorbDistance = ref(autoAdsorbDistance);
@@ -87,7 +94,7 @@ export class TimelineData extends BaseData {
 
     // 监听 scale 和 fps 变化，更新各项指标
     this.unwatch = watch(
-      [this.scale, this.fps, this.autoAdsorbDistance],
+      this.observeList,
       () => {
         this.calcTimelineGapWidth();
         this.updateEvent.triggerEvent(this.ctx);
@@ -123,8 +130,6 @@ export class TimelineData extends BaseData {
     // 计算一帧所占的宽度，用于限定当前时间每次移动的宽度是一帧的宽度的倍数
     const singleFrameWidth = this.gapWidth.value / this.framesPerGap.value;
     this.currentTime.value = Math.round(offsetX / singleFrameWidth) / this.fps.value;
-    // 触发更新事件
-    this.updateEvent.triggerEvent(this.ctx);
   }
 
   /**

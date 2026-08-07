@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { computed, provide, toRef } from "vue";
-import { TimelineData, RendererManager, TimelineRenderer, TrackLineRenderer, TrackLineData } from "@web-vcp/core";
+import { RendererManager, TimelineRenderer, TrackLineRenderer, DataManager } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
@@ -36,10 +36,8 @@ const styleList = computed(() => ({
   ...cssProps.value
 }));
 
-// 创建时间线数据模型
-const timeline = new TimelineData();
-// 创建轨道数据模型
-const trackline = new TrackLineData()
+// 创建数据模型
+const dataManager = new DataManager();
 
 // 创建渲染器管理器
 const rendererManager = new RendererManager();
@@ -53,8 +51,7 @@ rendererManager.register(tracklineRendererName, trackLineRenderer);
 
 provide<VcpCtx>(vcpCtx, {
   theme,
-  timeline,
-  trackline,
+  dataManager,
   timelineRenderer,
   rendererManager
 })

@@ -117,11 +117,13 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         iconClass: "ri-stacked-view",
         tipsText: "自动吸附",
         effect: ctx.theme.value,
-        active: ctx.timeline.enableAutoAdsorb.value,
+        active: ctx.dataManager.timeline.enableAutoAdsorb.value,
         style: { transform: "rotateZ(-90deg)" },
       },
       events: {
-        click: () => (ctx.timeline.enableAutoAdsorb.value = !ctx.timeline.enableAutoAdsorb.value),
+        click: () =>
+          (ctx.dataManager.timeline.enableAutoAdsorb.value =
+            !ctx.dataManager.timeline.enableAutoAdsorb.value),
       },
     },
     {
@@ -133,7 +135,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         effect: ctx.theme.value,
       },
       events: {
-        click: () => ctx.timeline.scale.value--,
+        click: () => ctx.dataManager.timeline.scale.value--,
       },
     },
     {
@@ -142,10 +144,10 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       props: {
         showTooltip: false,
         class: "vcp-toolbar__slider",
-        modelValue: ctx.timeline.scale.value,
+        modelValue: ctx.dataManager.timeline.scale.value,
       },
       events: {
-        "update:modelValue": (val: number) => (ctx.timeline.scale.value = val),
+        "update:modelValue": (val: number) => (ctx.dataManager.timeline.scale.value = val),
       },
     },
     {
@@ -157,7 +159,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         effect: ctx.theme.value,
       },
       events: {
-        click: () => ctx.timeline.scale.value++,
+        click: () => ctx.dataManager.timeline.scale.value++,
       },
     },
   ]);

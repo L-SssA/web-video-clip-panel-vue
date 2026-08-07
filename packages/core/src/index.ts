@@ -15,6 +15,7 @@ export { TrackLineRenderer } from "./renderers/TrackLineRenderer";
 // 管理器导出
 export { PixiAppManager } from "./managers/PixiAppManager";
 export { RendererManager } from "./managers/RendererManager";
+export { DataManager } from "./managers/DataManager";
 
 // 工具导出
 export * from "./utils/tools";

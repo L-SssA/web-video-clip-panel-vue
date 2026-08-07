@@ -1,8 +1,8 @@
-import type { ComputedRef } from "vue";
+import type { ComputedRef, Ref } from "vue";
 
 import { computed, ref, watch } from "vue";
 
-import type { TrackLineContext } from "@/types/trackline";
+import type { TrackLineContext, TrackLineDataOptions } from "@/types/trackline";
 import type {
   AudioTrackLine,
   pictureTrackLine,
@@ -57,13 +57,20 @@ export class TrackLineData extends BaseData {
     };
   }
 
-  constructor(
-    marginTop: number = DEFAULT_TRACKLINE_MARGIN_TOP,
-    gapHeight: number = DEFAULT_TRACKLINE_GAP_HEIGHT,
-    marginLeft: number = DEFAULT_TRACKLINE_MARGIN_LEFT,
-    trackHeights: Record<string, number> = DEFAULT_TRACK_HEIGHTS,
-  ) {
+  get observeList(): Ref[] {
+    return [this.mergeTrackLineList];
+  }
+
+  constructor(options: Partial<TrackLineDataOptions> = {}) {
     super();
+
+    const {
+      marginTop = DEFAULT_TRACKLINE_MARGIN_TOP,
+      gapHeight = DEFAULT_TRACKLINE_GAP_HEIGHT,
+      marginLeft = DEFAULT_TRACKLINE_MARGIN_LEFT,
+      trackHeights = DEFAULT_TRACK_HEIGHTS,
+    } = options;
+
     this.marginTop = marginTop;
     this.gapHeight = gapHeight;
     this.marginLeft = marginLeft;
@@ -77,7 +84,7 @@ export class TrackLineData extends BaseData {
       ...this.audioTrackLineList.value,
     ]);
 
-    this.unwatch = watch([this.mergeTrackLineList], () => {
+    this.unwatch = watch(this.observeList, () => {
       this.updateEvent.triggerEvent(this.ctx);
     });
   }

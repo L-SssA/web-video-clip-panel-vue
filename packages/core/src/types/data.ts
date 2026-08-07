@@ -1,3 +1,6 @@
+import type { TimelineContext, TimelineDataOptions } from "./timeline";
+import type { TrackLineContext, TrackLineDataOptions } from "./trackline";
+
 export interface IData {
   /**
    * 添加更新回调
@@ -13,4 +16,14 @@ export interface IData {
    * 释放资源
    */
   release(): void;
+}
+
+export interface DataManagerOptions {
+  timeline: Partial<TimelineDataOptions>;
+  trackline: Partial<TrackLineDataOptions>;
+}
+
+export interface DataManagerContext {
+  timeline: TimelineContext;
+  trackline: TrackLineContext;
 }

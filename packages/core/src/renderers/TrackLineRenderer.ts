@@ -2,7 +2,8 @@ import type { Application } from "pixi.js";
 
 import { Texture, Container, Assets } from "pixi.js";
 
-import type { TrackLineContext, TrackLineGraphicsCache, TrackLineStyles } from "@/types/trackline";
+import type { DataManagerContext } from "@/types/data";
+import type { TrackLineGraphicsCache, TrackLineStyles } from "@/types/trackline";
 
 import { DEFAULT_COMMON_TRACK_HEIGHT, DEFAULT_ICONS_SOURCES } from "@/config/constant";
 import { buildTrackLine } from "@/utils/trackline";
@@ -33,7 +34,7 @@ export class TrackLineRenderer extends BaseRenderer {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async render(data: TrackLineContext, styles: Partial<TrackLineStyles> = {}): Promise<void> {
+  async render(data: DataManagerContext, styles: Partial<TrackLineStyles> = {}): Promise<void> {
     await this.loadIconTextures(styles);
     this.drawTrackLine(data, styles);
   }
@@ -57,10 +58,10 @@ export class TrackLineRenderer extends BaseRenderer {
     await Promise.allSettled(promises);
   }
 
-  private drawTrackLine(data: TrackLineContext, styles: Partial<TrackLineStyles>) {
+  private drawTrackLine(data: DataManagerContext, styles: Partial<TrackLineStyles>) {
     if (!this.app) return;
 
-    const { mergeTrackLineList, trackHeights, gapHeight } = data;
+    const { mergeTrackLineList, trackHeights, gapHeight } = data.trackline;
     let tracklineTopOffset = 0;
     for (let i = 0; i < mergeTrackLineList.length; i++) {
       const trackline = mergeTrackLineList[i];

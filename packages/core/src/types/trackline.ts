@@ -1,5 +1,48 @@
 import type { Container, Graphics, Sprite } from "pixi.js";
 
+/**
+ * 轨道数据选项
+ */
+export interface TrackLineDataOptions {
+  marginTop: number;
+  gapHeight: number;
+  marginLeft: number;
+  trackHeights: Record<string, number>;
+}
+
+/**
+ * 轨道线上下文数据
+ */
+export interface TrackLineContext {
+  mergeTrackLineList: TrackLine[];
+  marginTop: number;
+  gapHeight: number;
+  marginLeft: number;
+  trackHeights: Record<string, number>;
+}
+
+/**
+ * 轨道样式
+ */
+export interface TrackLineStyles {
+  icons: Record<string, string>;
+  iconColor: string;
+  iconSize: number;
+  backgroundColor: string;
+  trackItemColors: Record<string, string>;
+}
+
+/**
+ * 轨道图形缓存
+ */
+export interface TrackLineGraphicsCache {
+  container: Container;
+  iconSprite: Sprite;
+  backgroundGraphics: Graphics;
+  tracklineContainer: Container;
+  trackitems: Container[];
+}
+
 export type SourceType = "video" | "audio" | "text" | "image";
 
 export interface BaseTrackItem {
@@ -86,36 +129,3 @@ export interface VideoTrackLine extends BaseTrackLine<VideoTrackItem> {}
 export type TrackLine = ImageTrackLine | TextTrackLine | AudioTrackLine | VideoTrackLine;
 
 export type pictureTrackLine = ImageTrackLine | VideoTrackLine;
-
-/**
- * 轨道线上下文数据
- */
-export interface TrackLineContext {
-  mergeTrackLineList: TrackLine[];
-  marginTop: number;
-  gapHeight: number;
-  marginLeft: number;
-  trackHeights: Record<string, number>;
-}
-
-/**
- * 轨道样式
- */
-export interface TrackLineStyles {
-  icons: Record<string, string>;
-  iconColor: string;
-  iconSize: number;
-  backgroundColor: string;
-  trackItemColors: Record<string, string>;
-}
-
-/**
- * 轨道图形缓存
- */
-export interface TrackLineGraphicsCache {
-  container: Container;
-  iconSprite: Sprite;
-  backgroundGraphics: Graphics;
-  tracklineContainer: Container;
-  trackitems: Container[];
-}

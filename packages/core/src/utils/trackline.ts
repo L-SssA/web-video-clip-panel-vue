@@ -1,11 +1,11 @@
 import { Application, Container, Graphics, Sprite, Text as PixiText, Assets } from "pixi.js";
 
+import type { DataManagerContext } from "@/types/data";
 import type {
   AudioTrackItem,
   ImageTrackItem,
   TrackItem,
   TrackLine,
-  TrackLineContext,
   TrackLineStyles,
   VideoTrackItem,
 } from "@/types/trackline";
@@ -28,7 +28,7 @@ import { formatSeconds } from "./tools";
 export function buildTrackLine(
   trackline: TrackLine,
   app: Application,
-  ctx: TrackLineContext,
+  ctx: DataManagerContext,
   styles: Partial<TrackLineStyles>,
   tracklineTopOffset: number = 0,
   container: Container = new Container(),
@@ -47,7 +47,7 @@ export function buildTrackLine(
     marginTop = DEFAULT_TRACKLINE_MARGIN_TOP,
     marginLeft = DEFAULT_TRACKLINE_MARGIN_LEFT,
     trackHeights,
-  } = ctx;
+  } = ctx.trackline;
   const {
     iconColor = "#888888",
     iconSize = DEFAULT_ICON_SIZE,
@@ -101,18 +101,16 @@ export function buildTrackLine(
 
 export function buildTrackItem(
   trackitem: TrackItem,
-  ctx: TrackLineContext,
+  ctx: DataManagerContext,
   styles: Partial<TrackLineStyles>,
 ) {
-  const { trackHeights } = ctx;
+  const { trackHeights } = ctx.trackline;
+  const { fps, framesPerGap, gapWidth } = ctx.timeline;
   const { trackItemColors = DEFAULT_TRACK_COLOR } = styles;
   const { type, start, end, name } = trackitem;
 
   const trackHeight = trackHeights[type] || DEFAULT_COMMON_TRACK_HEIGHT;
   const itemColor = trackItemColors[type] || DEFAULT_COMMON_TRACK_COLOR;
-  const fps = 30,
-    framesPerGap = 9,
-    gapWidth = 17.9999999;
   const fromPx = ((start * fps) / framesPerGap) * gapWidth;
   const toPx = ((end * fps) / framesPerGap) * gapWidth;
   const itemWidthPx = toPx - fromPx;

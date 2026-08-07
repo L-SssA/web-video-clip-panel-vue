@@ -2,7 +2,8 @@ import type { Application } from "pixi.js";
 
 import { BitmapText, Rectangle, Graphics, Container } from "pixi.js";
 
-import type { TimelineStyles, TimelineContext } from "@/types/timeline";
+import type { DataManagerContext } from "@/types/data";
+import type { TimelineStyles } from "@/types/timeline";
 
 import { getTrackDurationFormatted } from "./tools";
 
@@ -33,7 +34,7 @@ export function buildTimelineHead(
  */
 export function buildTimelineGapsAndLabels(
   app: Application,
-  ctx: TimelineContext,
+  ctx: DataManagerContext,
   styles: Partial<TimelineStyles> = {},
   container: Container = new Container(),
   linegraphics: Graphics = new Graphics(),
@@ -44,7 +45,7 @@ export function buildTimelineGapsAndLabels(
   textList.forEach((child) => child.destroy());
   textList.splice(0);
 
-  const { fps, gapWidth, gapsPerLabel, framesPerGap, marginLeft } = ctx;
+  const { fps, gapWidth, gapsPerLabel, framesPerGap, marginLeft } = ctx.timeline;
   const { lineColor = "#555555", lineWidth = 2, fontColor = "#888888", fontSize = 12 } = styles;
   const gapCounts = Math.floor(app.screen.width / gapWidth);
   for (let i = 0; i < gapCounts; i++) {
@@ -84,7 +85,7 @@ export function buildTimelineGapsAndLabels(
  */
 export function buildCursorLine(
   app: Application,
-  ctx: TimelineContext,
+  ctx: DataManagerContext,
   styles: Partial<TimelineStyles> = {},
   graphics: Graphics = new Graphics(),
 ) {
@@ -92,7 +93,7 @@ export function buildCursorLine(
   graphics.clear();
 
   const { cursorLineColor = "#f5f5f5", cursorLineWidth = 2 } = styles;
-  const { cursorLinePosition, marginLeft } = ctx;
+  const { cursorLinePosition, marginLeft } = ctx.timeline;
   // 游标线
   graphics
     .moveTo(0, 0)

@@ -1,7 +1,8 @@
 import { Application, BitmapText, Container, Graphics } from "pixi.js";
 
+import type { DataManagerContext } from "@/types/data";
 import type { TimelineEvents } from "@/types/events";
-import type { TimelineStyles, TimelineContext } from "@/types/timeline";
+import type { TimelineStyles } from "@/types/timeline";
 
 import { EventCallback } from "@/utils/eventCallback";
 import { buildCursorLine, buildTimelineGapsAndLabels, buildTimelineHead } from "@/utils/timeline";
@@ -25,7 +26,7 @@ export class TimelineRenderer extends BaseRenderer {
 
   // 数据缓存（用于对比是否需要重绘）
   private dataCache?: {
-    ctx: TimelineContext;
+    ctx: DataManagerContext;
     styles: Partial<TimelineStyles>;
     app: { width: number; height: number };
   };
@@ -39,7 +40,7 @@ export class TimelineRenderer extends BaseRenderer {
    * @param ctx 时间线上下文数据
    * @param styles 时间线样式
    */
-  async render(ctx: TimelineContext, styles: Partial<TimelineStyles> = {}): Promise<void> {
+  async render(ctx: DataManagerContext, styles: Partial<TimelineStyles> = {}): Promise<void> {
     if (!this.isInitialized || !this.app) {
       console.warn("TimelineRenderer is not initialized");
       return;
@@ -109,7 +110,7 @@ export class TimelineRenderer extends BaseRenderer {
    * @param styles 时间线样式
    */
   private checkTimelineUpdate(
-    ctx: TimelineContext,
+    ctx: DataManagerContext,
     styles: Partial<TimelineStyles> = {},
   ): {
     redrawTimelineHead: boolean;
@@ -151,12 +152,12 @@ export class TimelineRenderer extends BaseRenderer {
 
     // 时间线相关属性改变需要重建
     if (
-      ctx.fps !== cacheCtx.fps ||
-      ctx.scale !== cacheCtx.scale ||
-      ctx.gapWidth !== cacheCtx.gapWidth ||
-      ctx.gapsPerLabel !== cacheCtx.gapsPerLabel ||
-      ctx.framesPerGap !== cacheCtx.framesPerGap ||
-      ctx.marginLeft !== cacheCtx.marginLeft
+      ctx.timeline.fps !== cacheCtx.timeline.fps ||
+      ctx.timeline.scale !== cacheCtx.timeline.scale ||
+      ctx.timeline.gapWidth !== cacheCtx.timeline.gapWidth ||
+      ctx.timeline.gapsPerLabel !== cacheCtx.timeline.gapsPerLabel ||
+      ctx.timeline.framesPerGap !== cacheCtx.timeline.framesPerGap ||
+      ctx.timeline.marginLeft !== cacheCtx.timeline.marginLeft
     ) {
       checkers.redrawTimeline = true;
     }
@@ -188,7 +189,7 @@ export class TimelineRenderer extends BaseRenderer {
    * @param redraw 是否重新绘制
    */
   private drawGapsAndLabels(
-    ctx: TimelineContext,
+    ctx: DataManagerContext,
     styles: Partial<TimelineStyles> = {},
     redraw: boolean = false,
   ): void {
@@ -223,14 +224,14 @@ export class TimelineRenderer extends BaseRenderer {
    * @param redraw 是否重新绘制
    */
   private drawCursorLine(
-    ctx: TimelineContext,
+    ctx: DataManagerContext,
     styles: Partial<TimelineStyles> = {},
     redraw: boolean = false,
   ): void {
     if (!this.app) return;
 
     // 如果游标线位置小于0则不绘制
-    if (ctx.cursorLinePosition < 0) return;
+    if (ctx.timeline.cursorLinePosition < 0) return;
 
     // 如果未创建实例，则先创建实例
     if (!this.cursorGraphics) {
@@ -241,7 +242,10 @@ export class TimelineRenderer extends BaseRenderer {
       buildCursorLine(this.app, ctx, styles, this.cursorGraphics);
     } else {
       // 如果有缓存，则只更新位置
-      this.cursorGraphics.position.set(ctx.cursorLinePosition + ctx.marginLeft, 0);
+      this.cursorGraphics.position.set(
+        ctx.timeline.cursorLinePosition + ctx.timeline.marginLeft,
+        0,
+      );
     }
   }
 
