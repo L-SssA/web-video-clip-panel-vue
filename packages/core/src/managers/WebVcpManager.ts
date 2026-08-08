@@ -14,6 +14,7 @@ export class WebVcpManager {
 
   public timeline: TimelineRenderer;
   public trackline: TrackLineRenderer;
+
   private unlistenResize: Function | null = null;
 
   constructor() {
@@ -43,7 +44,7 @@ export class WebVcpManager {
   }
 
   /**
-   * 渲染所有
+   * 重新渲染
    */
   async renderAll() {
     await this.renderer.renderAll(this.data.ctx);
@@ -63,14 +64,14 @@ export class WebVcpManager {
    */
   private bindEvents() {
     // 数据变化时重新渲染
-    this.data.onUpdate(this.renderAll);
+    this.data.onUpdate(this.renderAll.bind(this));
 
     // 时间线交互事件
-    this.timeline.on("timelineClick", this.updateCurrentTime);
-    this.timeline.on("cursorLineMove", this.updateCurrentTime);
+    this.timeline.on("timelineClick", this.updateCurrentTime.bind(this));
+    this.timeline.on("cursorLineMove", this.updateCurrentTime.bind(this));
 
     // 窗口resize时重新渲染
-    this.unlistenResize = useWindowResize(this.renderAll);
+    this.unlistenResize = useWindowResize(this.renderAll.bind(this));
   }
 
   /**
@@ -79,10 +80,12 @@ export class WebVcpManager {
   private unbindEvents() {
     this.data.offUpdate(this.renderAll);
 
-    this.timeline.off("timelineClick", this.updateCurrentTime);
-    this.timeline.off("cursorLineMove", this.updateCurrentTime);
+    this.timeline.off("timelineClick", this.updateCurrentTime.bind(this));
+    this.timeline.off("cursorLineMove", this.updateCurrentTime.bind(this));
 
-    this.unlistenResize?.();
+    if (this.unlistenResize) {
+      this.unlistenResize();
+    }
   }
 
   /**
