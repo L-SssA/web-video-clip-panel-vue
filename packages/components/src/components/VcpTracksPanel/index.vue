@@ -6,49 +6,24 @@
 import { inject, onMounted, onUnmounted, ref } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext';
-import { useWindowResize } from '@/hooks/useWindowResize';
 import { vcpCtxSymbol } from '@/config/symbols';
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 const tracksPanelRef = ref<HTMLElement | null>(null)
 
-
-// 节流处理时间线更新
-async function handleDataUpdate() {
-  await ctx.rendererManager.renderAll(ctx.dataManager.ctx)
-}
-
 async function setupPixi() {
   if (!tracksPanelRef.value) return
   // 初始化渲染器
-  await ctx.rendererManager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
-  await ctx.rendererManager.renderAll(ctx.dataManager.ctx)
+  await ctx.webVcpManager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
 }
-
-// 窗口resize时重新渲染
-let resizeUnlistener = useWindowResize(() => {
-  handleDataUpdate()
-})
-// 数据变化时重新渲染
-ctx.dataManager.onUpdate(handleDataUpdate)
-
-ctx.rendererManager.timeline.on("timelineClick", ((event) => {
-  ctx.dataManager.setCurrentTimeByPixel(event.global.x);
-}));
-ctx.rendererManager.timeline.on("cursorLineMove", ((event) => {
-  ctx.dataManager.setCurrentTimeByPixel(event.global.x);
-}));
-
 
 onMounted(() => {
   setupPixi()
 })
 
 onUnmounted(() => {
-  ctx.dataManager.offUpdate(handleDataUpdate)
-  resizeUnlistener()
   // 销毁渲染器
-  ctx.rendererManager.destroy()
+  ctx.webVcpManager.destroy()
 })
 
 </script>

@@ -17,6 +17,7 @@ export { TrackLineRenderer } from "./renderers/TrackLineRenderer";
 export { PixiAppManager } from "./managers/PixiAppManager";
 export { RendererManager } from "./managers/RendererManager";
 export { DataManager } from "./managers/DataManager";
+export { WebVcpManager } from "./managers/WebVcpManager";
 
 // 工具导出
 export * from "./utils/tools";

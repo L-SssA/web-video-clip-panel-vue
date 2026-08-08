@@ -43,6 +43,8 @@ export class DataManager extends BaseData {
    */
   release(): void {
     this.unwatch();
+    this.timeline.release();
+    this.trackline.release();
     super.release();
   }
 }

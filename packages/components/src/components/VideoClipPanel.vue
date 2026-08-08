@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { computed, provide, toRef, watch } from "vue";
-import { RendererManager, DataManager } from "@web-vcp/core";
+import { WebVcpManager } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
@@ -38,23 +38,19 @@ const styleList = computed(() => ({
   ...cssProps.value
 }));
 
-// 创建数据模型
-const dataManager = new DataManager();
+const webVcpManager = new WebVcpManager();
 
-// 创建渲染器管理器
-const rendererManager = new RendererManager();
 
 watch(theme, (newTheme) => {
-  dataManager.timeline.updateStyles(timelineStylesMap[newTheme] || timelineDefaultStyles)
-  dataManager.trackline.updateStyles(tracklineStylesMap[newTheme] || tracklineDefaultStyles)
+  webVcpManager.data.timeline.updateStyles(timelineStylesMap[newTheme] || timelineDefaultStyles)
+  webVcpManager.data.trackline.updateStyles(tracklineStylesMap[newTheme] || tracklineDefaultStyles)
 }, {
   immediate: true
 })
 
 provide<VcpCtx>(vcpCtxSymbol, {
   theme,
-  dataManager,
-  rendererManager
+  webVcpManager
 })
 </script>
 

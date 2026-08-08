@@ -2,10 +2,6 @@ import type { ApplicationOptions } from "pixi.js";
 
 import type { IRenderer } from "@/types/renderer";
 
-import { TIMELINE_RENDERER_SYMBOL, TRACKLINE_RENDERER_SYMBOL } from "@/config/symbol";
-import { TimelineRenderer } from "@/renderers/TimelineRenderer";
-import { TrackLineRenderer } from "@/renderers/TrackLineRenderer";
-
 import type { DataManager } from "./DataManager";
 
 import { PixiAppManager } from "./PixiAppManager";
@@ -18,20 +14,8 @@ export class RendererManager {
   private pixiAppManager: PixiAppManager;
   private renderers: Map<string | Symbol, IRenderer> = new Map();
 
-  public timeline: TimelineRenderer;
-  public trackline: TrackLineRenderer;
-
   constructor() {
     this.pixiAppManager = new PixiAppManager();
-
-    // 注册时间线渲染器
-    const timelineRenderer = new TimelineRenderer();
-    this.register(TIMELINE_RENDERER_SYMBOL, timelineRenderer);
-    this.timeline = timelineRenderer;
-    // 注册轨道渲染器
-    const trackLineRenderer = new TrackLineRenderer();
-    this.register(TRACKLINE_RENDERER_SYMBOL, trackLineRenderer);
-    this.trackline = trackLineRenderer;
   }
 
   /**
