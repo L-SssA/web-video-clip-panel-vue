@@ -80,8 +80,8 @@ export class WebVcpManager {
   private unbindEvents() {
     this.data.offUpdate(this.renderAll);
 
-    this.timeline.off("timelineClick", this.updateCurrentTime.bind(this));
-    this.timeline.off("cursorLineMove", this.updateCurrentTime.bind(this));
+    this.timeline.off("timelineClick", this.updateCurrentTime);
+    this.timeline.off("cursorLineMove", this.updateCurrentTime);
 
     if (this.unlistenResize) {
       this.unlistenResize();
