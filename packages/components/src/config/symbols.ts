@@ -1,4 +1,1 @@
-export const vcpCtx = Symbol("vcpCtx");
-
-export const timelineRendererName = "timeline";
-export const tracklineRendererName = "trackline";
+export const vcpCtxSymbol = Symbol("vcpCtx");

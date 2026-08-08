@@ -7,14 +7,14 @@
 
 <script setup lang="ts">
 import { computed, provide, toRef, watch } from "vue";
-import { RendererManager, TimelineRenderer, TrackLineRenderer, DataManager } from "@web-vcp/core";
+import { RendererManager, DataManager } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { useTheme } from "@/hooks/useTheme";
-import { vcpCtx, timelineRendererName, tracklineRendererName } from "@/config/symbols";
+import { vcpCtxSymbol } from "@/config/symbols";
 import { defaultStyles as timelineDefaultStyles, timelineStylesMap } from '@/config/timeline';
 import { defaultStyles as tracklineDefaultStyles, tracklineStylesMap } from "@/config/trackline";
 
@@ -44,14 +44,6 @@ const dataManager = new DataManager();
 // 创建渲染器管理器
 const rendererManager = new RendererManager();
 
-// 注册时间线渲染器
-const timelineRenderer = new TimelineRenderer();
-rendererManager.register(timelineRendererName, timelineRenderer);
-// 注册轨道渲染器
-const trackLineRenderer = new TrackLineRenderer();
-rendererManager.register(tracklineRendererName, trackLineRenderer);
-
-
 watch(theme, (newTheme) => {
   dataManager.timeline.updateStyles(timelineStylesMap[newTheme] || timelineDefaultStyles)
   dataManager.trackline.updateStyles(tracklineStylesMap[newTheme] || tracklineDefaultStyles)
@@ -59,11 +51,9 @@ watch(theme, (newTheme) => {
   immediate: true
 })
 
-
-provide<VcpCtx>(vcpCtx, {
+provide<VcpCtx>(vcpCtxSymbol, {
   theme,
   dataManager,
-  timelineRenderer,
   rendererManager
 })
 </script>

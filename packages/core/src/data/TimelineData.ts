@@ -69,7 +69,7 @@ export class TimelineData extends BaseData {
   }
 
   get observeList(): Ref[] {
-    return [this.scale, this.fps, this.autoAdsorbDistance, this.currentTime];
+    return [this.scale, this.fps, this.autoAdsorbDistance, this.currentTime, this.styles];
   }
 
   constructor(options: Partial<TimelineDataOptions> = {}) {

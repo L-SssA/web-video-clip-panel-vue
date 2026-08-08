@@ -3,13 +3,13 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, onUnmounted, ref, watch } from 'vue';
+import { inject, onMounted, onUnmounted, ref } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { useWindowResize } from '@/hooks/useWindowResize';
-import { vcpCtx } from '@/config/symbols';
+import { vcpCtxSymbol } from '@/config/symbols';
 
-const ctx = inject<VcpCtx>(vcpCtx, {} as VcpCtx);
+const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 const tracksPanelRef = ref<HTMLElement | null>(null)
 
 
@@ -29,17 +29,13 @@ async function setupPixi() {
 let resizeUnlistener = useWindowResize(() => {
   handleDataUpdate()
 })
-// 主题变化时重新渲染
-watch(ctx.theme, () => {
-  handleDataUpdate()
-})
 // 数据变化时重新渲染
 ctx.dataManager.onUpdate(handleDataUpdate)
 
-ctx.timelineRenderer.on("timelineClick", ((event) => {
+ctx.rendererManager.timeline.on("timelineClick", ((event) => {
   ctx.dataManager.setCurrentTimeByPixel(event.global.x);
 }));
-ctx.timelineRenderer.on("cursorLineMove", ((event) => {
+ctx.rendererManager.timeline.on("cursorLineMove", ((event) => {
   ctx.dataManager.setCurrentTimeByPixel(event.global.x);
 }));
 

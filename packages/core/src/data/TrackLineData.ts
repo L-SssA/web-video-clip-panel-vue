@@ -63,7 +63,7 @@ export class TrackLineData extends BaseData {
   }
 
   get observeList(): Ref[] {
-    return [this.mergeTrackLineList];
+    return [this.mergeTrackLineList, this.styles];
   }
 
   constructor(options: Partial<TrackLineDataOptions> = {}) {

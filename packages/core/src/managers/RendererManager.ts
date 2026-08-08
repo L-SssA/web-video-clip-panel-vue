@@ -2,6 +2,10 @@ import type { ApplicationOptions } from "pixi.js";
 
 import type { IRenderer } from "@/types/renderer";
 
+import { TIMELINE_RENDERER_SYMBOL, TRACKLINE_RENDERER_SYMBOL } from "@/config/symbol";
+import { TimelineRenderer } from "@/renderers/TimelineRenderer";
+import { TrackLineRenderer } from "@/renderers/TrackLineRenderer";
+
 import type { DataManager } from "./DataManager";
 
 import { PixiAppManager } from "./PixiAppManager";
@@ -12,10 +16,22 @@ import { PixiAppManager } from "./PixiAppManager";
  */
 export class RendererManager {
   private pixiAppManager: PixiAppManager;
-  private renderers: Map<string, IRenderer> = new Map();
+  private renderers: Map<string | Symbol, IRenderer> = new Map();
+
+  public timeline: TimelineRenderer;
+  public trackline: TrackLineRenderer;
 
   constructor() {
     this.pixiAppManager = new PixiAppManager();
+
+    // 注册时间线渲染器
+    const timelineRenderer = new TimelineRenderer();
+    this.register(TIMELINE_RENDERER_SYMBOL, timelineRenderer);
+    this.timeline = timelineRenderer;
+    // 注册轨道渲染器
+    const trackLineRenderer = new TrackLineRenderer();
+    this.register(TRACKLINE_RENDERER_SYMBOL, trackLineRenderer);
+    this.trackline = trackLineRenderer;
   }
 
   /**
@@ -23,7 +39,7 @@ export class RendererManager {
    * @param name 渲染器名称
    * @param renderer 渲染器实例
    */
-  register(name: string, renderer: IRenderer): void {
+  register(name: string | Symbol, renderer: IRenderer): void {
     if (this.renderers.has(name)) {
       console.warn(`Renderer "${name}" has already been registered`);
       return;
@@ -36,7 +52,7 @@ export class RendererManager {
    * 注销渲染器
    * @param name 渲染器名称
    */
-  unregister(name: string): void {
+  unregister(name: string | Symbol): void {
     const renderer = this.renderers.get(name);
     if (renderer) {
       renderer.destroy();
@@ -79,7 +95,7 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async render(name: string, data: DataManager["ctx"]): Promise<void> {
+  async render(name: string | Symbol, data: DataManager["ctx"]): Promise<void> {
     const renderer = this.renderers.get(name);
     if (!renderer) {
       console.warn(`Renderer "${name}" is not registered`);
