@@ -12,6 +12,7 @@ import {
   TIMELINE_GAP_OPTIONS,
   DEFAULT_TIMELINE_STYLES,
 } from "@/config/constant";
+import { pixelToTime, timeToPixel } from "@/utils/tools";
 
 import { BaseData } from "./BaseData";
 
@@ -96,8 +97,11 @@ export class TimelineData extends BaseData {
       // currentTime(秒) * fps -> 帧数
       // 帧数 / framesPerGap -> 刻度数
       // 刻度数 * gapWidth -> 实际坐标
-      return (
-        ((this.currentTime.value * this.fps.value) / this.framesPerGap.value) * this.gapWidth.value
+      return timeToPixel(
+        this.currentTime.value,
+        this.fps.value,
+        this.framesPerGap.value,
+        this.gapWidth.value,
       );
     });
 
@@ -112,6 +116,10 @@ export class TimelineData extends BaseData {
     );
   }
 
+  /**
+   * 更新样式
+   * @param styles
+   */
   updateStyles(styles?: Partial<TimelineStyles>): void {
     this.styles.value = { ...this.styles.value, ...styles };
   }
@@ -140,9 +148,12 @@ export class TimelineData extends BaseData {
   setCurrentTimeByPixel(pixel: number): void {
     // 计算像素位置相对于时间线的偏移量
     const offsetX = Math.max(pixel - this.marginLeft, 0);
-    // 计算一帧所占的宽度，用于限定当前时间每次移动的宽度是一帧的宽度的倍数
-    const singleFrameWidth = this.gapWidth.value / this.framesPerGap.value;
-    this.currentTime.value = Math.round(offsetX / singleFrameWidth) / this.fps.value;
+    this.currentTime.value = pixelToTime(
+      offsetX,
+      this.fps.value,
+      this.framesPerGap.value,
+      this.gapWidth.value,
+    );
   }
 
   /**

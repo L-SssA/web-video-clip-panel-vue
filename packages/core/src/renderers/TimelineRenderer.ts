@@ -4,7 +4,11 @@ import type { DataManagerContext } from "@/types/data";
 import type { TimelineEvents } from "@/types/events";
 
 import { EventCallback } from "@/utils/eventCallback";
-import { buildCursorLine, buildTimelineGapsAndLabels, buildTimelineHead } from "@/utils/timeline";
+import {
+  buildCursorLine,
+  buildTimelineGapsAndLabels,
+  buildTimelineHead,
+} from "@/utils/timelineGraphics";
 
 import { BaseRenderer } from "./BaseRenderer";
 

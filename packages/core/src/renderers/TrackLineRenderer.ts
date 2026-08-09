@@ -6,7 +6,7 @@ import type { DataManagerContext } from "@/types/data";
 import type { TrackLineGraphicsCache } from "@/types/trackline";
 
 import { DEFAULT_COMMON_TRACK_HEIGHT, DEFAULT_ICONS_SOURCES } from "@/config/constant";
-import { buildTrackLine } from "@/utils/trackline";
+import { buildTrackLine } from "@/utils/tracklineGraphics";
 
 import { BaseRenderer } from "./BaseRenderer";
 

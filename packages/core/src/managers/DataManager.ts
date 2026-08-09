@@ -7,6 +7,7 @@ import type { DataManagerOptions, DataManagerContext } from "@/types/data";
 import { BaseData } from "@/data/BaseData";
 import { TimelineData } from "@/data/TimelineData";
 import { TrackLineData } from "@/data/TrackLineData";
+import { timeToPixel } from "@/utils/tools";
 
 export class DataManager extends BaseData {
   timeline: TimelineData;
@@ -34,7 +35,15 @@ export class DataManager extends BaseData {
     });
   }
 
+  /**
+   * 根据像素设置当前时间
+   * @param pixel
+   */
   setCurrentTimeByPixel(pixel: number) {
+    const maxTime = this.trackline.getLongestTracklineSecond();
+    const { fps, framesPerGap, gapWidth } = this.timeline.ctx;
+    const maxPixel = timeToPixel(maxTime, fps, framesPerGap, gapWidth);
+    if (pixel > maxPixel) pixel = maxPixel;
     this.timeline.setCurrentTimeByPixel(pixel);
   }
 

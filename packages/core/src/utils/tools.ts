@@ -97,3 +97,29 @@ export function throttle<T extends (...args: any[]) => void>(
     }
   };
 }
+
+/**
+ * 时间转像素
+ * @param time
+ * @param fps
+ * @param framesPerGap
+ * @param gapWidth
+ * @returns
+ */
+export function timeToPixel(time: number, fps: number, framesPerGap: number, gapWidth: number) {
+  return ((time * fps) / framesPerGap) * gapWidth;
+}
+
+/**
+ * 像素转时间
+ * @param pixel
+ * @param fps
+ * @param framesPerGap
+ * @param gapWidth
+ * @returns
+ */
+export function pixelToTime(pixel: number, fps: number, framesPerGap: number, gapWidth: number) {
+  // 计算一帧所占的宽度，用于限定当前时间每次移动的宽度是一帧的宽度的倍数
+  const singleFrameWidth = gapWidth / framesPerGap;
+  return Math.round(pixel / singleFrameWidth) / fps;
+}

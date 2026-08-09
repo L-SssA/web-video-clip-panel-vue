@@ -97,8 +97,28 @@ export class TrackLineData extends BaseData {
     });
   }
 
+  /**
+   * 更新样式
+   * @param styles
+   */
   updateStyles(styles: Partial<TrackLineStyles> = {}): void {
     this.styles.value = { ...this.styles.value, ...styles };
+  }
+
+  /**
+   * 获取最长轨道的时长
+   * @returns
+   */
+  getLongestTracklineSecond(): number {
+    if (this.mergeTrackLineList.value.length > 0) {
+      return this.mergeTrackLineList.value.reduce((max, trackLine) => {
+        return Math.max(
+          max,
+          trackLine.data.reduce((max, item) => Math.max(max, item.end), 0),
+        );
+      }, 0);
+    }
+    return 0;
   }
 
   /**
