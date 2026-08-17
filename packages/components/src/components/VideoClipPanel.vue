@@ -27,7 +27,11 @@ const props = defineProps({
     type: String,
     default: "light",
     validator: (value: string) => ["light", "dark"].includes(value),
-  }
+  },
+  manager: {
+    type: WebVcpManager,
+    default: () => new WebVcpManager(),
+  },
 });
 
 const theme = toRef(props, 'theme')
@@ -38,19 +42,17 @@ const styleList = computed(() => ({
   ...cssProps.value
 }));
 
-const webVcpManager = new WebVcpManager();
-
 
 watch(theme, (newTheme) => {
-  webVcpManager.data.timeline.updateStyles(timelineStylesMap[newTheme] || timelineDefaultStyles)
-  webVcpManager.data.trackline.updateStyles(tracklineStylesMap[newTheme] || tracklineDefaultStyles)
+  props.manager.data.timeline.updateStyles(timelineStylesMap[newTheme] || timelineDefaultStyles)
+  props.manager.data.trackline.updateStyles(tracklineStylesMap[newTheme] || tracklineDefaultStyles)
 }, {
   immediate: true
 })
 
 provide<VcpCtx>(vcpCtxSymbol, {
   theme,
-  webVcpManager
+  manager: props.manager,
 })
 </script>
 

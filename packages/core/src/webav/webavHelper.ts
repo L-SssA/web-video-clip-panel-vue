@@ -1,7 +1,7 @@
 import { AudioClip, Combinator, OffscreenSprite, type ImgClip } from "@webav/av-cliper";
 
 import type { TrackItem, TrackLine } from "@/types/trackline";
-import type { ChromaKeyOptions, MediaClip, WebavClipCacheData } from "@/types/webav";
+import type { MediaClip, WebavClipCacheData, WebavHelperOptions } from "@/types/webav";
 
 import { DEFAULT_CHROMAKEY_OPTIONS } from "@/config/constant";
 import { generateUUID } from "@/utils/tools";
@@ -25,7 +25,8 @@ export default class WebavHelper {
    * 构造函数
    * @param chromaKeyOptions - 绿幕抠像配置选项，默认使用常量配置
    */
-  constructor(chromaKeyOptions: ChromaKeyOptions = DEFAULT_CHROMAKEY_OPTIONS) {
+  constructor(options: Partial<WebavHelperOptions> = {}) {
+    const { chromaKeyOptions = DEFAULT_CHROMAKEY_OPTIONS } = options;
     // 初始化缓存池，用于存储已加载的媒体片段
     this.clipCache = new Map<string, WebavClipCacheData>();
     // 初始化 WebAV 片段构建器，用于创建媒体片段

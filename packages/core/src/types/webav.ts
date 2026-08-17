@@ -15,7 +15,7 @@ export type WebavClipCacheData = {
 
 // 绿幕抠像选项
 export type ChromaKeyOptions = {
-  keyColor: [number, number, number] | undefined;
+  keyColor?: [number, number, number];
   similarity: number;
   smoothness: number;
   spill: number;
@@ -49,3 +49,7 @@ export type WebavThumbnailsBuilderFunction = (
   clip: MediaClip,
   trackItem: TrackItem,
 ) => Promise<string[]>;
+
+export interface WebavHelperOptions {
+  chromaKeyOptions: ChromaKeyOptions;
+}

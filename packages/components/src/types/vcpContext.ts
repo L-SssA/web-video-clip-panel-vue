@@ -3,5 +3,5 @@ import type { Ref } from "vue";
 
 export type VcpCtx = {
   theme: Ref<string>;
-  webVcpManager: WebVcpManager;
+  manager: WebVcpManager;
 };

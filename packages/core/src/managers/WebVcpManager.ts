@@ -1,9 +1,12 @@
 import type { ApplicationOptions } from "pixi.js";
 
+import type { WebVcpManagerOptions } from "@/types/webvcp";
+
 import { TIMELINE_RENDERER_SYMBOL, TRACKLINE_RENDERER_SYMBOL } from "@/config/symbol";
 import { useWindowResize } from "@/hooks/useWindowResize";
 import { TimelineRenderer } from "@/renderers/TimelineRenderer";
 import { TrackLineRenderer } from "@/renderers/TrackLineRenderer";
+import WebavHelper from "@/webav/webavHelper";
 
 import { DataManager } from "./DataManager";
 import { RendererManager } from "./RendererManager";
@@ -16,10 +19,16 @@ export class WebVcpManager {
   public trackline: TrackLineRenderer;
 
   private unlistenResize: Function | null = null;
+  private webavHelper: WebavHelper;
 
-  constructor() {
+  constructor(options: Partial<WebVcpManagerOptions> = {}) {
+    const { data: dataOptions, webav: webavOptions } = options;
+    // 渲染器
     this.renderer = new RendererManager();
-    this.data = new DataManager();
+    // 数据
+    this.data = new DataManager(dataOptions);
+    // 音视频解码
+    this.webavHelper = new WebavHelper(webavOptions);
 
     // 注册时间线渲染器
     const timelineRenderer = new TimelineRenderer();
@@ -57,6 +66,7 @@ export class WebVcpManager {
     this.unbindEvents();
     this.renderer.destroy();
     this.data.release();
+    this.webavHelper.release();
   }
 
   /**

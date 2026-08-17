@@ -14,7 +14,7 @@ const tracksPanelRef = ref<HTMLElement | null>(null)
 async function setupPixi() {
   if (!tracksPanelRef.value) return
   // 初始化渲染器
-  await ctx.webVcpManager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
+  await ctx.manager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
 }
 
 onMounted(() => {
@@ -23,7 +23,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   // 销毁渲染器
-  ctx.webVcpManager.destroy()
+  ctx.manager.destroy()
 })
 
 </script>
