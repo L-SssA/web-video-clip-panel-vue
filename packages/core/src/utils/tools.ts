@@ -123,3 +123,32 @@ export function pixelToTime(pixel: number, fps: number, framesPerGap: number, ga
   const singleFrameWidth = gapWidth / framesPerGap;
   return Math.round(pixel / singleFrameWidth) / fps;
 }
+
+/**
+ * 获取调整大小后的图像 Blob
+ * @param img - 源图像元素
+ * @param targetWidth - 目标宽度
+ * @param targetHeight - 目标高度
+ * @returns 返回 Promise<Blob>，包含调整大小后的图像数据
+ */
+export function getResizeImageBlob(
+  img: CanvasImageSource,
+  targetWidth: number,
+  targetHeight: number,
+) {
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to get canvas context");
+
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+  return new Promise<Blob>((resolve) =>
+    canvas.toBlob((blob) => {
+      resolve(blob as Blob);
+      canvas.remove();
+    }),
+  );
+}

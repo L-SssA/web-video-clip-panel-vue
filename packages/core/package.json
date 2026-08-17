@@ -17,7 +17,7 @@
     "watch": "vue-tsc -b && vite build --watch"
   },
   "dependencies": {
-    "mediabunny": "^1.53.0",
+    "@webav/av-cliper": "^1.2.8",
     "pixi.js": "^8.19.0"
   },
   "peerDependencies": {
