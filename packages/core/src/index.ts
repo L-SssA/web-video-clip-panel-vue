@@ -24,3 +24,4 @@ export * from "./utils/tools";
 
 // 默认值导出
 export * from "./config/constant";
+export * from "./config/symbol";

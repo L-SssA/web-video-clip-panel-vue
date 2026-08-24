@@ -4,6 +4,7 @@ import { watch } from "vue";
 
 import type { DataManagerOptions, DataManagerContext } from "@/types/data";
 
+import { TRACKLINE_SOURCE_TYPE } from "@/config/symbol";
 import { BaseData } from "@/data/BaseData";
 import { TimelineData } from "@/data/TimelineData";
 import { TrackLineData } from "@/data/TrackLineData";
@@ -45,6 +46,24 @@ export class DataManager extends BaseData {
     const maxPixel = timeToPixel(maxTime, fps, framesPerGap, gapWidth);
     if (pixel > maxPixel) pixel = maxPixel;
     this.timeline.setCurrentTimeByPixel(pixel);
+  }
+
+  /**
+   * 添加源
+   * @param type
+   * @param source
+   * @param opts
+   */
+  async addSource(type: string, source: string, opts: any = {}) {
+    const processor = {
+      [TRACKLINE_SOURCE_TYPE.VIDEO]: this.trackline.addMP4Source,
+      [TRACKLINE_SOURCE_TYPE.IMAGE]: this.trackline.addImageSource,
+      [TRACKLINE_SOURCE_TYPE.AUDIO]: this.trackline.addAudioSource,
+      [TRACKLINE_SOURCE_TYPE.TEXT]: this.trackline.addTextSource,
+    }[type];
+
+    if (processor) return await processor.bind(this.trackline)(source, opts);
+    throw new Error(`Invalid source type: ${String(type)}`);
   }
 
   /**

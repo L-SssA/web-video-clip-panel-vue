@@ -23,7 +23,7 @@ export class TrackLineRenderer extends BaseRenderer {
     imageIcon: null,
   };
   // 图形实例缓存
-  private cacheGraphics: Map<string | Symbol, TrackLineGraphicsCache> = new Map();
+  private cacheGraphics: Map<string | symbol, TrackLineGraphicsCache> = new Map();
 
   async init(app: Application, container?: Container): Promise<void> {
     await super.init(app, container);

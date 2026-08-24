@@ -4,6 +4,8 @@ import type {
   ImageTrackItem,
   SourceType,
   TextTrackItem,
+  TrackItem,
+  TrackLine,
   VideoTrackItem,
 } from "@/types/trackline";
 
@@ -117,4 +119,11 @@ export function defineImageTrackItemConfig(): ImageTrackItem {
     originWidth: 0,
     originHeight: 0,
   };
+}
+
+export function defineTrackLineConfig<T extends TrackItem = TrackItem>(
+  type: SourceType,
+  data: T[] = [],
+): TrackLine<T> {
+  return { id: generateUUID(), type, data };
 }

@@ -6,7 +6,7 @@ import type { SourceType, TrackItem } from "./trackline";
 
 // webav clip 缓存数据结构
 export type WebavClipCacheData = {
-  id: string | Symbol;
+  id: string | symbol;
   type: SourceType;
   response: ImageBitmap | Response;
   clip?: ImgClip | MP4Clip;

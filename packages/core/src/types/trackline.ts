@@ -1,5 +1,7 @@
 import type { Container, Graphics, Sprite } from "pixi.js";
 
+import type { WebavHelperOptions } from "./webav";
+
 /**
  * 轨道样式
  */
@@ -43,13 +45,14 @@ export interface TrackLineDataOptions {
   marginLeft: number;
   trackHeights: Record<string, number>;
   styles: Partial<TrackLineStyles>;
+  webav: Partial<WebavHelperOptions>;
 }
 
 export type SourceType = "video" | "audio" | "text" | "image";
 
 export interface BaseTrackItem {
-  id: string | Symbol; // 轨道片段ID
-  parentId: string; // 父级轨道ID
+  id: string | symbol; // 轨道片段ID
+  parentId: string | symbol; // 父级轨道ID
   type: SourceType; // 轨道片段类型
   name: string; // 轨道片段名称
   start: number; // 轨道片段开始时间
@@ -113,21 +116,23 @@ export interface VideoTrackItem extends BaseTrackItem {
 export type TrackItem = ImageTrackItem | TextTrackItem | AudioTrackItem | VideoTrackItem;
 
 export interface BaseTrackLine<T extends TrackItem = TrackItem> {
-  id: string | Symbol;
+  id: string | symbol;
   type: T["type"];
   data: T[];
   main?: boolean;
   mute?: boolean;
 }
 
-export interface ImageTrackLine extends BaseTrackLine<ImageTrackItem> {}
+export type ImageTrackLine = BaseTrackLine<ImageTrackItem>;
 
-export interface TextTrackLine extends BaseTrackLine<TextTrackItem> {}
+export type TextTrackLine = BaseTrackLine<TextTrackItem>;
 
-export interface AudioTrackLine extends BaseTrackLine<AudioTrackItem> {}
+export type AudioTrackLine = BaseTrackLine<AudioTrackItem>;
 
-export interface VideoTrackLine extends BaseTrackLine<VideoTrackItem> {}
+export type VideoTrackLine = BaseTrackLine<VideoTrackItem>;
 
-export type TrackLine = ImageTrackLine | TextTrackLine | AudioTrackLine | VideoTrackLine;
+export type TrackLine<T extends TrackItem = TrackItem> = {
+  [K in T["type"]]: BaseTrackLine<T>;
+}[T["type"]];
 
 export type pictureTrackLine = ImageTrackLine | VideoTrackLine;

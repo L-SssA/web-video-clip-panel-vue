@@ -6,7 +6,6 @@ import { TIMELINE_RENDERER_SYMBOL, TRACKLINE_RENDERER_SYMBOL } from "@/config/sy
 import { useWindowResize } from "@/hooks/useWindowResize";
 import { TimelineRenderer } from "@/renderers/TimelineRenderer";
 import { TrackLineRenderer } from "@/renderers/TrackLineRenderer";
-import WebavHelper from "@/webav/webavHelper";
 
 import { DataManager } from "./DataManager";
 import { RendererManager } from "./RendererManager";
@@ -19,16 +18,13 @@ export class WebVcpManager {
   public trackline: TrackLineRenderer;
 
   private unlistenResize: Function | null = null;
-  private webavHelper: WebavHelper;
 
   constructor(options: Partial<WebVcpManagerOptions> = {}) {
-    const { data: dataOptions, webav: webavOptions } = options;
+    const { data: dataOptions } = options;
     // 渲染器
     this.renderer = new RendererManager();
     // 数据
     this.data = new DataManager(dataOptions);
-    // 音视频解码
-    this.webavHelper = new WebavHelper(webavOptions);
 
     // 注册时间线渲染器
     const timelineRenderer = new TimelineRenderer();
@@ -60,13 +56,22 @@ export class WebVcpManager {
   }
 
   /**
+   * 添加源
+   * @param type
+   * @param source
+   * @param opts
+   */
+  async addSource(type: string, source: string, opts: any = {}) {
+    return await this.data.addSource(type, source, opts);
+  }
+
+  /**
    * 销毁
    */
   public destroy() {
     this.unbindEvents();
     this.renderer.destroy();
     this.data.release();
-    this.webavHelper.release();
   }
 
   /**

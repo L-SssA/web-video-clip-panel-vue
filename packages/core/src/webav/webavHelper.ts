@@ -1,6 +1,6 @@
 import { AudioClip, Combinator, OffscreenSprite, type ImgClip } from "@webav/av-cliper";
 
-import type { TrackItem, TrackLine } from "@/types/trackline";
+import type { AudioTrackItem, TrackItem, TrackLine, VideoTrackItem } from "@/types/trackline";
 import type { MediaClip, WebavClipCacheData, WebavHelperOptions } from "@/types/webav";
 
 import { DEFAULT_CHROMAKEY_OPTIONS } from "@/config/constant";
@@ -15,7 +15,7 @@ import { WebavThumbnailsBuilder } from "./webavThumbnailsBuilder";
  */
 export default class WebavHelper {
   /** 片段缓存池，用于存储已加载的媒体片段 */
-  private clipCache: Map<string | Symbol, WebavClipCacheData>;
+  private clipCache: Map<string | symbol, WebavClipCacheData>;
   /** WebAV 片段构建器实例 */
   private webavClipBuilder: WebavClipBuilder;
   /** WebAV 缩略图构建器实例 */
@@ -267,9 +267,10 @@ export default class WebavHelper {
       if (type === "text" || type === "image") continue;
 
       for (let trackItem of data) {
-        if (trackItem.mute) continue;
-
-        const { clipStart, start, end, volume } = trackItem;
+        const { clipStart, start, end, volume, mute } = trackItem as
+          | AudioTrackItem
+          | VideoTrackItem;
+        if (mute) continue;
 
         let clip = await this.genAudioClipFromCache(trackItem, { volume });
         if (!clip) continue;
@@ -312,7 +313,7 @@ export default class WebavHelper {
    * 释放指定 ID 的缓存片段
    * @param id - 轨道项 ID
    */
-  releaseById(id: string | Symbol) {
+  releaseById(id: string | symbol) {
     const cacheItem = this.clipCache.get(id);
     if (!cacheItem) return;
 

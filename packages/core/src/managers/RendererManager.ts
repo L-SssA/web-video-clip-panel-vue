@@ -12,7 +12,7 @@ import { PixiAppManager } from "./PixiAppManager";
  */
 export class RendererManager {
   private pixiAppManager: PixiAppManager;
-  private renderers: Map<string | Symbol, IRenderer> = new Map();
+  private renderers: Map<string | symbol, IRenderer> = new Map();
 
   constructor() {
     this.pixiAppManager = new PixiAppManager();
@@ -23,9 +23,9 @@ export class RendererManager {
    * @param name 渲染器名称
    * @param renderer 渲染器实例
    */
-  register(name: string | Symbol, renderer: IRenderer): void {
+  register(name: string | symbol, renderer: IRenderer): void {
     if (this.renderers.has(name)) {
-      console.warn(`Renderer "${name}" has already been registered`);
+      console.warn(`Renderer "${String(name)}" has already been registered`);
       return;
     }
 
@@ -36,7 +36,7 @@ export class RendererManager {
    * 注销渲染器
    * @param name 渲染器名称
    */
-  unregister(name: string | Symbol): void {
+  unregister(name: string | symbol): void {
     const renderer = this.renderers.get(name);
     if (renderer) {
       renderer.destroy();
@@ -68,7 +68,9 @@ export class RendererManager {
       Array.from(this.renderers.entries()).map(async ([name, renderer]) =>
         renderer
           .init(app)
-          .catch((error) => Promise.reject(`Failed to initialize renderer "${name}": ${error}`)),
+          .catch((error) =>
+            Promise.reject(`Failed to initialize renderer "${String(name)}": ${error}`),
+          ),
       ),
     );
   }
@@ -79,22 +81,22 @@ export class RendererManager {
    * @param data 渲染数据
    * @param styles 渲染样式
    */
-  async render(name: string | Symbol, data: DataManager["ctx"]): Promise<void> {
+  async render(name: string | symbol, data: DataManager["ctx"]): Promise<void> {
     const renderer = this.renderers.get(name);
     if (!renderer) {
-      console.warn(`Renderer "${name}" is not registered`);
+      console.warn(`Renderer "${String(name)}" is not registered`);
       return;
     }
 
     if (!renderer.isInitialized) {
-      console.warn(`Renderer "${name}" is not initialized`);
+      console.warn(`Renderer "${String(name)}" is not initialized`);
       return;
     }
 
     try {
       await renderer.render(data);
     } catch (error) {
-      console.error(`Failed to render with "${name}":`, error);
+      console.error(`Failed to render with "${String(name)}":`, error);
     }
   }
 
@@ -110,7 +112,7 @@ export class RendererManager {
         try {
           promises.push(renderer.render(data || {}));
         } catch (error) {
-          console.error(`Failed to render with "${name}":`, error);
+          console.error(`Failed to render with "${String(name)}":`, error);
         }
       }
     }
@@ -125,7 +127,7 @@ export class RendererManager {
       try {
         renderer.destroy();
       } catch (error) {
-        console.error(`Failed to destroy renderer "${name}":`, error);
+        console.error(`Failed to destroy renderer "${String(name)}":`, error);
       }
     }
     this.renderers.clear();
