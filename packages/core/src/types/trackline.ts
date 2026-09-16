@@ -1,7 +1,5 @@
 import type { Container, Graphics, Sprite } from "pixi.js";
 
-import type { WebavHelperOptions } from "./webav";
-
 /**
  * 轨道样式
  */
@@ -45,7 +43,6 @@ export interface TrackLineDataOptions {
   marginLeft: number;
   trackHeights: Record<string, number>;
   styles: Partial<TrackLineStyles>;
-  webav: Partial<WebavHelperOptions>;
 }
 
 export type SourceType = "video" | "audio" | "text" | "image";
@@ -66,6 +63,7 @@ export interface BaseTrackItem {
 export interface ImageTrackItem extends BaseTrackItem {
   type: "image";
   source: string; // 图片源
+  previewListLoader: Promise<string[]>; // 轨道预览图片加载器
   previewList: string[];
   // 图片信息
   gif: boolean;
@@ -81,6 +79,7 @@ export interface TextTrackItem extends BaseTrackItem {
 export interface AudioTrackItem extends BaseTrackItem {
   type: "audio";
   source: string; // 音频源
+  audioDataLoader: Promise<number[]>; // 轨道音频数据加载器
   audioData: number[];
   /* 音频信息 */
   duration: number;
@@ -95,7 +94,9 @@ export interface VideoTrackItem extends BaseTrackItem {
   type: "video";
   source: string; // 视频源
   audioSource: string; // 音频源
+  previewListLoader: Promise<string[]>; // 轨道预览图片加载器
   previewList: string[]; // 轨道预览图片
+  audioDataLoader: Promise<number[]>; // 轨道音频数据加载器
   audioData: number[];
   audioTrackItem?: AudioTrackItem;
   /* 视频信息 */

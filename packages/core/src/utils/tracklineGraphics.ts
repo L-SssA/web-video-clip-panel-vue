@@ -24,6 +24,19 @@ import {
 
 import { formatSeconds } from "./tools";
 
+/**
+ * 构建轨道
+ * @param trackline
+ * @param app
+ * @param ctx
+ * @param tracklineTopOffset
+ * @param container
+ * @param iconSprite
+ * @param backgroundGraphics
+ * @param tracklineContainer
+ * @param trackitems
+ * @returns
+ */
 export function buildTrackLine(
   trackline: TrackLine,
   app: Application,
@@ -98,6 +111,12 @@ export function buildTrackLine(
   };
 }
 
+/**
+ * 构建轨道片段
+ * @param trackitem 轨道片段
+ * @param ctx 数据管理器上下文
+ * @returns
+ */
 export function buildTrackItem(trackitem: TrackItem, ctx: DataManagerContext) {
   const { trackHeights, styles } = ctx.trackline;
   const { fps, framesPerGap, gapWidth } = ctx.timeline;
@@ -131,16 +150,28 @@ export function buildTrackItem(trackitem: TrackItem, ctx: DataManagerContext) {
   trackitemContainer.addChild(text);
 
   if (type === "image" || type == "video") {
-    buildPicPreview(trackitemContainer, trackitem, itemWidthPx, trackHeight, framesPerGap);
+    trackitem.previewListLoader.then(() => {
+      buildPicPreview(trackitemContainer, trackitem, itemWidthPx, trackHeight, framesPerGap);
+    });
   }
 
   if (type === "audio" || type === "video") {
-    buildAudioPreview(trackitemContainer, trackitem, itemWidthPx, trackHeight, fps);
+    trackitem.audioDataLoader.then(() => {
+      buildAudioPreview(trackitemContainer, trackitem, itemWidthPx, trackHeight, fps);
+    });
   }
 
   return trackitemContainer;
 }
 
+/**
+ * 构建画面预览
+ * @param trackitemContainer 轨道片段容器
+ * @param trackitem 轨道片段
+ * @param itemWidthPx 轨道片段宽度
+ * @param trackHeight 轨道高度
+ * @param framesPerGap 帧间隔
+ */
 export function buildPicPreview(
   trackitemContainer: Container,
   trackitem: VideoTrackItem | ImageTrackItem,
@@ -181,6 +212,15 @@ export function buildPicPreview(
   }
 }
 
+/**
+ * 构建视频画面预览
+ * @param trackitemContainer 轨道片段容器
+ * @param trackitem 轨道片段
+ * @param previewFrameCount 预览帧数
+ * @param previewWidth 预览宽度
+ * @param previewHeight 预览高度
+ * @param itemWidthPx 轨道片段宽度
+ */
 export function buildVideoPicPreview(
   trackitemContainer: Container,
   trackitem: VideoTrackItem,
@@ -209,7 +249,10 @@ export function buildVideoPicPreview(
   drawData.forEach((url, index) => {
     const x = index * previewWidth;
     if (x > itemWidthPx || x < -previewWidth) return;
-    Assets.load(url).then((texture) => {
+    Assets.load({
+      src: url,
+      parser: "texture",
+    }).then((texture) => {
       picPreview.texture(texture, 0xffffff, x, 20, previewWidth, previewHeight);
     });
   });
@@ -217,6 +260,16 @@ export function buildVideoPicPreview(
   trackitemContainer.addChild(picPreview);
 }
 
+/**
+ * 构建图片画面预览
+ * @param trackitemContainer 轨道片段容器
+ * @param trackitem 轨道片段
+ * @param previewFrameCount 预览帧数
+ * @param previewWidth 预览宽度
+ * @param previewHeight 预览高度
+ * @param itemWidthPx 轨道片段宽度
+ * @param framesPerGap 帧间隔
+ */
 export function buildImagePicPreview(
   trackitemContainer: Container,
   trackitem: ImageTrackItem,
@@ -242,7 +295,10 @@ export function buildImagePicPreview(
   drawData.forEach((url, index) => {
     const x = index * previewWidth;
     if (x > itemWidthPx || x < -previewWidth) return;
-    Assets.load(url).then((texture) => {
+    Assets.load({
+      src: url,
+      parser: "texture",
+    }).then((texture) => {
       picPreview.texture(texture, 0xffffff, x, 20, previewWidth, previewHeight);
     });
   });
@@ -250,6 +306,14 @@ export function buildImagePicPreview(
   trackitemContainer.addChild(picPreview);
 }
 
+/**
+ * 构建音频预览
+ * @param trackitemContainer 轨道片段容器
+ * @param trackitem 轨道片段
+ * @param itemWidthPx 轨道片段宽度
+ * @param trackHeight 轨道高度
+ * @param fps 帧率
+ */
 export function buildAudioPreview(
   trackitemContainer: Container,
   trackitem: VideoTrackItem | AudioTrackItem,

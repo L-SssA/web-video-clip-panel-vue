@@ -45,7 +45,9 @@ export function defineVideoTrackItemConfig(): VideoTrackItem {
     type: "video",
     source: "", // 视频源
     audioSource: "", // 音频源
+    previewListLoader: Promise.resolve([]), // 轨道预览图片加载器
     previewList: [], // 轨道预览图片
+    audioDataLoader: Promise.resolve([]), // 轨道音频波形图加载器
     audioData: [],
     /* 视频信息 */
     originWidth: 0,
@@ -75,6 +77,7 @@ export function defineAudioTrackItemConfig(): AudioTrackItem {
     ...baseConfig,
     type: "audio",
     source: "", // 音频源
+    audioDataLoader: Promise.resolve([]), // 轨道音频波形图加载器
     audioData: [],
     /* 音频信息 */
     duration: 0,
@@ -113,6 +116,7 @@ export function defineImageTrackItemConfig(): ImageTrackItem {
     ...baseConfig,
     type: "image",
     source: "", // 图片源
+    previewListLoader: Promise.resolve([]), // 轨道预览图片加载器
     previewList: [],
     /* 图片信息 */
     gif: false,

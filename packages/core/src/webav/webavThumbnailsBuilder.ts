@@ -84,9 +84,9 @@ export class WebavThumbnailsBuilder {
    * @param trackItem - 轨道项配置
    * @returns 返回缩略图 URL 数组的 Promise
    */
-  public buildThumbnails(clip: MediaClip, trackItem: TrackItem) {
+  async buildThumbnails(clip: MediaClip, trackItem: TrackItem) {
     const builder = this.builders[trackItem.type];
-    if (!builder) return Promise.resolve([] as string[]);
+    if (!builder) return [] as string[];
     return builder(clip, trackItem);
   }
 }

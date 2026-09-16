@@ -58,6 +58,10 @@ export class TrackLineRenderer extends BaseRenderer {
     await Promise.allSettled(promises);
   }
 
+  /**
+   * 绘制轨道
+   * @param data
+   */
   private drawTrackLine(data: DataManagerContext) {
     if (!this.app) return;
 
@@ -66,6 +70,7 @@ export class TrackLineRenderer extends BaseRenderer {
     for (let i = 0; i < mergeTrackLineList.length; i++) {
       const trackline = mergeTrackLineList[i];
       const cacheGraphics = this.cacheGraphics.get(trackline.id);
+      // 如果存在缓存的图形实例，则更新图形实例
       if (cacheGraphics) {
         const { container, iconSprite, backgroundGraphics, tracklineContainer, trackitems } =
           cacheGraphics;
@@ -82,6 +87,7 @@ export class TrackLineRenderer extends BaseRenderer {
           trackitems,
         );
       } else {
+        // 不存在缓存的图形实例，则创建新的图形实例
         const { container, iconSprite, backgroundGraphics, tracklineContainer, trackitems } =
           buildTrackLine(trackline, this.app, data, tracklineTopOffset);
 

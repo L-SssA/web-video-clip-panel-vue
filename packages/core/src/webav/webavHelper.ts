@@ -145,15 +145,15 @@ export default class WebavHelper {
    * @param trackItem - 轨道项配置
    * @returns 返回缩略图 URL 数组的 Promise
    */
-  getThumbnails(trackItem: TrackItem) {
+  async getThumbnails(trackItem: TrackItem) {
     const cache = this.clipCache.get(trackItem.id);
-    if (!cache) return Promise.resolve([] as string[]);
+    if (!cache) return [] as string[];
 
     if (!cache.thumbnails && cache.clip) {
       cache.thumbnails = this.webavThumbnailsBuilder.buildThumbnails(cache.clip, trackItem);
     }
 
-    return cache.thumbnails;
+    return cache.thumbnails || [];
   }
 
   /**
@@ -233,20 +233,49 @@ export default class WebavHelper {
   }
 
   /**
-   * 生成音波数据（PCM）
+   * 获取音频数据（PCM）
    * @param trackItem - 轨道项配置（可以是音频或视频）
    * @returns 返回 PCM 音频数据数组，如果无法生成则返回空数组
    */
-  async genWaveData(trackItem: TrackItem) {
+  async getPCMData(trackItem: TrackItem) {
     const audioClip = await this.genAudioClipFromCache(trackItem);
 
     if (audioClip) {
       const data = (audioClip as AudioClip).getPCMData()[0];
       audioClip.destroy();
-      return data;
+      return [...data];
     }
 
-    return [];
+    return [] as number[];
+  }
+
+  /**
+   * 生成音频波形数据
+   * @param trackItem - 轨道项配置
+   * @returns 返回波形数据数组
+   */
+  async genWaveData(trackItem: TrackItem) {
+    const pcmData = await this.getPCMData(trackItem);
+    if (!pcmData.length) return [] as number[];
+    let fps = 30;
+    if ("fps" in trackItem) fps = trackItem.fps;
+    const samplesPerFrame = Math.floor(48000 / fps);
+    const totalFrames = Math.floor((trackItem as AudioTrackItem | VideoTrackItem).duration * fps);
+
+    const waveform: number[] = [];
+    // 遍历每一帧，计算每一帧的音波数据
+    for (let i = 0; i < totalFrames; i++) {
+      const start = i * samplesPerFrame;
+      const end = Math.min(start + samplesPerFrame, pcmData.length);
+      if (start >= end) break;
+      let sum = 0;
+      for (let j = start; j < end; j++) {
+        sum += Math.abs(pcmData[j]);
+      }
+      const averageValue = sum / (end - start);
+      waveform.push(averageValue);
+    }
+    return waveform;
   }
 
   /**

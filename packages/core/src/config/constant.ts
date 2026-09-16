@@ -94,10 +94,10 @@ export const DEFAULT_AUDIO_COLUMN_WIDTH = 2;
 export const DEFAULT_AUDIO_COLUMN_SPACING = 2;
 
 // 音频柱可变化的高度
-export const DYNC_AUDIO_BAR_HEIGHT = 10;
+export const DYNC_AUDIO_BAR_HEIGHT = 5;
 
 // 音频柱0值高度
-export const START_AUDIO_BAR_HEIGHT = 0;
+export const START_AUDIO_BAR_HEIGHT = 5;
 
 // 默认轨道样式
 export const DEFAULT_TRACKLINE_STYLES = {

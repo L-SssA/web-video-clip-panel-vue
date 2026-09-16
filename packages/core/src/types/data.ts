@@ -1,5 +1,6 @@
 import type { TimelineContext, TimelineDataOptions } from "./timeline";
 import type { TrackLineContext, TrackLineDataOptions } from "./trackline";
+import type { WebavHelperOptions } from "./webav";
 
 export interface IData {
   /**
@@ -21,6 +22,7 @@ export interface IData {
 export interface DataManagerOptions {
   timeline: Partial<TimelineDataOptions>;
   trackline: Partial<TrackLineDataOptions>;
+  webav: Partial<WebavHelperOptions>;
 }
 
 export interface DataManagerContext {
