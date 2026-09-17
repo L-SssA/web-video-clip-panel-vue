@@ -118,3 +118,11 @@ export const DEFAULT_CHROMAKEY_OPTIONS = {
 
 // 抽帧最大宽度（px）
 export const MAX_PREVIEW_SIZE = 100;
+
+// Trackline 资源类型
+export const TRACKLINE_SOURCE_TYPE = {
+  VIDEO: "video",
+  IMAGE: "image",
+  AUDIO: "audio",
+  TEXT: "text",
+};

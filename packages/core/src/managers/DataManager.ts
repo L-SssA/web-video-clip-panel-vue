@@ -12,7 +12,7 @@ import type {
   VideoTrackItem,
 } from "@/types/trackline";
 
-import { TRACKLINE_SOURCE_TYPE } from "@/config/symbol";
+import { TRACKLINE_SOURCE_TYPE } from "@/config/constant";
 import { BaseData } from "@/data/BaseData";
 import { TimelineData } from "@/data/TimelineData";
 import { TrackLineData } from "@/data/TrackLineData";

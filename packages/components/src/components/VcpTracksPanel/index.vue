@@ -3,23 +3,14 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, onUnmounted, ref } from 'vue';
+import { inject, onUnmounted } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
-const tracksPanelRef = ref<HTMLElement | null>(null)
 
-async function setupPixi() {
-  if (!tracksPanelRef.value) return
-  // 初始化渲染器
-  await ctx.manager.init(tracksPanelRef.value, { backgroundAlpha: 0 })
-}
 
-onMounted(() => {
-  setupPixi()
-})
 
 onUnmounted(() => {
   // 销毁渲染器
