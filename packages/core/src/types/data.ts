@@ -1,3 +1,4 @@
+import type { SystemCommonContext, SystemCommonDataOptions } from "./systemCommon";
 import type { TimelineContext, TimelineDataOptions } from "./timeline";
 import type { TrackLineContext, TrackLineDataOptions } from "./trackline";
 import type { WebavHelperOptions } from "./webav";
@@ -22,10 +23,12 @@ export interface IData {
 export interface DataManagerOptions {
   timeline: Partial<TimelineDataOptions>;
   trackline: Partial<TrackLineDataOptions>;
+  system: Partial<SystemCommonDataOptions>;
   webav: Partial<WebavHelperOptions>;
 }
 
 export interface DataManagerContext {
   timeline: TimelineContext;
   trackline: TrackLineContext;
+  system: SystemCommonContext;
 }

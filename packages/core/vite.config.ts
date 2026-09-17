@@ -23,11 +23,10 @@ export default defineConfig({
       cssFileName: "style",
     },
     rolldownOptions: {
-      external: ["vue", "pixi.js"],
+      external: ["vue"],
       output: {
         globals: {
           vue: "Vue",
-          "pixi.js": "pixi.js",
         },
       },
     },

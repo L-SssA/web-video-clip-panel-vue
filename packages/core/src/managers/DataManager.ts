@@ -14,6 +14,7 @@ import type {
 
 import { TRACKLINE_SOURCE_TYPE } from "@/config/constant";
 import { BaseData } from "@/data/BaseData";
+import { SystemCommonData } from "@/data/SystemCommonData";
 import { TimelineData } from "@/data/TimelineData";
 import { TrackLineData } from "@/data/TrackLineData";
 import { timeToPixel } from "@/utils/tools";
@@ -28,6 +29,7 @@ import WebavHelper from "@/webav/webavHelper";
 export class DataManager extends BaseData {
   timeline: TimelineData;
   trackline: TrackLineData;
+  system: SystemCommonData;
   unwatch: Function;
 
   // webav 相关音视频解码工具
@@ -37,6 +39,7 @@ export class DataManager extends BaseData {
     return {
       timeline: this.timeline.ctx,
       trackline: this.trackline.ctx,
+      system: this.system.ctx,
     };
   }
 
@@ -49,12 +52,23 @@ export class DataManager extends BaseData {
     // 数据处理器
     this.timeline = new TimelineData(options.timeline);
     this.trackline = new TrackLineData(options.trackline);
+    this.system = new SystemCommonData(options.system);
     // 音视频解码
     this.webavHelper = new WebavHelper(options.webav);
 
     this.unwatch = watch(this.observeList, () => {
       this.updateEvent.triggerEvent(this.ctx);
     });
+  }
+
+  /**
+   * 设置主题
+   * @param themeTag
+   */
+  setTheme(themeTag: string) {
+    this.timeline.setTheme(themeTag);
+    this.trackline.setTheme(themeTag);
+    this.system.setTheme(themeTag);
   }
 
   /**

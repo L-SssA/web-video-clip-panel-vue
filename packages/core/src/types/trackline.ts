@@ -1,5 +1,3 @@
-import type { Container, Graphics, Sprite } from "pixi.js";
-
 /**
  * 轨道样式
  */
@@ -21,17 +19,6 @@ export interface TrackLineContext {
   marginLeft: number;
   trackHeights: Record<string, number>;
   styles: TrackLineStyles;
-}
-
-/**
- * 轨道图形缓存
- */
-export interface TrackLineGraphicsCache {
-  container: Container;
-  iconSprite: Sprite;
-  backgroundGraphics: Graphics;
-  tracklineContainer: Container;
-  trackitems: Container[];
 }
 
 /**

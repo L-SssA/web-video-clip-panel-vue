@@ -13,10 +13,8 @@ import type { VcpCtx } from "@/types/vcpContext.ts";
 
 import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
-import { useTheme } from "@/hooks/useTheme";
 import { vcpCtxSymbol } from "@/config/symbols";
-import { defaultStyles as timelineDefaultStyles, timelineStylesMap } from '@/config/timeline';
-import { defaultStyles as tracklineDefaultStyles, tracklineStylesMap } from "@/config/trackline";
+import { useThemeProps } from "@/hooks/useThemeProps";
 
 const props = defineProps({
   height: {
@@ -34,18 +32,16 @@ const props = defineProps({
   },
 });
 
-const theme = toRef(props, 'theme')
-const { cssProps } = useTheme(theme);
+const { cssProps } = useThemeProps(props.manager.data.system)
 
 const styleList = computed(() => ({
   height: typeof props.height === "number" ? `${props.height}px` : props.height,
   ...cssProps.value
 }));
 
-
+const theme = toRef(props, 'theme')
 watch(theme, (newTheme) => {
-  props.manager.data.timeline.updateStyles(timelineStylesMap[newTheme] || timelineDefaultStyles)
-  props.manager.data.trackline.updateStyles(tracklineStylesMap[newTheme] || tracklineDefaultStyles)
+  props.manager.setTheme(newTheme);
 }, {
   immediate: true
 })

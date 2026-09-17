@@ -1,8 +1,3 @@
-import AudioIcon from "@/assets/images/AudioIcon.png";
-import ImageIcon from "@/assets/images/ImageIcon.png";
-import TextIcon from "@/assets/images/TextIcon.png";
-import VideoIcon from "@/assets/images/VideoIcon.png";
-
 /**************** 时间线配置 ****************/
 // 相当于一个改变时间轴间隔配置的断点
 export const TIMELINE_GAP_OPTIONS = [
@@ -28,16 +23,6 @@ export const DEFAULT_FPS = 30;
 // 时间轴默认左侧偏移量（px）
 export const DEFAULT_TIMELINE_MARGIN_LEFT = 64;
 
-// 时间轴默认样式
-export const DEFAULT_TIMELINE_STYLES = {
-  lineColor: "#555555",
-  lineWidth: 2,
-  fontColor: "#888888",
-  fontSize: 12,
-  cursorLineColor: "#f5f5f5",
-  cursorLineWidth: 2,
-};
-
 // 自动吸附距离（px）
 export const AUTO_ADSORB_WIDTH = 10;
 
@@ -50,17 +35,6 @@ export const DEFAULT_TRACKLINE_GAP_HEIGHT = 10;
 
 // 主轨道的 ID
 export const MAIN_TRACK_ID = Symbol("main-track-id");
-
-// 默认图标源
-export const DEFAULT_ICONS_SOURCES = {
-  videoIcon: VideoIcon,
-  audioIcon: AudioIcon,
-  textIcon: TextIcon,
-  imageIcon: ImageIcon,
-} as Record<string, string>;
-
-// 默认图标大小（px）
-export const DEFAULT_ICON_SIZE = 26;
 
 // 默认轨道左侧偏移量（px）
 export const DEFAULT_TRACKLINE_MARGIN_LEFT = 64;
@@ -75,14 +49,6 @@ export const DEFAULT_TRACK_HEIGHTS = {
 
 // 通用轨道高度
 export const DEFAULT_COMMON_TRACK_HEIGHT = 64;
-
-// 轨道颜色
-export const DEFAULT_TRACK_COLOR = {
-  video: "#4A90E2",
-  audio: "#3A8F7B",
-  text: "#A83245",
-  image: "#A57DBB",
-};
 
 // 通用轨道颜色
 export const DEFAULT_COMMON_TRACK_COLOR = "#6d6d6d";
@@ -100,13 +66,6 @@ export const DYNC_AUDIO_BAR_HEIGHT = 5;
 export const START_AUDIO_BAR_HEIGHT = 5;
 
 // 默认轨道样式
-export const DEFAULT_TRACKLINE_STYLES = {
-  icons: DEFAULT_ICONS_SOURCES,
-  iconColor: "#888888",
-  iconSize: DEFAULT_ICON_SIZE,
-  backgroundColor: "#383838",
-  trackItemColors: DEFAULT_TRACK_COLOR,
-};
 
 // 扣绿选项
 export const DEFAULT_CHROMAKEY_OPTIONS = {

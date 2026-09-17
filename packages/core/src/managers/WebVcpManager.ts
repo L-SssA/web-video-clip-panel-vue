@@ -12,6 +12,14 @@ export class WebVcpManager {
   }
 
   /**
+   * 设置主题
+   * @param themeTag
+   */
+  setTheme(themeTag: string) {
+    this.data.setTheme(themeTag);
+  }
+
+  /**
    * 添加源
    * @param type
    * @param source

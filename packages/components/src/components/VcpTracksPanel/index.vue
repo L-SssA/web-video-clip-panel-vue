@@ -3,19 +3,15 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onUnmounted } from 'vue';
+import { inject } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 
+console.log(ctx);
 
-
-onUnmounted(() => {
-  // 销毁渲染器
-  ctx.manager.destroy()
-})
 
 </script>
 

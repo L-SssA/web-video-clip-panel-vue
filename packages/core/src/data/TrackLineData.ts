@@ -20,9 +20,9 @@ import {
   DEFAULT_TRACKLINE_GAP_HEIGHT,
   DEFAULT_TRACKLINE_MARGIN_LEFT,
   DEFAULT_TRACKLINE_MARGIN_TOP,
-  DEFAULT_TRACKLINE_STYLES,
   MAIN_TRACK_ID,
 } from "@/config/constant";
+import { DEFAULT_TRACKLINE_STYLES, TRACKLINE_STYLES_MAP } from "@/config/theme";
 import { defineTrackLineConfig } from "@/utils/trackline";
 
 import { BaseData } from "./BaseData";
@@ -106,6 +106,15 @@ export class TrackLineData extends BaseData {
     this.unwatch = watch(this.observeList, () => {
       this.updateEvent.triggerEvent(this.ctx);
     });
+  }
+
+  /**
+   * 设置主题
+   * @param themeTag
+   */
+  setTheme(themeTag: string) {
+    const theme = TRACKLINE_STYLES_MAP[themeTag] || DEFAULT_TRACKLINE_STYLES;
+    this.updateStyles(theme);
   }
 
   /**
