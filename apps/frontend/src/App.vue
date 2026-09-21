@@ -15,7 +15,8 @@ const manager = new WebVcpManager({
 });
 
 // manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, "http://127.0.0.1:5500/video.mp4");
-// manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic1.jpg");
+// manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic1.jpg", { start: 0, end: 5 });
+// manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic1.jpg", { start: 20, end: 25 });
 // manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic2.jpg");
 manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, "http://127.0.0.1:5500/audio.mp3");
 // manager.addSource(TRACKLINE_SOURCE_TYPE.TEXT, "水印");

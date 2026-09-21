@@ -3,6 +3,7 @@ import type { ComputedRef, Ref } from "vue";
 import { computed, nextTick, ref, watch } from "vue";
 
 import type {
+  ActionType,
   TrackItem,
   TrackLineContext,
   TrackLineDataOptions,
@@ -16,13 +17,22 @@ import type {
 } from "@/types/trackline";
 
 import {
+  DEFAULT_AUDIO_BAR_HEIGHT,
+  DEFAULT_AUDIO_BAR_SPACING,
+  DEFAULT_AUDIO_BAR_WIDTH,
   DEFAULT_TRACK_HEIGHTS,
   DEFAULT_TRACKLINE_GAP_HEIGHT,
   DEFAULT_TRACKLINE_MARGIN_LEFT,
   DEFAULT_TRACKLINE_MARGIN_TOP,
   MAIN_TRACK_ID,
 } from "@/config/constant";
-import { DEFAULT_TRACKLINE_STYLES, TRACKLINE_STYLES_MAP } from "@/config/theme";
+import {
+  DEFAULT_ICONS_SOURCES,
+  DEFAULT_TRACK_COLOR,
+  DEFAULT_TRACKLINE_STYLES,
+  TRACKLINE_STYLES_MAP,
+} from "@/config/theme";
+import { isNumberInside } from "@/utils/tools";
 import { defineTrackLineConfig } from "@/utils/trackline";
 
 import { BaseData } from "./BaseData";
@@ -51,16 +61,25 @@ export class TrackLineData extends BaseData {
   readonly marginLeft: number;
 
   // 样式
+  readonly trackHeights: Record<string, number>;
+  readonly trackIcons: Record<string, string>;
+  readonly trackItemColors: Record<string, string>;
   readonly styles: Ref<TrackLineStyles>;
-
-  // 监听器，用于停止watch
-  private unwatch: Function;
-  private trackHeights: Record<string, number>;
+  // 音频柱相关样式
+  readonly audioBarWidth: number;
+  readonly audioBarSpacing: number;
+  readonly audioBarHeight: number;
 
   // 当前活跃的轨道
-  public activeTrackLine: TrackLine | null = null;
+  public activeTrackLine: Ref<TrackLine | null> = ref(null);
   // 当前活跃的轨道片段
-  public activeTrackItem: TrackItem | null = null;
+  public activeTrackItem: Ref<TrackItem | null> = ref(null);
+
+  // 交互
+  // 拖拽过程中出现重叠现象
+  public draggingOverlap: Ref<boolean> = ref(false);
+  // 交互的事件类型
+  public actionType: Ref<ActionType | ""> = ref("");
 
   get ctx(): TrackLineContext {
     return {
@@ -69,7 +88,12 @@ export class TrackLineData extends BaseData {
       gapHeight: this.gapHeight,
       marginLeft: this.marginLeft,
       trackHeights: this.trackHeights,
+      trackIcons: this.trackIcons,
+      trackItemColors: this.trackItemColors,
       styles: this.styles.value,
+      audioBarWidth: this.audioBarWidth,
+      audioBarSpacing: this.audioBarSpacing,
+      audioBarHeight: this.audioBarHeight,
     };
   }
 
@@ -84,15 +108,25 @@ export class TrackLineData extends BaseData {
       marginTop = DEFAULT_TRACKLINE_MARGIN_TOP,
       gapHeight = DEFAULT_TRACKLINE_GAP_HEIGHT,
       marginLeft = DEFAULT_TRACKLINE_MARGIN_LEFT,
-      trackHeights = DEFAULT_TRACK_HEIGHTS,
+      trackHeights = {},
+      trackIcons = {},
+      trackItemColors = {},
       styles,
+      audioBarWidth = DEFAULT_AUDIO_BAR_WIDTH,
+      audioBarSpacing = DEFAULT_AUDIO_BAR_SPACING,
+      audioBarHeight = DEFAULT_AUDIO_BAR_HEIGHT,
     } = options;
 
     this.marginTop = marginTop;
     this.gapHeight = gapHeight;
     this.marginLeft = marginLeft;
+    this.audioBarWidth = audioBarWidth;
+    this.audioBarSpacing = audioBarSpacing;
+    this.audioBarHeight = audioBarHeight;
 
     this.trackHeights = { ...DEFAULT_TRACK_HEIGHTS, ...trackHeights };
+    this.trackIcons = { ...DEFAULT_ICONS_SOURCES, ...trackIcons };
+    this.trackItemColors = { ...DEFAULT_TRACK_COLOR, ...trackItemColors };
     this.styles = ref(DEFAULT_TRACKLINE_STYLES);
     this.updateStyles(styles);
 
@@ -104,7 +138,7 @@ export class TrackLineData extends BaseData {
     ]);
 
     this.unwatch = watch(this.observeList, () => {
-      this.updateEvent.triggerEvent(this.ctx);
+      this.triggerUpdate();
     });
   }
 
@@ -147,13 +181,24 @@ export class TrackLineData extends BaseData {
    */
   addToTrackLine<T extends TrackItem>(trackItem: T): void {
     const duration = trackItem.end - trackItem.start || 5;
-    if (this.activeTrackLine && this.activeTrackLine.type === trackItem.type) {
+    if (this.activeTrackLine.value && this.activeTrackLine.value.type === trackItem.type) {
       // 如果当前活跃轨道与当前添加的轨道类型相同，则将数据添加到当前轨道
-      trackItem.parentId = this.activeTrackLine.id;
-      trackItem.start = Math.max(...this.activeTrackLine.data.map((item) => item.end), 0);
-      trackItem.end = trackItem.start + duration;
-      this.activeTrackLine.data.push(trackItem);
-      nextTick(() => (this.activeTrackItem = trackItem));
+      trackItem.parentId = this.activeTrackLine.value.id;
+      // 查找是否出现重叠的问题
+      const overlap =
+        this.activeTrackLine.value.data.findIndex((t) => {
+          return (
+            isNumberInside(trackItem.start, t.start, t.end) ||
+            isNumberInside(trackItem.end, t.start, t.end)
+          );
+        }) > -1;
+      if (overlap) {
+        // 如果重叠，则加入队尾
+        trackItem.start = Math.max(...this.activeTrackLine.value.data.map((item) => item.end), 0);
+        trackItem.end = trackItem.start + duration;
+      }
+      this.activeTrackLine.value.data.push(trackItem);
+      nextTick(() => (this.activeTrackItem.value = trackItem));
     } else {
       // 如果当前活跃轨道与当前添加的轨道类型不同，则创建新的轨道
       const newTrackLine = defineTrackLineConfig<T>(trackItem.type);
@@ -165,8 +210,8 @@ export class TrackLineData extends BaseData {
         this.pictureTrackLineList.value.push(newTrackLine as pictureTrackLine);
       }
       trackItem.end = trackItem.start + duration;
-      this.activeTrackLine = newTrackLine;
-      nextTick(() => (this.activeTrackItem = trackItem));
+      this.activeTrackLine.value = newTrackLine;
+      nextTick(() => (this.activeTrackItem.value = trackItem));
     }
   }
 
@@ -174,7 +219,6 @@ export class TrackLineData extends BaseData {
    * 释放资源
    */
   release(): void {
-    this.unwatch();
     super.release();
   }
 }

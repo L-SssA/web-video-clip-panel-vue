@@ -38,6 +38,8 @@ export class TimelineData extends BaseData {
   readonly framesPerGap: Ref<number> = ref(0);
   // 时间线默认位移(px) default 60
   readonly marginLeft: number;
+  // 滚动位移
+  readonly scrollOffset: Ref<number> = ref(0);
 
   // 启用自动吸附 default true
   readonly enableAutoAdsorb: Ref<boolean> = ref(true);
@@ -46,9 +48,6 @@ export class TimelineData extends BaseData {
 
   // 样式
   readonly styles: Ref<TimelineStyles>;
-
-  // 监听器，用于停止watch
-  private unwatch: Function;
 
   /**
    * 获取时间线上下文数据
@@ -64,13 +63,26 @@ export class TimelineData extends BaseData {
       gapsPerLabel: this.gapsPerLabel.value,
       framesPerGap: this.framesPerGap.value,
       marginLeft: this.marginLeft,
+      scrollOffset: this.scrollOffset.value,
       cursorLinePosition: this.cursorLinePosition.value,
       styles: this.styles.value,
     };
   }
 
   get observeList(): Ref[] {
-    return [this.scale, this.fps, this.autoAdsorbDistance, this.currentTime, this.styles];
+    return [
+      this.fps,
+      this.currentTime,
+      this.cursorLinePosition,
+      this.scale,
+      this.gapWidth,
+      this.gapsPerLabel,
+      this.framesPerGap,
+      this.scrollOffset,
+      this.enableAutoAdsorb,
+      this.autoAdsorbDistance,
+      this.styles,
+    ];
   }
 
   constructor(options: Partial<TimelineDataOptions> = {}) {
@@ -97,23 +109,28 @@ export class TimelineData extends BaseData {
       // currentTime(秒) * fps -> 帧数
       // 帧数 / framesPerGap -> 刻度数
       // 刻度数 * gapWidth -> 实际坐标
-      return timeToPixel(
-        this.currentTime.value,
-        this.fps.value,
-        this.framesPerGap.value,
-        this.gapWidth.value,
+      return (
+        timeToPixel(
+          this.currentTime.value,
+          this.fps.value,
+          this.framesPerGap.value,
+          this.gapWidth.value,
+        ) + this.marginLeft
       );
     });
 
     // 监听 scale 和 fps 变化，更新各项指标
-    this.unwatch = watch(
-      this.observeList,
-      () => {
-        this.calcTimelineGapWidth();
-        this.updateEvent.triggerEvent(this.ctx);
-      },
-      { immediate: true },
-    );
+    this.unwatch = watch(this.observeList, () => {
+      this.triggerUpdate();
+    });
+  }
+
+  /**
+   * 触发更新
+   */
+  triggerUpdate() {
+    this.calcTimelineGapWidth();
+    super.triggerUpdate();
   }
 
   /**
@@ -156,7 +173,7 @@ export class TimelineData extends BaseData {
    */
   setCurrentTimeByPixel(pixel: number): void {
     // 计算像素位置相对于时间线的偏移量
-    const offsetX = Math.max(pixel - this.marginLeft, 0);
+    const offsetX = Math.max(pixel - this.marginLeft + this.scrollOffset.value, 0);
     this.currentTime.value = pixelToTime(
       offsetX,
       this.fps.value,
@@ -169,7 +186,6 @@ export class TimelineData extends BaseData {
    * 释放资源
    */
   release(): void {
-    this.unwatch();
     super.release();
   }
 }

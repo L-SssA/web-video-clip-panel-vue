@@ -2,11 +2,10 @@
  * 轨道样式
  */
 export interface TrackLineStyles {
-  icons: Record<string, string>;
   iconColor: string;
   iconSize: number;
   backgroundColor: string;
-  trackItemColors: Record<string, string>;
+  activeBgColor: string;
 }
 
 /**
@@ -18,7 +17,12 @@ export interface TrackLineContext {
   gapHeight: number;
   marginLeft: number;
   trackHeights: Record<string, number>;
+  trackIcons: Record<string, string>;
+  trackItemColors: Record<string, string>;
   styles: TrackLineStyles;
+  audioBarWidth: number;
+  audioBarSpacing: number;
+  audioBarHeight: number;
 }
 
 /**
@@ -29,7 +33,12 @@ export interface TrackLineDataOptions {
   gapHeight: number;
   marginLeft: number;
   trackHeights: Record<string, number>;
+  trackIcons: Record<string, string>;
+  trackItemColors: Record<string, string>;
   styles: Partial<TrackLineStyles>;
+  audioBarWidth: number;
+  audioBarSpacing: number;
+  audioBarHeight: number;
 }
 
 export type SourceType = "video" | "audio" | "text" | "image";
@@ -45,6 +54,8 @@ export interface BaseTrackItem {
   reloadFlag: boolean; // 是否需要重新加载
   loading?: boolean; // 加载状态
   ghost?: boolean; // 是否为 ghost 片段
+  clipStart: number; // 裁剪开始时间
+  clipEnd: number; // 裁剪结束时间
 }
 
 export interface ImageTrackItem extends BaseTrackItem {
@@ -73,8 +84,6 @@ export interface AudioTrackItem extends BaseTrackItem {
   /* 配置项 */
   mute: boolean;
   volume: number; // 音量
-  clipStart: number; // 裁剪开始时间
-  clipEnd: number; // 裁剪结束时间
 }
 
 export interface VideoTrackItem extends BaseTrackItem {
@@ -94,8 +103,6 @@ export interface VideoTrackItem extends BaseTrackItem {
   previewDuration: number;
   duration: number;
   /* 配置项 */
-  clipStart: number; // 裁剪开始时间
-  clipEnd: number; // 裁剪结束时间
   mute: boolean;
   volume: number; // 音量
   enableChromaKey: boolean; // 是否启用色键，即是否使用绿色屏幕
@@ -124,3 +131,5 @@ export type TrackLine<T extends TrackItem = TrackItem> = {
 }[T["type"]];
 
 export type pictureTrackLine = ImageTrackLine | VideoTrackLine;
+
+export type ActionType = "start" | "end" | "move";

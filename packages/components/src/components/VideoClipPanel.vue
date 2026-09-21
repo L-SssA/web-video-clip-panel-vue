@@ -15,6 +15,7 @@ import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { vcpCtxSymbol } from "@/config/symbols";
 import { useThemeProps } from "@/hooks/useThemeProps";
+import { numberToStyleValue } from "@web-vcp/core";
 
 const props = defineProps({
   height: {
@@ -35,7 +36,7 @@ const props = defineProps({
 const { cssProps } = useThemeProps(props.manager.data.system)
 
 const styleList = computed(() => ({
-  height: typeof props.height === "number" ? `${props.height}px` : props.height,
+  height: numberToStyleValue(props.height),
   ...cssProps.value
 }));
 

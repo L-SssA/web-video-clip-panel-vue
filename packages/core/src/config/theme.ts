@@ -28,14 +28,15 @@ export const TIMELINE_STYLES_MAP: Record<string, Partial<TimelineStyles>> = {
 export const TRACKLINE_DARK_STYLES = {
   iconColor: "#888888",
   backgroundColor: "#383838",
+  activeBgColor: "#3c3c3c",
 };
 
 // 默认图标源
 export const DEFAULT_ICONS_SOURCES = {
-  videoIcon: "ri-video-line",
-  audioIcon: "ri-disc-line",
-  textIcon: "ri-text",
-  imageIcon: "ri-image-line",
+  video: "ri-video-line",
+  audio: "ri-disc-line",
+  text: "ri-text",
+  image: "ri-image-line",
 } as Record<string, string>;
 
 // 默认图标大小（px）
@@ -47,14 +48,14 @@ export const DEFAULT_TRACK_COLOR = {
   audio: "#3A8F7B",
   text: "#A83245",
   image: "#A57DBB",
+  unknown: "#686868",
 };
 
 export const DEFAULT_TRACKLINE_STYLES = {
-  icons: DEFAULT_ICONS_SOURCES,
   iconColor: "#888888",
   iconSize: DEFAULT_ICON_SIZE,
-  backgroundColor: "#383838",
-  trackItemColors: DEFAULT_TRACK_COLOR,
+  backgroundColor: "#e4e4e4",
+  activeBgColor: "#d8d8d8",
 };
 
 export const TRACKLINE_STYLES_MAP: Record<string, Partial<TrackLineStyles>> = {

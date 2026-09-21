@@ -29,6 +29,8 @@ export function defineBaseTrackItemConfig(id: string, type: SourceType): BaseTra
     reloadFlag: true,
     loading: true,
     ghost: false,
+    clipStart: 0, // 裁剪开始时间
+    clipEnd: 0, // 裁剪结束时间
   };
 }
 
@@ -57,8 +59,6 @@ export function defineVideoTrackItemConfig(): VideoTrackItem {
     previewDuration: 0,
     duration: 0,
     /* 配置项 */
-    clipStart: 0, // 裁剪开始时间
-    clipEnd: 0, // 裁剪结束时间
     mute: false,
     volume: 1.0, // 音量
     enableChromaKey: false,
@@ -83,8 +83,6 @@ export function defineAudioTrackItemConfig(): AudioTrackItem {
     duration: 0,
     /* 配置项 */
     volume: 1.0, // 音量
-    clipStart: 0, // 裁剪开始时间
-    clipEnd: 0, // 裁剪结束时间
     mute: false,
   };
 }

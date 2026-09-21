@@ -2,7 +2,7 @@ import type { AudioClip, ImgClip, MP4Clip } from "@webav/av-cliper";
 import type { Ref } from "vue";
 
 import { renderTxt2ImgBitmap } from "@webav/av-cliper";
-import { watch } from "vue";
+import { reactive, watch } from "vue";
 
 import type { DataManagerOptions, DataManagerContext } from "@/types/data";
 import type {
@@ -44,7 +44,11 @@ export class DataManager extends BaseData {
   }
 
   get observeList(): Ref[] {
-    return [...this.timeline.observeList, ...this.trackline.observeList];
+    return [
+      ...this.timeline.observeList,
+      ...this.trackline.observeList,
+      ...this.system.observeList,
+    ];
   }
 
   constructor(options: Partial<DataManagerOptions> = {}) {
@@ -56,9 +60,25 @@ export class DataManager extends BaseData {
     // 音视频解码
     this.webavHelper = new WebavHelper(options.webav);
 
-    this.unwatch = watch(this.observeList, () => {
-      this.updateEvent.triggerEvent(this.ctx);
-    });
+    this.unwatch = watch(
+      this.observeList,
+      () => {
+        this.triggerUpdate();
+      },
+      {
+        immediate: true,
+      },
+    );
+  }
+
+  /**
+   * 触发更新
+   */
+  triggerUpdate() {
+    super.triggerUpdate();
+    this.timeline.triggerUpdate();
+    this.trackline.triggerUpdate();
+    this.system.triggerUpdate();
   }
 
   /**
@@ -77,9 +97,11 @@ export class DataManager extends BaseData {
    */
   setCurrentTimeByPixel(pixel: number) {
     const maxTime = this.trackline.getLongestTracklineSecond();
-    const { fps, framesPerGap, gapWidth } = this.timeline.ctx;
-    const maxPixel = timeToPixel(maxTime, fps, framesPerGap, gapWidth);
+    const { fps, framesPerGap, gapWidth, marginLeft } = this.timeline.ctx;
+    const minPixel = marginLeft;
+    const maxPixel = timeToPixel(maxTime, fps, framesPerGap, gapWidth) + marginLeft;
     if (pixel > maxPixel) pixel = maxPixel;
+    if (pixel < minPixel) pixel = minPixel;
     this.timeline.setCurrentTimeByPixel(pixel);
   }
 
@@ -95,7 +117,7 @@ export class DataManager extends BaseData {
     opts: Partial<VideoTrackItem> = {},
   ): Promise<{ object: VideoTrackItem; clip: MP4Clip }> {
     // 创建空的轨道数据
-    const trackitem = defineVideoTrackItemConfig();
+    const trackitem = reactive(defineVideoTrackItemConfig());
     trackitem.source = source;
 
     // 解码视频获取元数据
@@ -120,6 +142,10 @@ export class DataManager extends BaseData {
       return audioData;
     });
 
+    Promise.allSettled([trackitem.previewListLoader, trackitem.audioDataLoader]).then(
+      () => (trackitem.loading = false),
+    );
+
     // 添加轨道数据
     this.trackline.addToTrackLine(trackitem);
 
@@ -139,7 +165,7 @@ export class DataManager extends BaseData {
     opts: Partial<ImageTrackItem> = {},
   ): Promise<{ object: ImageTrackItem; clip: ImgClip }> {
     // 创建空的轨道数据
-    const trackitem = defineImageTrackItemConfig();
+    const trackitem = reactive(defineImageTrackItemConfig());
     trackitem.source = source;
 
     // 解码图片获取元数据
@@ -154,6 +180,7 @@ export class DataManager extends BaseData {
 
     trackitem.previewListLoader = this.webavHelper.getThumbnails(trackitem).then((previewList) => {
       trackitem.previewList = previewList;
+      trackitem.loading = false;
       return previewList;
     });
 
@@ -175,7 +202,7 @@ export class DataManager extends BaseData {
     opts: Partial<AudioTrackItem> = {},
   ): Promise<{ object: AudioTrackItem; clip: AudioClip }> {
     // 创建空的轨道数据
-    const trackitem = defineAudioTrackItemConfig();
+    const trackitem = reactive(defineAudioTrackItemConfig());
     trackitem.source = source;
 
     // 解码图片获取元数据
@@ -189,6 +216,7 @@ export class DataManager extends BaseData {
 
     trackitem.audioDataLoader = this.webavHelper.genWaveData(trackitem).then((audioData) => {
       trackitem.audioData = audioData;
+      trackitem.loading = false;
       return audioData;
     });
 
@@ -210,7 +238,7 @@ export class DataManager extends BaseData {
     opts: Partial<TextTrackItem> = {},
   ): Promise<{ object: TextTrackItem; clip: ImgClip }> {
     // 创建空的轨道数据
-    const trackitem = defineTextTrackItemConfig();
+    const trackitem = reactive(defineTextTrackItemConfig());
 
     // 解码图片获取元数据
     const source = await renderTxt2ImgBitmap(text, "font-size: 80px; color: red;");

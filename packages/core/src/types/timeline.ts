@@ -21,6 +21,7 @@ export interface TimelineContext {
   gapsPerLabel: number;
   framesPerGap: number;
   marginLeft: number;
+  scrollOffset: number;
   cursorLinePosition: number;
   styles: TimelineStyles;
 }

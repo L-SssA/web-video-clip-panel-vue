@@ -45,27 +45,17 @@ export const DEFAULT_TRACK_HEIGHTS = {
   audio: 46,
   text: 22,
   image: 64,
+  unknown: 64,
 };
 
-// 通用轨道高度
-export const DEFAULT_COMMON_TRACK_HEIGHT = 64;
-
-// 通用轨道颜色
-export const DEFAULT_COMMON_TRACK_COLOR = "#6d6d6d";
-
 // 音频柱的宽度
-export const DEFAULT_AUDIO_COLUMN_WIDTH = 2;
+export const DEFAULT_AUDIO_BAR_WIDTH = 2;
 
 // 音频柱的间隔
-export const DEFAULT_AUDIO_COLUMN_SPACING = 2;
+export const DEFAULT_AUDIO_BAR_SPACING = 2;
 
-// 音频柱可变化的高度
-export const DYNC_AUDIO_BAR_HEIGHT = 5;
-
-// 音频柱0值高度
-export const START_AUDIO_BAR_HEIGHT = 5;
-
-// 默认轨道样式
+// 音频柱的高度
+export const DEFAULT_AUDIO_BAR_HEIGHT = 10;
 
 // 扣绿选项
 export const DEFAULT_CHROMAKEY_OPTIONS = {

@@ -1,6 +1,6 @@
 import type { Ref } from "vue";
 
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 import type {
   SystemCommonContext,
@@ -36,6 +36,10 @@ export class SystemCommonData extends BaseData {
 
     this.styles = ref(DEFAULT_SYSTEM_COMMON_STYLES);
     this.updateStyles(styles);
+
+    this.unwatch = watch(this.observeList, () => {
+      this.triggerUpdate();
+    });
   }
 
   /**

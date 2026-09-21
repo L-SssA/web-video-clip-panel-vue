@@ -152,3 +152,24 @@ export function getResizeImageBlob(
     }),
   );
 }
+
+/**
+ * 数字转css值
+ * @param value
+ * @param unit
+ * @returns
+ */
+export function numberToStyleValue(value: number | string, unit: string = "px") {
+  return typeof value === "number" ? `${value}${unit}` : String(value);
+}
+
+/**
+ * 数字是否在范围内
+ * @param num 数字
+ * @param min 下限
+ * @param max 上线
+ * @returns 数字是否在范围内
+ */
+export function isNumberInside(num: number, min: number, max: number) {
+  return min < num && num < max;
+}

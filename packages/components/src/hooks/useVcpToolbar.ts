@@ -1,8 +1,8 @@
 import { ElSlider } from "element-plus";
 import { computed } from "vue";
 
-import type { VcpCtx } from "@/types/vcpContext";
-import type { VcpToolbarConfig } from "@/types/vcpToolbar";
+import type { VcpCtx } from "@/types/vcpContext.ts";
+import type { VcpToolbarConfig } from "@/types/vcpToolbar.ts";
 
 import IconButton from "@/components/IconButton/index.vue";
 
