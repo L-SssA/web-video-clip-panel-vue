@@ -1,11 +1,14 @@
 <template>
   <VideoClipPanel :theme="theme" :manager="manager"></VideoClipPanel>
   <ElSwitch v-model="theme" :active-value="'dark'" :inactive-value="'light'"></ElSwitch>
+  <ElButton @click="manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, 'http://127.0.0.1:5500/video.mp4')">添加视频</ElButton>
+  <ElButton @click="manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, 'http://127.0.0.1:5500/pic1.jpg')">添加图片</ElButton>
+  <ElButton @click="manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, 'http://127.0.0.1:5500/audio.mp3')">添加音频</ElButton>
 </template>
 
 <script setup lang="ts">
 import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager } from "@web-vcp/components";
-import { ElSwitch } from "element-plus";
+import { ElSwitch, ElButton } from "element-plus";
 
 import { ref } from "vue";
 
@@ -13,14 +16,10 @@ const theme = ref("dark");
 const manager = new WebVcpManager({
   data: { timeline: { scale: 50 } }
 });
-
-// manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, "http://127.0.0.1:5500/video.mp4");
-// manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic1.jpg", { start: 0, end: 5 });
-// manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic1.jpg", { start: 20, end: 25 });
-// manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic2.jpg");
-manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, "http://127.0.0.1:5500/audio.mp3");
-// manager.addSource(TRACKLINE_SOURCE_TYPE.TEXT, "水印");
-
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.el-button {
+  margin-left: 10px;
+}
+</style>

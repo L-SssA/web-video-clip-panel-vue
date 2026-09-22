@@ -61,8 +61,15 @@ provide<VcpCtx>(vcpCtxSymbol, {
   flex-direction: column;
   min-height: 120px;
 
+  .vcp-toolbar {
+    flex-shrink: 0;
+    height: 48px;
+    box-sizing: border-box;
+  }
+
   .vcp-tracks-panel {
     flex: 1;
+    height: calc(100% - 48px);
   }
 }
 </style>

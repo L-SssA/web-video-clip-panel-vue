@@ -188,8 +188,12 @@ export class TrackLineData extends BaseData {
       const overlap =
         this.activeTrackLine.value.data.findIndex((t) => {
           return (
+            // t.start <= trackItem.start < t.end
             isNumberInside(trackItem.start, t.start, t.end) ||
-            isNumberInside(trackItem.end, t.start, t.end)
+            trackItem.start === t.start ||
+            // t.start < trackItem.end <= t.end
+            isNumberInside(trackItem.end, t.start, t.end) ||
+            trackItem.end == t.end
           );
         }) > -1;
       if (overlap) {
