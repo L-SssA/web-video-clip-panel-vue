@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 
-import type { DataManagerContext } from "@/types/data";
-import type { ImageTrackItem, VideoTrackItem, AudioTrackItem } from "@/types/trackline";
+import type { ImageTrackItem, VideoTrackItem, AudioTrackItem } from "@/types/data";
+import type { DataManagerContext } from "@/types/manager";
 
 /**
  * 绘制图像预览

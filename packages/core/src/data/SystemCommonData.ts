@@ -6,15 +6,18 @@ import type {
   SystemCommonContext,
   SystemCommonDataOptions,
   SystemCommonStyles,
-} from "@/types/systemCommon";
+} from "@/types/data";
 
 import { DEFAULT_SYSTEM_COMMON_STYLES, SYSTEM_COMMON_STYLES_MAP } from "@/config/theme";
 
 import { BaseData } from "./BaseData";
 
 export class SystemCommonData extends BaseData {
+  public mouseEvent: MouseEvent | null = null;
+
   // 样式
   readonly styles: Ref<SystemCommonStyles>;
+  readonly panelHeight: Ref<number>;
 
   /**
    * 获取系统通用上下文数据
@@ -22,6 +25,7 @@ export class SystemCommonData extends BaseData {
   get ctx(): SystemCommonContext {
     return {
       styles: this.styles.value,
+      panelHeight: this.panelHeight.value,
     };
   }
 
@@ -32,7 +36,9 @@ export class SystemCommonData extends BaseData {
   constructor(options: Partial<SystemCommonDataOptions> = {}) {
     super();
 
-    const { styles } = options;
+    const { styles, panelHeight = 320 } = options;
+
+    this.panelHeight = ref(panelHeight);
 
     this.styles = ref(DEFAULT_SYSTEM_COMMON_STYLES);
     this.updateStyles(styles);

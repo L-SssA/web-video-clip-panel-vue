@@ -2,7 +2,7 @@ import { AudioClip, ImgClip, MP4Clip } from "@webav/av-cliper";
 
 import { WebavClipBuilder } from "@/webav/webavClipBuilder";
 
-import type { SourceType, TrackItem } from "./trackline";
+import type { SourceType, TrackItem } from "./data";
 
 // webav clip 缓存数据结构
 export type WebavClipCacheData = {

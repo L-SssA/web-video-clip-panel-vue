@@ -1,8 +1,6 @@
 // 类型导出
+export type * from "./types/manager";
 export type * from "./types/data";
-export type * from "./types/timeline";
-export type * from "./types/trackline";
-export type * from "./types/systemCommon";
 
 // 数据层导出
 export * from "./data/TimelineData";

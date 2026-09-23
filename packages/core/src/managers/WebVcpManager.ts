@@ -1,20 +1,19 @@
-import type { WebVcpManagerOptions } from "@/types/webvcp";
-
-import { useWindowResize } from "@/hooks/useWindowResize";
+import type { WebVcpManagerOptions } from "@/types/manager";
 
 import { DataManager } from "./DataManager";
+import { UserEventManager } from "./UserEventManager";
 
 export class WebVcpManager {
   public data: DataManager;
 
-  private unbindWindowResize?: () => void;
+  private userEvents: UserEventManager;
 
   constructor(options: Partial<WebVcpManagerOptions> = {}) {
     const { data: dataOptions } = options;
     // 数据
     this.data = new DataManager(dataOptions);
-    // 绑定事件
-    this.bindEvents();
+    // 事件管理器
+    this.userEvents = new UserEventManager(this.data);
   }
 
   /**
@@ -36,17 +35,11 @@ export class WebVcpManager {
   }
 
   /**
-   * 绑定相关事件
+   * 设置用于监听鼠标移动事件的元素
+   * @param el 页面元素
    */
-  bindEvents() {
-    this.unbindWindowResize = useWindowResize(this.handleWindowResize.bind(this));
-  }
-
-  /**
-   * 处理窗口大小变化事件
-   */
-  handleWindowResize() {
-    this.data.triggerUpdate();
+  setElementToListenMouseMove(el: HTMLElement | null) {
+    this.userEvents.setElementToListenMouseMove(el);
   }
 
   /**
@@ -54,13 +47,6 @@ export class WebVcpManager {
    */
   public destroy() {
     this.data.release();
-    this.unbindEvents();
-  }
-
-  /**
-   * 解除绑定相关事件
-   */
-  unbindEvents() {
-    this.unbindWindowResize?.();
+    this.userEvents.release();
   }
 }

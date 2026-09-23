@@ -8,13 +8,11 @@ import type {
   TrackLineContext,
   TrackLineDataOptions,
   TrackLineStyles,
-} from "@/types/trackline";
-import type {
   AudioTrackLine,
   pictureTrackLine,
   VideoTrackLine,
   TrackLine,
-} from "@/types/trackline";
+} from "@/types/data";
 
 import {
   DEFAULT_AUDIO_BAR_HEIGHT,

@@ -40,6 +40,14 @@ export class EventCallback {
   }
 
   /**
+   * 触发回调函数，兼容原生事件
+   * @param args 触发参数
+   */
+  handleEvent(...args: any[]): void {
+    this.triggerEvent(...args);
+  }
+
+  /**
    * 清空回调函数
    */
   clearEvent(): void {

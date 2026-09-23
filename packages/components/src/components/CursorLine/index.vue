@@ -1,6 +1,6 @@
 <template>
   <div class="cursor-line" :style="cursorLineStyles" v-show="showNoniusLine">
-    <i class="cursor-line-icon ri-home-fill"></i>
+    <i class="cursor-line-icon ri-home-fill" @mousedown=""></i>
   </div>
 </template>
 

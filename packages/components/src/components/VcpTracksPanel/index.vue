@@ -1,5 +1,5 @@
 <template>
-  <div class="vcp-tracks-panel">
+  <div class="vcp-tracks-panel" ref="vcpTracksPanelRef">
     <TimeLine />
     <TrackLines />
     <CursorLine />
@@ -7,20 +7,24 @@
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue';
+import { inject, onMounted, ref } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext.ts';
 import { vcpCtxSymbol } from '@/config/symbols.ts';
 
-import TimeLine from "./TimeLine.vue";
-import CursorLine from "./CursorLine.vue";
+import TimeLine from "@/components/TimeLine/index.vue";
+import CursorLine from "@/components/CursorLine/index.vue";
 import TrackLines from "./TrackLines.vue";
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 
-console.log(ctx);
+const vcpTracksPanelRef = ref<HTMLDivElement | null>(null)
 
-
+onMounted(() => {
+  if (vcpTracksPanelRef.value) {
+    ctx.manager.setElementToListenMouseMove(vcpTracksPanelRef.value)
+  }
+}) 
 </script>
 
 <style scoped lang="scss">

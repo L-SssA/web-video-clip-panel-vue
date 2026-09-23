@@ -18,10 +18,6 @@ import { useThemeProps } from "@/hooks/useThemeProps";
 import { numberToStyleValue } from "@web-vcp/core";
 
 const props = defineProps({
-  height: {
-    type: [String, Number],
-    default: 320,
-  },
   theme: {
     type: String,
     default: "light",
@@ -36,7 +32,7 @@ const props = defineProps({
 const { cssProps } = useThemeProps(props.manager.data.system)
 
 const styleList = computed(() => ({
-  height: numberToStyleValue(props.height),
+  height: numberToStyleValue(props.manager.data.system.panelHeight.value),
   ...cssProps.value
 }));
 

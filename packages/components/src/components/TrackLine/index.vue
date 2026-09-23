@@ -1,7 +1,6 @@
 <template>
   <div class="track-line" :style="tracklineStyles" @mousedown="setActiveTrackline" @dragstart.self.prevent>
-    <div class="track-list" :data-id="data.id" data-domtype="trackLine" :data-tracktype="data.type"
-      :style="tracklineListStyles">
+    <div class="track-list" :style="tracklineListStyles">
       <!-- <div class="new-track-line-sign"
         v-show="data.id === trackState.newTrackLineNeighborId && trackState.showCreateLine"
         :style="newTrackLineSignStyle"></div> -->

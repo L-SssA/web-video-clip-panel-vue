@@ -4,7 +4,7 @@
 
 import type { ImgClip, MP4Clip } from "@webav/av-cliper";
 
-import type { ImageTrackItem, TrackItem, VideoTrackItem } from "@/types/trackline";
+import type { ImageTrackItem, TrackItem, VideoTrackItem } from "@/types/data";
 import type { MediaClip, WebavThumbnailsBuilderFunction } from "@/types/webav";
 
 import { MAX_PREVIEW_SIZE } from "@/config/constant";

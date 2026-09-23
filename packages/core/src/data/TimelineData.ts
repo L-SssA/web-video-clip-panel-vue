@@ -2,7 +2,7 @@ import type { Ref } from "vue";
 
 import { computed, ref, watch } from "vue";
 
-import type { TimelineContext, TimelineDataOptions, TimelineStyles } from "@/types/timeline";
+import type { TimelineContext, TimelineDataOptions, TimelineStyles } from "@/types/data";
 
 import {
   AUTO_ADSORB_WIDTH,

@@ -7,7 +7,7 @@ import type {
   TrackItem,
   TrackLine,
   VideoTrackItem,
-} from "@/types/trackline";
+} from "@/types/data";
 
 import { generateUUID } from "./tools";
 

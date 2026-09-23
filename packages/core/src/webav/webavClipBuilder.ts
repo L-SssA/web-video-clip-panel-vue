@@ -3,7 +3,7 @@
  */
 import { createChromakey, AudioClip, MP4Clip, ImgClip } from "@webav/av-cliper";
 
-import type { TrackItem, ImageTrackItem, VideoTrackItem } from "@/types/trackline";
+import type { TrackItem, ImageTrackItem, VideoTrackItem } from "@/types/data";
 import type { ChromaKeyOptions, ChromaKeyProcessor, WebavClipBuilderFunction } from "@/types/webav";
 
 /**

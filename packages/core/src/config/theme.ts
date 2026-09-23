@@ -1,5 +1,4 @@
-import type { TimelineStyles } from "@/types/timeline";
-import type { TrackLineStyles } from "@/types/trackline";
+import type { TimelineStyles, TrackLineStyles } from "@/types/data";
 
 // ==================== 时间线样式 ====================
 export const DARK_TIMELINE_STYLES = {

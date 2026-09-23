@@ -4,13 +4,8 @@ import type { Ref } from "vue";
 import { renderTxt2ImgBitmap } from "@webav/av-cliper";
 import { reactive, watch } from "vue";
 
-import type { DataManagerOptions, DataManagerContext } from "@/types/data";
-import type {
-  AudioTrackItem,
-  ImageTrackItem,
-  TextTrackItem,
-  VideoTrackItem,
-} from "@/types/trackline";
+import type { AudioTrackItem, ImageTrackItem, TextTrackItem, VideoTrackItem } from "@/types/data";
+import type { DataManagerOptions, DataManagerContext } from "@/types/manager";
 
 import { TRACKLINE_SOURCE_TYPE } from "@/config/constant";
 import { BaseData } from "@/data/BaseData";
@@ -79,6 +74,13 @@ export class DataManager extends BaseData {
     this.timeline.triggerUpdate();
     this.trackline.triggerUpdate();
     this.system.triggerUpdate();
+  }
+
+  /**
+   * 触发更新，兼容原生事件
+   */
+  handleEvent() {
+    this.triggerUpdate();
   }
 
   /**

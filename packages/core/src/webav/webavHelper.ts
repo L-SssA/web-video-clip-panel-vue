@@ -1,6 +1,6 @@
 import { AudioClip, Combinator, OffscreenSprite, type ImgClip } from "@webav/av-cliper";
 
-import type { AudioTrackItem, TrackItem, TrackLine, VideoTrackItem } from "@/types/trackline";
+import type { AudioTrackItem, TrackItem, TrackLine, VideoTrackItem } from "@/types/data";
 import type { MediaClip, WebavClipCacheData, WebavHelperOptions } from "@/types/webav";
 
 import { DEFAULT_CHROMAKEY_OPTIONS } from "@/config/constant";
