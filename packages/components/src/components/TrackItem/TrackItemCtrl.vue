@@ -1,6 +1,6 @@
 <template>
   <div class="track-item-drag-panel" :draggable="!actionType && data.changeable"
-    @dragstart.prevent.stop="console.log('dragStart')" @dragend.prevent.stop="console.log('dragend')">
+    @dragstart.prevent.stop="ctx.manager.data.activateTrackItemDraging">
   </div>
   <div class="resize-box" v-show="showResizeBox">
     <div class="resize-btn resize-btn-left" @mousedown.stop="data.changeable && console.log('dragLeft')">|
@@ -31,7 +31,7 @@ const actionType = ctx.manager.data.trackline.actionType
 const showResizeBox = computed(() => {
   const { activeTrackItem } = ctx.manager.data.trackline
   return props.data.id === activeTrackItem.value?.id && props.data.changeable
-})
+}) 
 </script>
 
 <style scoped lang="scss">

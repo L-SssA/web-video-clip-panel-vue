@@ -12,7 +12,7 @@ import { BaseData } from "@/data/BaseData";
 import { SystemCommonData } from "@/data/SystemCommonData";
 import { TimelineData } from "@/data/TimelineData";
 import { TrackLineData } from "@/data/TrackLineData";
-import { timeToPixel } from "@/utils/tools";
+import { pixelToTime, timeToPixel } from "@/utils/tools";
 import {
   defineAudioTrackItemConfig,
   defineImageTrackItemConfig,
@@ -22,13 +22,23 @@ import {
 import WebavHelper from "@/webav/webavHelper";
 
 export class DataManager extends BaseData {
-  timeline: TimelineData;
-  trackline: TrackLineData;
-  system: SystemCommonData;
-  unwatch: Function;
+  public timeline: TimelineData;
+  public trackline: TrackLineData;
+  public system: SystemCommonData;
+  public unwatch: Function;
+
+  // 事件标识
+  private cursorMoving: boolean = false;
+  private markX: number = 0;
+  private markScrollOffset: number = 0;
+  private markTrackitemData = {
+    start: 0,
+    end: 0,
+  };
+  private trackitemDraging: boolean = false;
 
   // webav 相关音视频解码工具
-  private webavHelper: WebavHelper;
+  private webav: WebavHelper;
 
   get ctx(): DataManagerContext {
     return {
@@ -53,21 +63,15 @@ export class DataManager extends BaseData {
     this.trackline = new TrackLineData(options.trackline);
     this.system = new SystemCommonData(options.system);
     // 音视频解码
-    this.webavHelper = new WebavHelper(options.webav);
+    this.webav = new WebavHelper(options.webav);
 
-    this.unwatch = watch(
-      this.observeList,
-      () => {
-        this.triggerUpdate();
-      },
-      {
-        immediate: true,
-      },
-    );
+    this.unwatch = watch(this.observeList, () => this.triggerUpdate(), {
+      immediate: true,
+    });
   }
 
   /**
-   * 触发更新
+   * 触发数据更新（全量）
    */
   triggerUpdate() {
     super.triggerUpdate();
@@ -77,10 +81,49 @@ export class DataManager extends BaseData {
   }
 
   /**
-   * 触发更新，兼容原生事件
+   * 根据标识更新数据
    */
-  handleEvent() {
-    this.triggerUpdate();
+  triggerUpdateByTag() {
+    // 处理游标线移动
+    if (this.cursorMoving && this.system.mouseEvent) {
+      const movedX = this.system.mouseEvent.clientX;
+      this.setCurrentTimeByPixel(movedX);
+    }
+    // trackitem 拖拽移动
+    if (this.trackitemDraging && this.system.mouseEvent) {
+      const movedX = this.system.mouseEvent.clientX;
+      this.moveTrackItemByPixel(movedX);
+    }
+  }
+
+  /**
+   * 清理事件标识
+   */
+  clearEventTag() {
+    this.cursorMoving = false;
+    this.markX = 0;
+    this.trackitemDraging = false;
+  }
+
+  /**
+   * 激活游标线移动
+   */
+  activateCursorLineMoving() {
+    this.cursorMoving = true;
+  }
+
+  /**
+   * 激活 trackitem 拖拽事件
+   */
+  activateTrackItemDraging() {
+    if (!this.system.mouseEvent || !this.trackline.activeTrackItem.value) return;
+    this.trackitemDraging = true;
+    this.markX = this.system.mouseEvent.clientX;
+    this.markScrollOffset = this.timeline.ctx.scrollOffset;
+    // 保存必要的 trackitem 数据
+    const { start, end } = this.trackline.activeTrackItem.value;
+    this.markTrackitemData.start = start;
+    this.markTrackitemData.end = end;
   }
 
   /**
@@ -108,6 +151,27 @@ export class DataManager extends BaseData {
   }
 
   /**
+   * 根据像素移动 trackitem
+   * @param pixelX 移动的 x 像素
+   */
+  moveTrackItemByPixel(pixelX: number) {
+    if (!this.trackline.activeTrackItem.value) return;
+    // 移动 pixel
+    const offsetX = pixelX - this.markX;
+    // 移动中的滚动
+    const offsetScroll = this.timeline.ctx.scrollOffset - this.markScrollOffset;
+    // 移动的 pixel 转换为时间
+    const { fps, framesPerGap, gapWidth } = this.timeline.ctx;
+    let offsetSeconds = pixelToTime(offsetX + offsetScroll, fps, framesPerGap, gapWidth);
+
+    const { start, end } = this.markTrackitemData;
+    // 移动边界
+    if (start + offsetSeconds < 0) offsetSeconds = -start;
+    this.trackline.activeTrackItem.value.start = start + offsetSeconds;
+    this.trackline.activeTrackItem.value.end = end + offsetSeconds;
+  }
+
+  /**
    * 添加MP4源
    * @param source
    * @param changeable
@@ -123,7 +187,7 @@ export class DataManager extends BaseData {
     trackitem.source = source;
 
     // 解码视频获取元数据
-    const clip = await this.webavHelper.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
     const videoMeta = clip.meta;
     trackitem.originWidth = videoMeta.width;
@@ -135,11 +199,11 @@ export class DataManager extends BaseData {
     trackitem.frameCount = Math.floor(this.timeline.ctx.fps * trackitem.duration);
     Object.assign(trackitem, opts);
 
-    trackitem.previewListLoader = this.webavHelper.getThumbnails(trackitem).then((previewList) => {
+    trackitem.previewListLoader = this.webav.getThumbnails(trackitem).then((previewList) => {
       trackitem.previewList = previewList;
       return previewList;
     });
-    trackitem.audioDataLoader = this.webavHelper.genWaveData(trackitem).then((audioData) => {
+    trackitem.audioDataLoader = this.webav.genWaveData(trackitem).then((audioData) => {
       trackitem.audioData = audioData;
       return audioData;
     });
@@ -171,7 +235,7 @@ export class DataManager extends BaseData {
     trackitem.source = source;
 
     // 解码图片获取元数据
-    const clip = await this.webavHelper.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
     const imageMeta = clip.meta;
     trackitem.originWidth = imageMeta.width;
@@ -180,7 +244,7 @@ export class DataManager extends BaseData {
     trackitem.end = 5;
     Object.assign(trackitem, opts);
 
-    trackitem.previewListLoader = this.webavHelper.getThumbnails(trackitem).then((previewList) => {
+    trackitem.previewListLoader = this.webav.getThumbnails(trackitem).then((previewList) => {
       trackitem.previewList = previewList;
       trackitem.loading = false;
       return previewList;
@@ -208,7 +272,7 @@ export class DataManager extends BaseData {
     trackitem.source = source;
 
     // 解码图片获取元数据
-    const clip = await this.webavHelper.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
     const audioMeta = clip.meta;
     trackitem.duration = audioMeta.duration / 1e6;
@@ -216,7 +280,7 @@ export class DataManager extends BaseData {
     trackitem.end = audioMeta.duration / 1e6;
     Object.assign(trackitem, opts);
 
-    trackitem.audioDataLoader = this.webavHelper.genWaveData(trackitem).then((audioData) => {
+    trackitem.audioDataLoader = this.webav.genWaveData(trackitem).then((audioData) => {
       trackitem.audioData = audioData;
       trackitem.loading = false;
       return audioData;
@@ -244,7 +308,7 @@ export class DataManager extends BaseData {
 
     // 解码图片获取元数据
     const source = await renderTxt2ImgBitmap(text, "font-size: 80px; color: red;");
-    const clip = await this.webavHelper.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
     trackitem.text = text;
     trackitem.name = text;
@@ -284,7 +348,7 @@ export class DataManager extends BaseData {
     this.unwatch();
     this.timeline.release();
     this.trackline.release();
-    this.webavHelper.release();
+    this.webav.release();
     super.release();
   }
 }

@@ -1,6 +1,6 @@
 <template>
-  <div class="cursor-line" :style="cursorLineStyles" v-show="showNoniusLine">
-    <i class="cursor-line-icon ri-home-fill" @mousedown=""></i>
+  <div class="cursor-line" :style="cursorLineStyles" v-show="showCursorLine">
+    <i class="cursor-line-icon ri-home-fill" @mousedown="ctx.manager.data.activateCursorLineMoving"></i>
   </div>
 </template>
 
@@ -20,7 +20,7 @@ const cursorLineViewPosition = computed(() => {
   return cursorLinePosition.value - scrollOffset.value
 })
 // 是否显示游标线
-const showNoniusLine = computed(() => {
+const showCursorLine = computed(() => {
   // 由于计算精度的偏差，这里倾向于尽量显示游标线
   return cursorLineViewPosition.value - ctx.manager.data.timeline.marginLeft >= -0.8
 })
@@ -44,6 +44,7 @@ const cursorLineStyles = computed(() => {
   background-color: #686868;
   width: 2px;
   z-index: 50;
+  user-select: none;
 
   .cursor-line-icon {
     position: absolute;

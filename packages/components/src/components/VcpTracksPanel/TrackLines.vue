@@ -15,7 +15,7 @@
 
 <script lang="ts" setup>
 import { ElScrollbar } from "element-plus";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, watch } from "vue";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 import { vcpCtxSymbol } from "@/config/symbols.ts";
@@ -27,6 +27,7 @@ import { numberToStyleValue } from "@web-vcp/core";
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 
 const tracksTypesScrollbarRef = ref<HTMLDivElement | null>(null)
+const tracksLinesScrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
 const trackHeights = ctx.manager.data.trackline.trackHeights
 const trackIcons = ctx.manager.data.trackline.trackIcons
 const typesWidth = ctx.manager.data.timeline.marginLeft
@@ -35,10 +36,11 @@ const tracklines = computed(() => {
   return ctx.manager.data.trackline.mergeTrackLineList.value
 })
 const trackIconStyles = computed(() => {
-  const { styles } = ctx.manager.data.trackline
+  const { styles, gapHeight } = ctx.manager.data.trackline
   return {
     color: styles.value.iconColor,
-    fontSize: numberToStyleValue(styles.value.iconSize)
+    fontSize: numberToStyleValue(styles.value.iconSize),
+    marginTop: numberToStyleValue(gapHeight)
   }
 })
 
@@ -50,6 +52,14 @@ const handleTracksLinesScroll = (event: { scrollLeft: number, scrollTop: number 
     tracksTypesScrollbarRef.value.scrollTop = scrollTop
   }
 }
+
+watch([
+  () => ctx.manager.data.trackline.getLongestTracklineSecond()
+], () => {
+  if (tracksLinesScrollbarRef.value) {
+    tracksLinesScrollbarRef.value.update()
+  }
+})
 </script>
 
 <style lang="scss" scoped>

@@ -174,6 +174,24 @@ export class TrackLineData extends BaseData {
   }
 
   /**
+   * 在 trackLine 中 找到是否有重叠的 trackitem
+   * @param trackItem 需要查找的 trackitem
+   * @returns 重叠的 trackitem
+   */
+  findOverlapTrackitem(trackLine: TrackLine, trackItem: TrackItem) {
+    return trackLine.data.find((t) => {
+      return (
+        // t.start <= trackItem.start < t.end
+        isNumberInside(trackItem.start, t.start, t.end) ||
+        trackItem.start === t.start ||
+        // t.start < trackItem.end <= t.end
+        isNumberInside(trackItem.end, t.start, t.end) ||
+        trackItem.end == t.end
+      );
+    });
+  }
+
+  /**
    * 添加轨道数据
    * @param trackItem
    */
@@ -183,18 +201,8 @@ export class TrackLineData extends BaseData {
       // 如果当前活跃轨道与当前添加的轨道类型相同，则将数据添加到当前轨道
       trackItem.parentId = this.activeTrackLine.value.id;
       // 查找是否出现重叠的问题
-      const overlap =
-        this.activeTrackLine.value.data.findIndex((t) => {
-          return (
-            // t.start <= trackItem.start < t.end
-            isNumberInside(trackItem.start, t.start, t.end) ||
-            trackItem.start === t.start ||
-            // t.start < trackItem.end <= t.end
-            isNumberInside(trackItem.end, t.start, t.end) ||
-            trackItem.end == t.end
-          );
-        }) > -1;
-      if (overlap) {
+      const overlap = this.findOverlapTrackitem(this.activeTrackLine.value, trackItem);
+      if (overlap != null) {
         // 如果重叠，则加入队尾
         trackItem.start = Math.max(...this.activeTrackLine.value.data.map((item) => item.end), 0);
         trackItem.end = trackItem.start + duration;

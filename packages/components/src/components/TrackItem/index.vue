@@ -12,12 +12,13 @@
 </template>
 
 <script setup lang='ts'>
-import type { TrackItem } from '@web-vcp/core';
-import { numberToStyleValue, timeToPixel } from '@web-vcp/core';
 import { computed, inject } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext.ts';
 import { vcpCtxSymbol } from '@/config/symbols.ts';
+
+import type { TrackItem } from '@web-vcp/core';
+import { numberToStyleValue, timeToPixel } from '@web-vcp/core';
 
 import TrackItemCtrl from "./TrackItemCtrl.vue";
 import TrackItemHeader from "./TrackItemHeader.vue";
