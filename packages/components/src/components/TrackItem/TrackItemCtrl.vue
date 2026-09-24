@@ -3,9 +3,11 @@
     @dragstart.prevent.stop="ctx.manager.data.activateTrackItemDraging">
   </div>
   <div class="resize-box" v-show="showResizeBox">
-    <div class="resize-btn resize-btn-left" @mousedown.stop="ctx.manager.data.activateTrackItemResizing('start')">|
+    <div class="resize-btn resize-btn-left"
+      @mousedown.prevent.stop="ctx.manager.data.activateTrackItemResizing('start')">|
     </div>
-    <div class="resize-btn resize-btn-right" @mousedown.stop="ctx.manager.data.activateTrackItemResizing('end')">|
+    <div class="resize-btn resize-btn-right"
+      @mousedown.prevent.stop="ctx.manager.data.activateTrackItemResizing('end')">|
     </div>
   </div>
 </template>
@@ -38,7 +40,7 @@ const showResizeBox = computed(() => {
 .track-item-drag-panel {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 1;
 }
 
 .resize-box {
@@ -47,8 +49,9 @@ const showResizeBox = computed(() => {
   border: 1px solid #fff;
   box-sizing: border-box;
   opacity: 0.8;
-  z-index: 1;
+  z-index: 2;
   font-size: 1rem;
+  pointer-events: none;
 
   .resize-btn {
     background-color: #fff;
@@ -59,9 +62,9 @@ const showResizeBox = computed(() => {
     line-height: 1;
     width: 8px;
     position: absolute;
-    z-index: 1;
     user-select: none;
     cursor: e-resize;
+    pointer-events: all;
   }
 
   .resize-btn-left {

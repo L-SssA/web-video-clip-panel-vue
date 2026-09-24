@@ -4,8 +4,14 @@ import type { Ref } from "vue";
 import { renderTxt2ImgBitmap } from "@webav/av-cliper";
 import { reactive, watch } from "vue";
 
-import type { AudioTrackItem, ImageTrackItem, TextTrackItem, VideoTrackItem } from "@/types/data";
-import type { DataManagerOptions, DataManagerContext } from "@/types/manager";
+import type {
+  AudioTrackItem,
+  ImageTrackItem,
+  TextTrackItem,
+  TrackItem,
+  VideoTrackItem,
+} from "@/types/data";
+import type { DataManagerOptions, DataManagerContext, MarkedTrackItemData } from "@/types/manager";
 
 import { TRACKLINE_SOURCE_TYPE } from "@/config/constant";
 import { BaseData } from "@/data/BaseData";
@@ -29,17 +35,19 @@ export class DataManager extends BaseData {
 
   // 事件标识
   private cursorMoving: boolean = false;
-  private markX: number = 0;
-  private markScrollOffset: number = 0;
-  private markTrackitemData = {
+  private markedX: number = 0;
+  private markedScrollOffset: number = 0;
+  private markedTrackItemData: MarkedTrackItemData = {
     start: 0,
     end: 0,
     clipStart: 0,
     clipEnd: 0,
   };
-  private trackitemDraging: boolean = false;
-  private trackitemResing: boolean = false;
-  private trackitemResizeSideTag: string = "";
+  private prevTrackItemData: MarkedTrackItemData | null = null;
+  private nextTrackItemData: MarkedTrackItemData | null = null;
+  private trackItemDraging: boolean = false;
+  private trackItemResing: boolean = false;
+  private trackItemResizeSideTag: string = "";
 
   // webav 相关音视频解码工具
   private webav: WebavHelper;
@@ -93,13 +101,13 @@ export class DataManager extends BaseData {
       const movedX = this.system.mouseEvent.clientX;
       this.setCurrentTimeByPixel(movedX);
     }
-    // trackitem 拖拽移动
-    if (this.trackitemDraging && this.system.mouseEvent) {
+    // trackItem 拖拽移动
+    if (this.trackItemDraging && this.system.mouseEvent) {
       const movedX = this.system.mouseEvent.clientX;
       this.moveTrackItemByPixel(movedX);
     }
-    // trackitem 缩放移动
-    if (this.trackitemResing && this.system.mouseEvent) {
+    // trackItem 缩放移动
+    if (this.trackItemResing && this.system.mouseEvent) {
       const movedX = this.system.mouseEvent.clientX;
       this.resizeTrackItemByPixel(movedX);
     }
@@ -110,16 +118,18 @@ export class DataManager extends BaseData {
    */
   clearEventTag() {
     this.cursorMoving = false;
-    this.markX = 0;
-    this.markTrackitemData = {
+    this.markedX = 0;
+    this.markedTrackItemData = {
       start: 0,
       end: 0,
       clipStart: 0,
       clipEnd: 0,
     };
-    this.trackitemDraging = false;
-    this.trackitemResing = false;
-    this.trackitemResizeSideTag = "";
+    this.prevTrackItemData = null;
+    this.nextTrackItemData = null;
+    this.trackItemDraging = false;
+    this.trackItemResing = false;
+    this.trackItemResizeSideTag = "";
   }
 
   /**
@@ -130,27 +140,27 @@ export class DataManager extends BaseData {
   }
 
   /**
-   * 激活 trackitem 拖拽事件
+   * 激活 trackItem 拖拽事件
    */
   activateTrackItemDraging() {
     if (this.invalidTrackItemMouseAction()) return;
-    if (!this.saveStatusBeforeAction()) return;
-    this.trackitemDraging = true;
+    if (!this.saveTrackItemStatus()) return;
+    this.trackItemDraging = true;
   }
 
   /**
-   * 激活 trackitem 缩放事件
+   * 激活 trackItem 缩放事件
    * @param side: start | end 缩放的位置
    */
   activateTrackItemResizing(sideTag: string) {
     if (this.invalidTrackItemMouseAction()) return;
-    if (!this.saveStatusBeforeAction()) return;
-    this.trackitemResing = true;
-    this.trackitemResizeSideTag = sideTag;
+    if (!this.saveTrackItemStatus()) return;
+    this.trackItemResing = true;
+    this.trackItemResizeSideTag = sideTag;
   }
 
   /**
-   * trackitem 鼠标移动操作的无效校验
+   * trackItem 鼠标移动操作的无效校验
    */
   invalidTrackItemMouseAction() {
     return (
@@ -163,14 +173,42 @@ export class DataManager extends BaseData {
   /**
    * 保存操作前的状态
    */
-  saveStatusBeforeAction() {
-    if (!this.system.mouseEvent || !this.trackline.activeTrackItem.value) return false;
-    this.markX = this.system.mouseEvent.clientX;
-    this.markScrollOffset = this.timeline.ctx.scrollOffset;
-    // 保存必要的 trackitem 数据
-    const { start, end, clipStart, clipEnd } = this.trackline.activeTrackItem.value;
-    Object.assign(this.markTrackitemData, { start, end, clipStart, clipEnd });
-    return true;
+  saveTrackItemStatus() {
+    if (
+      !this.system.mouseEvent ||
+      !this.trackline.activeTrackItem.value ||
+      !this.trackline.activeTrackLine.value
+    )
+      return false;
+    try {
+      this.markedX = this.system.mouseEvent.clientX;
+      this.markedScrollOffset = this.timeline.ctx.scrollOffset;
+      // 保存必要的 trackItem 数据
+      const { start, end, clipStart, clipEnd } = this.trackline.activeTrackItem.value;
+      Object.assign(this.markedTrackItemData, { start, end, clipStart, clipEnd });
+      // 保存 activeTrackItem 前后的 item
+      const activeTrackLine = this.trackline.activeTrackLine.value;
+      let prevTrackItem: TrackItem | null = null;
+      let nextTrackItem: TrackItem | null = null;
+      activeTrackLine.data.forEach((t) => {
+        if (t.end <= start && (prevTrackItem == null || t.end > prevTrackItem.end))
+          prevTrackItem = t;
+        if (t.start >= end && (nextTrackItem == null || t.start < nextTrackItem.start))
+          nextTrackItem = t;
+      });
+      if (prevTrackItem) {
+        const { start, end, clipStart, clipEnd } = prevTrackItem;
+        this.prevTrackItemData = { start, end, clipStart, clipEnd };
+      }
+      if (nextTrackItem) {
+        const { start, end, clipStart, clipEnd } = nextTrackItem;
+        this.nextTrackItemData = { start, end, clipStart, clipEnd };
+      }
+      return true;
+    } catch (e) {
+      console.warn(`saveStatusBeforeAction 出现异常: ${e}`);
+      return false;
+    }
   }
 
   /**
@@ -198,7 +236,7 @@ export class DataManager extends BaseData {
   }
 
   /**
-   * 根据像素移动 trackitem
+   * 根据像素移动 trackItem
    * @param pixelX 移动的 x 像素
    */
   moveTrackItemByPixel(pixelX: number) {
@@ -207,15 +245,15 @@ export class DataManager extends BaseData {
     // 计算移动像素转换为秒数
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
 
-    // 移动 trackitem
-    const { start, end } = this.markTrackitemData;
+    // 移动 trackItem
+    const { start, end } = this.markedTrackItemData;
     if (start + offsetSeconds < 0) offsetSeconds = -start; // 0 边界
     this.trackline.activeTrackItem.value.start = start + offsetSeconds;
     this.trackline.activeTrackItem.value.end = end + offsetSeconds;
   }
 
   /**
-   * 根据像素缩放 trackitem
+   * 根据像素缩放 trackItem
    * @param pixelX 移动的 x 像素
    */
   resizeTrackItemByPixel(pixelX: number) {
@@ -224,33 +262,59 @@ export class DataManager extends BaseData {
     // 计算移动像素转换为秒数
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
 
-    // 缩放 trackitem
-    const { start, end, clipStart, clipEnd } = this.markTrackitemData;
+    // 缩放 trackItem
+    const { start, end, clipStart, clipEnd } = this.markedTrackItemData;
     const { type } = this.trackline.activeTrackItem.value;
     const { gapWidth, fps, framesPerGap } = this.timeline.ctx;
 
     const oneGapEqualToSeconds = pixelToTime(gapWidth, fps, framesPerGap, gapWidth);
 
-    if (this.trackitemResizeSideTag === "start") {
+    if (this.trackItemResizeSideTag === "start") {
       // 缩放片段左侧
-      // 1. 左侧边界:0, 右侧边界:end-[时间线一格宽度]
+      // 1. 左侧边界:0,左侧片段的end; 右侧边界:end-[时间线一格宽度],右侧片段的start
       // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipStart 必须 >= 0
-      if (start + offsetSeconds < 0) offsetSeconds = -start; // 左侧边界
-      if (start + offsetSeconds > end - oneGapEqualToSeconds)
-        offsetSeconds = end - oneGapEqualToSeconds - start; // 右侧边界
+
+      // 左侧边界
+      if (start + offsetSeconds < 0) offsetSeconds = -start;
+      if (this.prevTrackItemData && start + offsetSeconds < this.prevTrackItemData.end) {
+        offsetSeconds = this.prevTrackItemData.end - start;
+      }
+
+      // 右侧边界
+      if (start + offsetSeconds > end - oneGapEqualToSeconds) {
+        offsetSeconds = end - oneGapEqualToSeconds - start;
+      }
+      if (this.nextTrackItemData && start + offsetSeconds > this.nextTrackItemData.start) {
+        offsetSeconds = this.nextTrackItemData.start - start;
+      }
+
+      // 视频和音频片段的裁剪边界
       if (["video", "audio"].includes(type)) {
-        if (clipStart + offsetSeconds < 0) offsetSeconds = -clipStart; // 视频和音频片段的裁剪边界
+        if (clipStart + offsetSeconds < 0) offsetSeconds = -clipStart;
         this.trackline.activeTrackItem.value.clipStart = clipStart + offsetSeconds;
       }
       this.trackline.activeTrackItem.value.start = start + offsetSeconds;
-    } else if (this.trackitemResizeSideTag === "end") {
+    } else if (this.trackItemResizeSideTag === "end") {
       // 缩放片段右侧
-      // 1. 左侧边界:start+[时间线一格宽度], 右侧边界:分类讨论
+      // 1. 左侧边界:start+[时间线一格宽度],左侧片段的end; 右侧边界:右侧片段的start
       // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipEnd 必须 >= 0
-      if (end + offsetSeconds < start + oneGapEqualToSeconds)
-        offsetSeconds = start + oneGapEqualToSeconds - end; // 左侧边界
+
+      // 左侧边界
+      if (end + offsetSeconds < start + oneGapEqualToSeconds) {
+        offsetSeconds = start + oneGapEqualToSeconds - end;
+      }
+      if (this.prevTrackItemData && end + offsetSeconds < this.prevTrackItemData.end) {
+        offsetSeconds = this.prevTrackItemData.end - end;
+      }
+
+      // 右侧边界
+      if (this.nextTrackItemData && end + offsetSeconds > this.nextTrackItemData.start) {
+        offsetSeconds = this.nextTrackItemData.start - end;
+      }
+
+      // 视频和音频片段的裁剪边界
       if (["video", "audio"].includes(type)) {
-        if (clipEnd - offsetSeconds < 0) offsetSeconds = clipEnd; // 视频和音频片段的裁剪边界
+        if (clipEnd - offsetSeconds < 0) offsetSeconds = clipEnd;
         this.trackline.activeTrackItem.value.clipEnd = clipEnd - offsetSeconds;
       }
       this.trackline.activeTrackItem.value.end = end + offsetSeconds;
@@ -264,9 +328,9 @@ export class DataManager extends BaseData {
    */
   calcOffsetSeconds(pixelX: number) {
     // 移动 pixel
-    const offsetX = pixelX - this.markX;
+    const offsetX = pixelX - this.markedX;
     // 移动中的滚动
-    const offsetScroll = this.timeline.ctx.scrollOffset - this.markScrollOffset;
+    const offsetScroll = this.timeline.ctx.scrollOffset - this.markedScrollOffset;
     // 移动的 pixel 转换为时间
     const { fps, framesPerGap, gapWidth } = this.timeline.ctx;
     let offsetSeconds = pixelToTime(offsetX + offsetScroll, fps, framesPerGap, gapWidth);
@@ -285,39 +349,39 @@ export class DataManager extends BaseData {
     opts: Partial<VideoTrackItem> = {},
   ): Promise<{ object: VideoTrackItem; clip: MP4Clip }> {
     // 创建空的轨道数据
-    const trackitem = reactive(defineVideoTrackItemConfig());
-    trackitem.source = source;
+    const trackItem = reactive(defineVideoTrackItemConfig());
+    trackItem.source = source;
 
     // 解码视频获取元数据
-    const clip = await this.webav.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackItem, source);
     if (!clip) throw new Error("加载资源失败");
     const videoMeta = clip.meta;
-    trackitem.originWidth = videoMeta.width;
-    trackitem.originHeight = videoMeta.height;
-    trackitem.start = 0;
-    trackitem.fps = this.timeline.ctx.fps;
-    trackitem.duration = videoMeta.duration / 1e6;
-    trackitem.end = videoMeta.duration / 1e6;
-    trackitem.frameCount = Math.floor(this.timeline.ctx.fps * trackitem.duration);
-    Object.assign(trackitem, opts);
+    trackItem.originWidth = videoMeta.width;
+    trackItem.originHeight = videoMeta.height;
+    trackItem.start = 0;
+    trackItem.fps = this.timeline.ctx.fps;
+    trackItem.duration = videoMeta.duration / 1e6;
+    trackItem.end = videoMeta.duration / 1e6;
+    trackItem.frameCount = Math.floor(this.timeline.ctx.fps * trackItem.duration);
+    Object.assign(trackItem, opts);
 
-    trackitem.previewListLoader = this.webav.getThumbnails(trackitem).then((previewList) => {
-      trackitem.previewList = previewList;
+    trackItem.previewListLoader = this.webav.getThumbnails(trackItem).then((previewList) => {
+      trackItem.previewList = previewList;
       return previewList;
     });
-    trackitem.audioDataLoader = this.webav.genWaveData(trackitem).then((audioData) => {
-      trackitem.audioData = audioData;
+    trackItem.audioDataLoader = this.webav.genWaveData(trackItem).then((audioData) => {
+      trackItem.audioData = audioData;
       return audioData;
     });
 
-    Promise.allSettled([trackitem.previewListLoader, trackitem.audioDataLoader]).then(
-      () => (trackitem.loading = false),
+    Promise.allSettled([trackItem.previewListLoader, trackItem.audioDataLoader]).then(
+      () => (trackItem.loading = false),
     );
 
     // 添加轨道数据
-    this.trackline.addToTrackLine(trackitem);
+    this.trackline.addToTrackLine(trackItem);
 
-    return { object: trackitem, clip: clip as MP4Clip };
+    return { object: trackItem, clip: clip as MP4Clip };
   }
 
   /**
@@ -333,29 +397,29 @@ export class DataManager extends BaseData {
     opts: Partial<ImageTrackItem> = {},
   ): Promise<{ object: ImageTrackItem; clip: ImgClip }> {
     // 创建空的轨道数据
-    const trackitem = reactive(defineImageTrackItemConfig());
-    trackitem.source = source;
+    const trackItem = reactive(defineImageTrackItemConfig());
+    trackItem.source = source;
 
     // 解码图片获取元数据
-    const clip = await this.webav.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackItem, source);
     if (!clip) throw new Error("加载资源失败");
     const imageMeta = clip.meta;
-    trackitem.originWidth = imageMeta.width;
-    trackitem.originHeight = imageMeta.height;
-    trackitem.start = 0;
-    trackitem.end = 5;
-    Object.assign(trackitem, opts);
+    trackItem.originWidth = imageMeta.width;
+    trackItem.originHeight = imageMeta.height;
+    trackItem.start = 0;
+    trackItem.end = 5;
+    Object.assign(trackItem, opts);
 
-    trackitem.previewListLoader = this.webav.getThumbnails(trackitem).then((previewList) => {
-      trackitem.previewList = previewList;
-      trackitem.loading = false;
+    trackItem.previewListLoader = this.webav.getThumbnails(trackItem).then((previewList) => {
+      trackItem.previewList = previewList;
+      trackItem.loading = false;
       return previewList;
     });
 
     // 添加轨道数据
-    this.trackline.addToTrackLine(trackitem);
+    this.trackline.addToTrackLine(trackItem);
 
-    return { object: trackitem, clip: clip as ImgClip };
+    return { object: trackItem, clip: clip as ImgClip };
   }
 
   /**
@@ -370,28 +434,28 @@ export class DataManager extends BaseData {
     opts: Partial<AudioTrackItem> = {},
   ): Promise<{ object: AudioTrackItem; clip: AudioClip }> {
     // 创建空的轨道数据
-    const trackitem = reactive(defineAudioTrackItemConfig());
-    trackitem.source = source;
+    const trackItem = reactive(defineAudioTrackItemConfig());
+    trackItem.source = source;
 
     // 解码图片获取元数据
-    const clip = await this.webav.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackItem, source);
     if (!clip) throw new Error("加载资源失败");
     const audioMeta = clip.meta;
-    trackitem.duration = audioMeta.duration / 1e6;
-    trackitem.start = 0;
-    trackitem.end = audioMeta.duration / 1e6;
-    Object.assign(trackitem, opts);
+    trackItem.duration = audioMeta.duration / 1e6;
+    trackItem.start = 0;
+    trackItem.end = audioMeta.duration / 1e6;
+    Object.assign(trackItem, opts);
 
-    trackitem.audioDataLoader = this.webav.genWaveData(trackitem).then((audioData) => {
-      trackitem.audioData = audioData;
-      trackitem.loading = false;
+    trackItem.audioDataLoader = this.webav.genWaveData(trackItem).then((audioData) => {
+      trackItem.audioData = audioData;
+      trackItem.loading = false;
       return audioData;
     });
 
     // 添加轨道数据
-    this.trackline.addToTrackLine(trackitem);
+    this.trackline.addToTrackLine(trackItem);
 
-    return { object: trackitem, clip: clip as AudioClip };
+    return { object: trackItem, clip: clip as AudioClip };
   }
 
   /**
@@ -406,23 +470,23 @@ export class DataManager extends BaseData {
     opts: Partial<TextTrackItem> = {},
   ): Promise<{ object: TextTrackItem; clip: ImgClip }> {
     // 创建空的轨道数据
-    const trackitem = reactive(defineTextTrackItemConfig());
+    const trackItem = reactive(defineTextTrackItemConfig());
 
     // 解码图片获取元数据
     const source = await renderTxt2ImgBitmap(text, "font-size: 80px; color: red;");
-    const clip = await this.webav.loadClip(trackitem, source);
+    const clip = await this.webav.loadClip(trackItem, source);
     if (!clip) throw new Error("加载资源失败");
-    trackitem.text = text;
-    trackitem.name = text;
-    trackitem.loading = false;
-    trackitem.start = 0;
-    trackitem.end = 5;
-    Object.assign(trackitem, opts);
+    trackItem.text = text;
+    trackItem.name = text;
+    trackItem.loading = false;
+    trackItem.start = 0;
+    trackItem.end = 5;
+    Object.assign(trackItem, opts);
 
     // 添加轨道数据
-    this.trackline.addToTrackLine(trackitem);
+    this.trackline.addToTrackLine(trackItem);
 
-    return { object: trackitem, clip: clip as ImgClip };
+    return { object: trackItem, clip: clip as ImgClip };
   }
 
   /**

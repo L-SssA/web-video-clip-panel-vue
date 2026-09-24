@@ -25,3 +25,10 @@ export interface WebVcpManagerOptions {
   data: Partial<DataManagerOptions>;
   webav: Partial<WebavHelperOptions>;
 }
+
+export interface MarkedTrackItemData {
+  start: number;
+  end: number;
+  clipStart: number;
+  clipEnd: number;
+}

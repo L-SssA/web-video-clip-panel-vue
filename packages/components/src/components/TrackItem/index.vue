@@ -37,11 +37,11 @@ const props = defineProps({
 const draggingOverlap = ctx.manager.data.trackline.draggingOverlap
 
 const setActiveTrackItem = () => {
-  // 点击后，使当前 trackitem 作为 activeitem，相当于 focus
+  // 点击后，使当前 trackItem 作为 activeitem，相当于 focus
   ctx.manager.data.trackline.activeTrackItem.value = props.data
 }
 const currActive = computed(() => {
-  // 判断当前 trackitem 是否处于 active 状态
+  // 判断当前 trackItem 是否处于 active 状态
   const { activeTrackItem } = ctx.manager.data.trackline
   return props.data.id === activeTrackItem.value?.id
 })
