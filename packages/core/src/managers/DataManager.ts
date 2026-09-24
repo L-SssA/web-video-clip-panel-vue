@@ -34,8 +34,12 @@ export class DataManager extends BaseData {
   private markTrackitemData = {
     start: 0,
     end: 0,
+    clipStart: 0,
+    clipEnd: 0,
   };
   private trackitemDraging: boolean = false;
+  private trackitemResing: boolean = false;
+  private trackitemResizeSideTag: string = "";
 
   // webav 相关音视频解码工具
   private webav: WebavHelper;
@@ -94,6 +98,11 @@ export class DataManager extends BaseData {
       const movedX = this.system.mouseEvent.clientX;
       this.moveTrackItemByPixel(movedX);
     }
+    // trackitem 缩放移动
+    if (this.trackitemResing && this.system.mouseEvent) {
+      const movedX = this.system.mouseEvent.clientX;
+      this.resizeTrackItemByPixel(movedX);
+    }
   }
 
   /**
@@ -102,7 +111,15 @@ export class DataManager extends BaseData {
   clearEventTag() {
     this.cursorMoving = false;
     this.markX = 0;
+    this.markTrackitemData = {
+      start: 0,
+      end: 0,
+      clipStart: 0,
+      clipEnd: 0,
+    };
     this.trackitemDraging = false;
+    this.trackitemResing = false;
+    this.trackitemResizeSideTag = "";
   }
 
   /**
@@ -116,14 +133,44 @@ export class DataManager extends BaseData {
    * 激活 trackitem 拖拽事件
    */
   activateTrackItemDraging() {
-    if (!this.system.mouseEvent || !this.trackline.activeTrackItem.value) return;
+    if (this.invalidTrackItemMouseAction()) return;
+    if (!this.saveStatusBeforeAction()) return;
     this.trackitemDraging = true;
+  }
+
+  /**
+   * 激活 trackitem 缩放事件
+   * @param side: start | end 缩放的位置
+   */
+  activateTrackItemResizing(sideTag: string) {
+    if (this.invalidTrackItemMouseAction()) return;
+    if (!this.saveStatusBeforeAction()) return;
+    this.trackitemResing = true;
+    this.trackitemResizeSideTag = sideTag;
+  }
+
+  /**
+   * trackitem 鼠标移动操作的无效校验
+   */
+  invalidTrackItemMouseAction() {
+    return (
+      !this.system.mouseEvent ||
+      !this.trackline.activeTrackItem.value ||
+      !this.trackline.activeTrackItem.value.changeable
+    );
+  }
+
+  /**
+   * 保存操作前的状态
+   */
+  saveStatusBeforeAction() {
+    if (!this.system.mouseEvent || !this.trackline.activeTrackItem.value) return false;
     this.markX = this.system.mouseEvent.clientX;
     this.markScrollOffset = this.timeline.ctx.scrollOffset;
     // 保存必要的 trackitem 数据
-    const { start, end } = this.trackline.activeTrackItem.value;
-    this.markTrackitemData.start = start;
-    this.markTrackitemData.end = end;
+    const { start, end, clipStart, clipEnd } = this.trackline.activeTrackItem.value;
+    Object.assign(this.markTrackitemData, { start, end, clipStart, clipEnd });
+    return true;
   }
 
   /**
@@ -156,6 +203,66 @@ export class DataManager extends BaseData {
    */
   moveTrackItemByPixel(pixelX: number) {
     if (!this.trackline.activeTrackItem.value) return;
+
+    // 计算移动像素转换为秒数
+    let offsetSeconds = this.calcOffsetSeconds(pixelX);
+
+    // 移动 trackitem
+    const { start, end } = this.markTrackitemData;
+    if (start + offsetSeconds < 0) offsetSeconds = -start; // 0 边界
+    this.trackline.activeTrackItem.value.start = start + offsetSeconds;
+    this.trackline.activeTrackItem.value.end = end + offsetSeconds;
+  }
+
+  /**
+   * 根据像素缩放 trackitem
+   * @param pixelX 移动的 x 像素
+   */
+  resizeTrackItemByPixel(pixelX: number) {
+    if (!this.trackline.activeTrackItem.value) return;
+
+    // 计算移动像素转换为秒数
+    let offsetSeconds = this.calcOffsetSeconds(pixelX);
+
+    // 缩放 trackitem
+    const { start, end, clipStart, clipEnd } = this.markTrackitemData;
+    const { type } = this.trackline.activeTrackItem.value;
+    const { gapWidth, fps, framesPerGap } = this.timeline.ctx;
+
+    const oneGapEqualToSeconds = pixelToTime(gapWidth, fps, framesPerGap, gapWidth);
+
+    if (this.trackitemResizeSideTag === "start") {
+      // 缩放片段左侧
+      // 1. 左侧边界:0, 右侧边界:end-[时间线一格宽度]
+      // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipStart 必须 >= 0
+      if (start + offsetSeconds < 0) offsetSeconds = -start; // 左侧边界
+      if (start + offsetSeconds > end - oneGapEqualToSeconds)
+        offsetSeconds = end - oneGapEqualToSeconds - start; // 右侧边界
+      if (["video", "audio"].includes(type)) {
+        if (clipStart + offsetSeconds < 0) offsetSeconds = -clipStart; // 视频和音频片段的裁剪边界
+        this.trackline.activeTrackItem.value.clipStart = clipStart + offsetSeconds;
+      }
+      this.trackline.activeTrackItem.value.start = start + offsetSeconds;
+    } else if (this.trackitemResizeSideTag === "end") {
+      // 缩放片段右侧
+      // 1. 左侧边界:start+[时间线一格宽度], 右侧边界:分类讨论
+      // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipEnd 必须 >= 0
+      if (end + offsetSeconds < start + oneGapEqualToSeconds)
+        offsetSeconds = start + oneGapEqualToSeconds - end; // 左侧边界
+      if (["video", "audio"].includes(type)) {
+        if (clipEnd - offsetSeconds < 0) offsetSeconds = clipEnd; // 视频和音频片段的裁剪边界
+        this.trackline.activeTrackItem.value.clipEnd = clipEnd - offsetSeconds;
+      }
+      this.trackline.activeTrackItem.value.end = end + offsetSeconds;
+    }
+  }
+
+  /**
+   * 根据移动的像素计算等价的秒数
+   * @param pixelX 移动的像素
+   * @returns 等价的秒数
+   */
+  calcOffsetSeconds(pixelX: number) {
     // 移动 pixel
     const offsetX = pixelX - this.markX;
     // 移动中的滚动
@@ -163,12 +270,7 @@ export class DataManager extends BaseData {
     // 移动的 pixel 转换为时间
     const { fps, framesPerGap, gapWidth } = this.timeline.ctx;
     let offsetSeconds = pixelToTime(offsetX + offsetScroll, fps, framesPerGap, gapWidth);
-
-    const { start, end } = this.markTrackitemData;
-    // 移动边界
-    if (start + offsetSeconds < 0) offsetSeconds = -start;
-    this.trackline.activeTrackItem.value.start = start + offsetSeconds;
-    this.trackline.activeTrackItem.value.end = end + offsetSeconds;
+    return offsetSeconds;
   }
 
   /**

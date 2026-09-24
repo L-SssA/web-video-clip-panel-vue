@@ -3,9 +3,9 @@
     @dragstart.prevent.stop="ctx.manager.data.activateTrackItemDraging">
   </div>
   <div class="resize-box" v-show="showResizeBox">
-    <div class="resize-btn resize-btn-left" @mousedown.stop="data.changeable && console.log('dragLeft')">|
+    <div class="resize-btn resize-btn-left" @mousedown.stop="ctx.manager.data.activateTrackItemResizing('start')">|
     </div>
-    <div class="resize-btn resize-btn-right" @mousedown.stop="data.changeable && console.log('dragRight')">|
+    <div class="resize-btn resize-btn-right" @mousedown.stop="ctx.manager.data.activateTrackItemResizing('end')">|
     </div>
   </div>
 </template>
