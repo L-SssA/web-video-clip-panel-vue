@@ -1,13 +1,13 @@
 <template>
   <div class="track-item-drag-panel" :draggable="!actionType && data.changeable"
-    @dragstart.prevent.stop="ctx.manager.data.activateTrackItemDraging">
+    @dragstart.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TrackItemDrag)">
   </div>
   <div class="resize-box" v-show="showResizeBox">
     <div class="resize-btn resize-btn-left"
-      @mousedown.prevent.stop="ctx.manager.data.activateTrackItemResizing('start')">|
+      @mousedown.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TrackItemResize, 'start')">|
     </div>
     <div class="resize-btn resize-btn-right"
-      @mousedown.prevent.stop="ctx.manager.data.activateTrackItemResizing('end')">|
+      @mousedown.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TrackItemResize, 'end')">|
     </div>
   </div>
 </template>
@@ -16,6 +16,7 @@
 import { computed, inject } from 'vue';
 
 import type { TrackItem } from '@web-vcp/core';
+import { PANEL_EVENT_TYPE } from '@web-vcp/core';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';

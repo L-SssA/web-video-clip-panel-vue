@@ -1,9 +1,10 @@
 import { EventCallback } from "@/utils/eventCallback";
 
-import type { DataManager } from "./DataManager";
+import type { DataManager } from "../managers/DataManager";
 
-export class UserEventManager {
-  private _data: DataManager;
+import { BaseService } from "./BaseService";
+
+export class ElEventService extends BaseService {
   private _el: HTMLElement | null = null;
   private mouseMoveEvents = new EventCallback();
   private mouseUpEvents = new EventCallback();
@@ -11,7 +12,7 @@ export class UserEventManager {
   private windowResizeEvents = new EventCallback();
 
   constructor(data: DataManager) {
-    this._data = data;
+    super(data);
     this.bindEvents();
   }
 

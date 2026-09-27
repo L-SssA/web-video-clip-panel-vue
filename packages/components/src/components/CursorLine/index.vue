@@ -1,6 +1,7 @@
 <template>
   <div class="cursor-line" :style="cursorLineStyles" v-show="showCursorLine">
-    <i class="cursor-line-icon ri-home-fill" @mousedown="ctx.manager.data.activateCursorLineMoving"></i>
+    <i class="cursor-line-icon ri-home-fill"
+      @mousedown="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.CursorLineMove)"></i>
   </div>
 </template>
 
@@ -9,7 +10,7 @@ import { computed, inject } from 'vue';
 
 import type { VcpCtx } from '@/types/vcpContext.ts';
 import { vcpCtxSymbol } from '@/config/symbols.ts';
-import { numberToStyleValue } from '@web-vcp/core';
+import { numberToStyleValue, PANEL_EVENT_TYPE } from '@web-vcp/core';
 
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);

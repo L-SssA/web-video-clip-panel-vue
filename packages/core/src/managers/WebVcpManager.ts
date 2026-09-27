@@ -1,19 +1,13 @@
 import type { WebVcpManagerOptions } from "@/types/manager";
 
 import { DataManager } from "./DataManager";
-import { UserEventManager } from "./UserEventManager";
 
 export class WebVcpManager {
   public data: DataManager;
 
-  private userEvents: UserEventManager;
-
   constructor(options: Partial<WebVcpManagerOptions> = {}) {
-    const { data: dataOptions } = options;
     // 数据
-    this.data = new DataManager(dataOptions);
-    // 事件管理器
-    this.userEvents = new UserEventManager(this.data);
+    this.data = new DataManager(options.data);
   }
 
   /**
@@ -39,7 +33,7 @@ export class WebVcpManager {
    * @param el 页面元素
    */
   setElementToListenMouseMove(el: HTMLElement | null) {
-    this.userEvents.setElementToListenMouseMove(el);
+    this.data.setElementToListenMouseMove(el);
   }
 
   /**
@@ -47,6 +41,5 @@ export class WebVcpManager {
    */
   public destroy() {
     this.data.release();
-    this.userEvents.release();
   }
 }

@@ -75,3 +75,9 @@ export const TRACKLINE_SOURCE_TYPE = {
   AUDIO: "audio",
   TEXT: "text",
 };
+
+export const PANEL_EVENT_TYPE = {
+  CursorLineMove: "cursorLineMove",
+  TrackItemDrag: "trackItemDrag",
+  TrackItemResize: "trackItemResize",
+};
