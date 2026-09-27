@@ -21,7 +21,11 @@ const addVideoSource = () => {
   manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, 'http://127.0.0.1:5500/video.mp4')
 }
 const addImageSource = () => {
-  manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, 'http://127.0.0.1:5500/pic1.jpg', { changeable: false })
+  manager.addSource(
+    TRACKLINE_SOURCE_TYPE.IMAGE,
+    'http://127.0.0.1:5500/pic1.jpg',
+    // { changeable: false },
+  )
 }
 const addAudioSource = () => {
   manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, 'http://127.0.0.1:5500/audio.mp3')

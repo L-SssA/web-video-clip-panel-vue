@@ -64,7 +64,7 @@ const showResizeBox = computed(() => {
     position: absolute;
     user-select: none;
     cursor: e-resize;
-    pointer-events: all;
+    pointer-events: auto;
   }
 
   .resize-btn-left {
