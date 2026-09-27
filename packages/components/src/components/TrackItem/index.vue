@@ -72,6 +72,7 @@ const trackItemStyle = computed(() => {
 
   &.track-item-active:not(.unchange) {
     border-radius: 0;
+    z-index: 10;
   }
 
   &.track-item-ghost:not(.unchange) {

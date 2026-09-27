@@ -138,11 +138,11 @@ export class DataManager extends BaseData {
   }
 
   /**
-   * 清理事件标识
+   * 停用事件
    */
-  clearEventTag() {
-    this.trackItemService.clearEventTag();
-    this.cursorLineService.clearEventTag();
+  deactiveEvents() {
+    this.trackItemService.deactiveEvents();
+    this.cursorLineService.deactiveEvents();
   }
 
   /**

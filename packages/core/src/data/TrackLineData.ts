@@ -3,7 +3,6 @@ import type { ComputedRef, Ref } from "vue";
 import { computed, nextTick, ref, watch } from "vue";
 
 import type {
-  ActionType,
   TrackItem,
   TrackLineContext,
   TrackLineDataOptions,
@@ -76,8 +75,6 @@ export class TrackLineData extends BaseData {
   // 交互
   // 拖拽过程中出现重叠现象
   public draggingOverlap: Ref<boolean> = ref(false);
-  // 交互的事件类型
-  public actionType: Ref<ActionType | ""> = ref("");
 
   get ctx(): TrackLineContext {
     return {

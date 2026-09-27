@@ -1,5 +1,5 @@
 <template>
-  <div class="track-item-drag-panel" :draggable="!actionType && data.changeable"
+  <div class="track-item-drag-panel" :draggable="data.changeable"
     @dragstart.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TrackItemDrag)">
   </div>
   <div class="resize-box" v-show="showResizeBox">
@@ -30,7 +30,6 @@ const props = defineProps({
   }
 })
 
-const actionType = ctx.manager.data.trackline.actionType
 const showResizeBox = computed(() => {
   const { activeTrackItem } = ctx.manager.data.trackline
   return props.data.id === activeTrackItem.value?.id && props.data.changeable

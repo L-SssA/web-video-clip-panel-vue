@@ -53,7 +53,7 @@ export class ElEventService extends BaseService {
    * @param event 鼠标事件
    */
   handleMouseUp(_event: MouseEvent) {
-    this._data.clearEventTag();
+    this._data.deactiveEvents();
   }
 
   /**

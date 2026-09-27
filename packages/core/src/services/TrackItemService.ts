@@ -1,7 +1,7 @@
 import type { TrackItem } from "@/types/data";
 import type { MarkedTrackItemData } from "@/types/manager";
 
-import { pixelToTime } from "@/utils/tools";
+import { isNumberInside, pixelToTime } from "@/utils/tools";
 
 import { BaseService } from "./BaseService";
 
@@ -49,14 +49,19 @@ export class TrackItemService extends BaseService {
       Object.assign(this.markedTrackItemData, { start, end, clipStart, clipEnd });
       // 保存 activeTrackItem 前后的 item
       const activeTrackLine = this._data.trackline.activeTrackLine.value;
-      let prevTrackItem: TrackItem | null = null;
-      let nextTrackItem: TrackItem | null = null;
-      activeTrackLine.data.forEach((t) => {
-        if (t.end <= start && (prevTrackItem == null || t.end > prevTrackItem.end))
-          prevTrackItem = t;
-        if (t.start >= end && (nextTrackItem == null || t.start < nextTrackItem.start))
-          nextTrackItem = t;
-      });
+      const { prevTrackItem, nextTrackItem } = activeTrackLine.data.reduce<{
+        prevTrackItem: TrackItem | null;
+        nextTrackItem: TrackItem | null;
+      }>(
+        ({ prevTrackItem, nextTrackItem }, t) => {
+          if (t.end <= start && (prevTrackItem == null || t.end > prevTrackItem.end))
+            prevTrackItem = t;
+          if (t.start >= end && (nextTrackItem == null || t.start < nextTrackItem.start))
+            nextTrackItem = t;
+          return { prevTrackItem, nextTrackItem };
+        },
+        { prevTrackItem: null, nextTrackItem: null },
+      );
       if (prevTrackItem) {
         const { start, end, clipStart, clipEnd } = prevTrackItem;
         this.prevTrackItemData = { start, end, clipStart, clipEnd };
@@ -89,9 +94,17 @@ export class TrackItemService extends BaseService {
   }
 
   /**
+   * 停用事件
+   */
+  deactiveEvents() {
+    this.deactivateTrackItemDraging();
+    this.deactivateTrackItemResizing();
+  }
+
+  /**
    * 清理事件标识
    */
-  clearEventTag() {
+  resetMarks() {
     this.markedX = 0;
     this.markedTrackItemData = {
       start: 0,
@@ -101,9 +114,6 @@ export class TrackItemService extends BaseService {
     };
     this.prevTrackItemData = null;
     this.nextTrackItemData = null;
-    this.trackItemDraging = false;
-    this.trackItemResing = false;
-    this.trackItemResizeSideTag = "";
   }
 
   /**
@@ -113,6 +123,18 @@ export class TrackItemService extends BaseService {
     if (this.invalidTrackItemMouseAction()) return;
     if (!this.saveTrackItemStatus()) return;
     this.trackItemDraging = true;
+    this._data.trackline.activeTrackItem.value!.ghost = true;
+  }
+
+  /**
+   * 停用 trackItem 拖拽事件
+   */
+  deactivateTrackItemDraging() {
+    this.trackItemDraging = false;
+    this._data.trackline.draggingOverlap.value = false;
+    const activeTrackItem = this._data.trackline.activeTrackItem;
+    if (activeTrackItem.value) activeTrackItem.value.ghost = false;
+    this.resetMarks();
   }
 
   /**
@@ -127,6 +149,15 @@ export class TrackItemService extends BaseService {
   }
 
   /**
+   * 停用 trackItem 缩放事件
+   */
+  deactivateTrackItemResizing() {
+    this.trackItemResing = false;
+    this.trackItemResizeSideTag = "";
+    this.resetMarks();
+  }
+
+  /**
    * 根据像素移动 trackItem
    * @param pixelX 移动的 x 像素
    */
@@ -136,11 +167,30 @@ export class TrackItemService extends BaseService {
     // 计算移动像素转换为秒数
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
 
-    // 移动 trackItem
     const { start, end } = this.markedTrackItemData;
-    if (start + offsetSeconds < 0) offsetSeconds = -start; // 0 边界
-    this._data.trackline.activeTrackItem.value.start = start + offsetSeconds;
-    this._data.trackline.activeTrackItem.value.end = end + offsetSeconds;
+    // 0 边界
+    if (start + offsetSeconds < 0) offsetSeconds = -start;
+
+    const movedStart = start + offsetSeconds;
+    const movedEnd = end + offsetSeconds;
+
+    // 如果该 activeTrackItem 与其他 trackItem 重叠，则标记为重叠
+    this._data.trackline.draggingOverlap.value = Boolean(
+      this._data.trackline.activeTrackLine.value?.data.some(
+        (t) =>
+          this._data.trackline.activeTrackItem.value?.id !== t.id &&
+          // t.start <= movedStart < t.end
+          (isNumberInside(movedStart, t.start, t.end) ||
+            movedStart == t.start ||
+            // t.start < movedEnd <= t.end
+            isNumberInside(movedEnd, t.start, t.end) ||
+            movedEnd == t.end),
+      ),
+    );
+
+    // 移动 trackItem
+    this._data.trackline.activeTrackItem.value.start = movedStart;
+    this._data.trackline.activeTrackItem.value.end = movedEnd;
   }
 
   /**

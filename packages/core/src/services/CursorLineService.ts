@@ -4,10 +4,10 @@ export class CursorLineService extends BaseService {
   private cursorMoving: boolean = false;
 
   /**
-   * 清理事件标识
+   * 停用事件
    */
-  clearEventTag() {
-    this.cursorMoving = false;
+  deactiveEvents() {
+    this.deactivateCursorLineMoving();
   }
 
   /**
@@ -15,6 +15,13 @@ export class CursorLineService extends BaseService {
    */
   activateCursorLineMoving() {
     this.cursorMoving = true;
+  }
+
+  /**
+   * 停用游标线移动
+   */
+  deactivateCursorLineMoving() {
+    this.cursorMoving = false;
   }
 
   /**

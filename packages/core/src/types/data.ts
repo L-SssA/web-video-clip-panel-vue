@@ -213,5 +213,3 @@ export type TrackLine<T extends TrackItem = TrackItem> = {
 }[T["type"]];
 
 export type pictureTrackLine = ImageTrackLine | VideoTrackLine;
-
-export type ActionType = "start" | "end" | "move";
