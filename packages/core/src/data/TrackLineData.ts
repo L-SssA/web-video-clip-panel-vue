@@ -75,6 +75,12 @@ export class TrackLineData extends BaseData {
   // 交互
   // 拖拽过程中出现重叠现象
   public draggingOverlap: Ref<boolean> = ref(false);
+  // 左侧对齐线
+  public showAlignmentLeft: Ref<boolean> = ref(false);
+  public alignmentLeftPosition: Ref<number> = ref(0);
+  // 右侧对齐线
+  public showAlignmentRight: Ref<boolean> = ref(false);
+  public alignmentRightPosition: Ref<number> = ref(0);
 
   get ctx(): TrackLineContext {
     return {

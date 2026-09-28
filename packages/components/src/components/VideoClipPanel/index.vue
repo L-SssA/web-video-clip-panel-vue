@@ -11,11 +11,12 @@ import { WebVcpManager } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
 
-import VcpToolbar from "@/components/VcpToolbar/index.vue";
-import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 import { vcpCtxSymbol } from "@/config/symbols";
 import { useThemeProps } from "@/hooks/useThemeProps";
 import { numberToStyleValue } from "@web-vcp/core";
+
+import VcpToolbar from "@/components/VcpToolbar/index.vue";
+import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 
 const props = defineProps({
   theme: {

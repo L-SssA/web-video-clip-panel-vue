@@ -3,6 +3,7 @@
     <TimeLine />
     <TrackLines />
     <CursorLine />
+    <AuxiliaryLine />
   </div>
 </template>
 
@@ -15,6 +16,7 @@ import { vcpCtxSymbol } from '@/config/symbols.ts';
 import TimeLine from "@/components/TimeLine/index.vue";
 import CursorLine from "@/components/CursorLine/index.vue";
 import TrackLines from "./TrackLines.vue";
+import AuxiliaryLine from "@/components/AuxiliaryLine/index.vue";
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 

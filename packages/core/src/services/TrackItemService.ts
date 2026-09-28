@@ -1,7 +1,7 @@
 import type { TrackItem } from "@/types/data";
 import type { MarkedTrackItemData } from "@/types/manager";
 
-import { isNumberInside, pixelToTime } from "@/utils/tools";
+import { isNumberInside, pixelToTime, timeToPixel } from "@/utils/tools";
 
 import { BaseService } from "./BaseService";
 
@@ -134,6 +134,10 @@ export class TrackItemService extends BaseService {
     this._data.trackline.draggingOverlap.value = false;
     const activeTrackItem = this._data.trackline.activeTrackItem;
     if (activeTrackItem.value) activeTrackItem.value.ghost = false;
+    this._data.trackline.showAlignmentLeft.value = false;
+    this._data.trackline.showAlignmentRight.value = false;
+    this._data.trackline.alignmentLeftPosition.value = 0;
+    this._data.trackline.alignmentRightPosition.value = 0;
     this.resetMarks();
   }
 
@@ -162,7 +166,18 @@ export class TrackItemService extends BaseService {
    * @param pixelX 移动的 x 像素
    */
   moveTrackItemByPixel(pixelX: number) {
-    if (!this._data.trackline.activeTrackItem.value) return;
+    const {
+      activeTrackLine,
+      activeTrackItem,
+      draggingOverlap,
+      showAlignmentLeft,
+      alignmentLeftPosition,
+      showAlignmentRight,
+      alignmentRightPosition,
+    } = this._data.trackline;
+    const { fps, framesPerGap, gapWidth, scrollOffset, marginLeft } = this._data.timeline.ctx;
+
+    if (!activeTrackItem.value) return;
 
     // 计算移动像素转换为秒数
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
@@ -174,23 +189,44 @@ export class TrackItemService extends BaseService {
     const movedStart = start + offsetSeconds;
     const movedEnd = end + offsetSeconds;
 
-    // 如果该 activeTrackItem 与其他 trackItem 重叠，则标记为重叠
-    this._data.trackline.draggingOverlap.value = Boolean(
-      this._data.trackline.activeTrackLine.value?.data.some(
-        (t) =>
-          this._data.trackline.activeTrackItem.value?.id !== t.id &&
-          // t.start <= movedStart < t.end
-          (isNumberInside(movedStart, t.start, t.end) ||
-            movedStart == t.start ||
-            // t.start < movedEnd <= t.end
-            isNumberInside(movedEnd, t.start, t.end) ||
-            movedEnd == t.end),
-      ),
-    );
+    // 重置所有属性
+    draggingOverlap.value = false;
+    showAlignmentLeft.value = false;
+    showAlignmentRight.value = false;
+    alignmentLeftPosition.value = 0;
+    alignmentRightPosition.value = 0;
+
+    activeTrackLine.value?.data.forEach((t) => {
+      if (activeTrackItem.value?.id === t.id) return;
+
+      // 如果该 activeTrackItem 与其他 trackItem 重叠，则标记为重叠
+      if (
+        // t.start <= movedStart < t.end
+        isNumberInside(movedStart, t.start, t.end) ||
+        movedStart === t.start ||
+        // t.start < movedEnd <= t.end
+        isNumberInside(movedEnd, t.start, t.end) ||
+        movedEnd === t.end
+      ) {
+        draggingOverlap.value = true;
+      }
+      // 左侧定位线
+      if (movedStart === t.end) {
+        showAlignmentLeft.value = true;
+        alignmentLeftPosition.value =
+          timeToPixel(movedStart, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
+      }
+      // 右侧定位线
+      if (movedEnd === t.start) {
+        showAlignmentRight.value = true;
+        alignmentRightPosition.value =
+          timeToPixel(movedEnd, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
+      }
+    });
 
     // 移动 trackItem
-    this._data.trackline.activeTrackItem.value.start = movedStart;
-    this._data.trackline.activeTrackItem.value.end = movedEnd;
+    activeTrackItem.value.start = movedStart;
+    activeTrackItem.value.end = movedEnd;
   }
 
   /**
