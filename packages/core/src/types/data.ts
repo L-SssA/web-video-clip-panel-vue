@@ -67,6 +67,8 @@ export interface TimelineContext {
   scrollOffset: number;
   cursorLinePosition: number;
   styles: TimelineStyles;
+  enableAutoAdsorb: boolean;
+  autoAdsorbDistance: number;
 }
 
 /**

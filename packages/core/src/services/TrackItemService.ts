@@ -85,11 +85,13 @@ export class TrackItemService extends BaseService {
     if (this.trackItemDraging && this._data.system.mouseEvent) {
       const movedX = this._data.system.mouseEvent.clientX;
       this.moveTrackItemByPixel(movedX);
+      this.searchForAlignment();
     }
     // trackItem 缩放移动
     if (this.trackItemResing && this._data.system.mouseEvent) {
       const movedX = this._data.system.mouseEvent.clientX;
       this.resizeTrackItemByPixel(movedX);
+      this.searchForAlignment();
     }
   }
 
@@ -117,6 +119,16 @@ export class TrackItemService extends BaseService {
   }
 
   /**
+   * 重置对齐线
+   */
+  resetAlignment() {
+    this._data.trackline.showAlignmentLeft.value = false;
+    this._data.trackline.showAlignmentRight.value = false;
+    this._data.trackline.alignmentLeftPosition.value = 0;
+    this._data.trackline.alignmentRightPosition.value = 0;
+  }
+
+  /**
    * 激活 trackItem 拖拽事件
    */
   activateTrackItemDraging() {
@@ -134,11 +146,8 @@ export class TrackItemService extends BaseService {
     this._data.trackline.draggingOverlap.value = false;
     const activeTrackItem = this._data.trackline.activeTrackItem;
     if (activeTrackItem.value) activeTrackItem.value.ghost = false;
-    this._data.trackline.showAlignmentLeft.value = false;
-    this._data.trackline.showAlignmentRight.value = false;
-    this._data.trackline.alignmentLeftPosition.value = 0;
-    this._data.trackline.alignmentRightPosition.value = 0;
     this.resetMarks();
+    this.resetAlignment();
   }
 
   /**
@@ -159,6 +168,7 @@ export class TrackItemService extends BaseService {
     this.trackItemResing = false;
     this.trackItemResizeSideTag = "";
     this.resetMarks();
+    this.resetAlignment();
   }
 
   /**
@@ -166,61 +176,45 @@ export class TrackItemService extends BaseService {
    * @param pixelX 移动的 x 像素
    */
   moveTrackItemByPixel(pixelX: number) {
-    const {
-      activeTrackLine,
-      activeTrackItem,
-      draggingOverlap,
-      showAlignmentLeft,
-      alignmentLeftPosition,
-      showAlignmentRight,
-      alignmentRightPosition,
-    } = this._data.trackline;
-    const { fps, framesPerGap, gapWidth, scrollOffset, marginLeft } = this._data.timeline.ctx;
+    const { activeTrackLine, activeTrackItem, draggingOverlap } = this._data.trackline;
 
     if (!activeTrackItem.value) return;
 
     // 计算移动像素转换为秒数
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
 
+    // 计算边界
     const { start, end } = this.markedTrackItemData;
-    // 0 边界
     if (start + offsetSeconds < 0) offsetSeconds = -start;
+
+    // 计算自动吸附: 分别计算 start 和 end 的自动吸附，取偏移量最小的应用
+    const offsetSecondsStart = this.searchForAutoAdsorb(start + offsetSeconds) - start;
+    const offsetSecondsEnd = this.searchForAutoAdsorb(end + offsetSeconds) - end;
+    if (Math.abs(offsetSecondsStart) < Math.abs(offsetSecondsEnd)) {
+      offsetSeconds = offsetSecondsStart;
+    } else {
+      offsetSeconds = offsetSecondsEnd;
+    }
 
     const movedStart = start + offsetSeconds;
     const movedEnd = end + offsetSeconds;
 
-    // 重置所有属性
+    // 计算相对关系
     draggingOverlap.value = false;
-    showAlignmentLeft.value = false;
-    showAlignmentRight.value = false;
-    alignmentLeftPosition.value = 0;
-    alignmentRightPosition.value = 0;
 
-    activeTrackLine.value?.data.forEach((t) => {
-      if (activeTrackItem.value?.id === t.id) return;
-
+    // 计算相对关系 -> 计算重叠关系
+    activeTrackLine.value?.data.forEach((ti) => {
+      if (activeTrackItem.value?.id === ti.id) return;
       // 如果该 activeTrackItem 与其他 trackItem 重叠，则标记为重叠
       if (
-        // t.start <= movedStart < t.end
-        isNumberInside(movedStart, t.start, t.end) ||
-        movedStart === t.start ||
-        // t.start < movedEnd <= t.end
-        isNumberInside(movedEnd, t.start, t.end) ||
-        movedEnd === t.end
+        // ti.start <= movedStart < ti.end
+        isNumberInside(movedStart, ti.start, ti.end) ||
+        movedStart === ti.start ||
+        // ti.start < movedEnd <= ti.end
+        isNumberInside(movedEnd, ti.start, ti.end) ||
+        movedEnd === ti.end
       ) {
         draggingOverlap.value = true;
-      }
-      // 左侧定位线
-      if (movedStart === t.end) {
-        showAlignmentLeft.value = true;
-        alignmentLeftPosition.value =
-          timeToPixel(movedStart, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
-      }
-      // 右侧定位线
-      if (movedEnd === t.start) {
-        showAlignmentRight.value = true;
-        alignmentRightPosition.value =
-          timeToPixel(movedEnd, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
       }
     });
 
@@ -265,6 +259,9 @@ export class TrackItemService extends BaseService {
         offsetSeconds = this.nextTrackItemData.start - start;
       }
 
+      // 自动吸附
+      offsetSeconds = this.searchForAutoAdsorb(start + offsetSeconds) - start;
+
       // 视频和音频片段的裁剪边界
       if (["video", "audio"].includes(type)) {
         if (clipStart + offsetSeconds < 0) offsetSeconds = -clipStart;
@@ -283,6 +280,9 @@ export class TrackItemService extends BaseService {
       if (this.prevTrackItemData && end + offsetSeconds < this.prevTrackItemData.end) {
         offsetSeconds = this.prevTrackItemData.end - end;
       }
+
+      // 自动吸附
+      offsetSeconds = this.searchForAutoAdsorb(end + offsetSeconds) - end;
 
       // 右侧边界
       if (this.nextTrackItemData && end + offsetSeconds > this.nextTrackItemData.start) {
@@ -312,5 +312,75 @@ export class TrackItemService extends BaseService {
     const { fps, framesPerGap, gapWidth } = this._data.timeline.ctx;
     let offsetSeconds = pixelToTime(offsetX + offsetScroll, fps, framesPerGap, gapWidth);
     return offsetSeconds;
+  }
+
+  /**
+   * 计算自动吸附的偏移秒数
+   * @param tartgetSecond 目标时间点
+   */
+  searchForAutoAdsorb(tartgetSecond: number) {
+    const { enableAutoAdsorb, autoAdsorbDistance, fps, framesPerGap, gapWidth } =
+      this._data.timeline.ctx;
+    if (!enableAutoAdsorb) return tartgetSecond;
+    const autoAdsorbDistanceSeconds = pixelToTime(autoAdsorbDistance, fps, framesPerGap, gapWidth);
+    // 查找范围内的吸附点，去重并排序
+    const { mergeTrackLineList, activeTrackItem } = this._data.trackline;
+    const points = new Set<number>();
+    mergeTrackLineList.value.forEach((tl) => {
+      tl.data.forEach((ti) => {
+        if (ti.id === activeTrackItem.value?.id) return;
+        if (Math.abs(ti.start - tartgetSecond) <= autoAdsorbDistanceSeconds) points.add(ti.start);
+        if (Math.abs(ti.end - tartgetSecond) <= autoAdsorbDistanceSeconds) points.add(ti.end);
+      });
+    });
+    // 无有效附着点，返回
+    if (points.size <= 0) return tartgetSecond;
+
+    const sortedAbsorbPoints = [...points].sort(
+      (a, b) => Math.abs(b - tartgetSecond) - Math.abs(a - tartgetSecond),
+    );
+
+    return sortedAbsorbPoints[0];
+  }
+
+  /**
+   * 查找对齐线位置
+   */
+  searchForAlignment() {
+    // 重置对齐线状态
+    this.resetAlignment();
+
+    const {
+      mergeTrackLineList,
+      activeTrackItem,
+      showAlignmentLeft,
+      alignmentLeftPosition,
+      showAlignmentRight,
+      alignmentRightPosition,
+    } = this._data.trackline;
+
+    if (!activeTrackItem.value) return;
+
+    const { fps, framesPerGap, gapWidth, scrollOffset, marginLeft } = this._data.timeline.ctx;
+    const { start, end } = activeTrackItem.value;
+
+    // 计算相对关系 -> 计算对齐关系
+    mergeTrackLineList.value.forEach((tl) => {
+      tl.data.forEach((ti) => {
+        if (ti.id === activeTrackItem.value?.id) return;
+        // 左侧定位线
+        if (start === ti.start || start === ti.end) {
+          showAlignmentLeft.value = true;
+          alignmentLeftPosition.value =
+            timeToPixel(start, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
+        }
+        // 右侧定位线
+        if (end === ti.start || end === ti.end) {
+          showAlignmentRight.value = true;
+          alignmentRightPosition.value =
+            timeToPixel(end, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
+        }
+      });
+    });
   }
 }

@@ -65,7 +65,11 @@ export class TimelineData extends BaseData {
       marginLeft: this.marginLeft,
       scrollOffset: this.scrollOffset.value,
       cursorLinePosition: this.cursorLinePosition.value,
+      // 样式
       styles: this.styles.value,
+      // 自动吸附
+      enableAutoAdsorb: this.enableAutoAdsorb.value,
+      autoAdsorbDistance: this.autoAdsorbDistance.value,
     };
   }
 
