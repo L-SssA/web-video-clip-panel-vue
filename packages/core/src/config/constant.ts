@@ -77,7 +77,7 @@ export const TRACKLINE_SOURCE_TYPE = {
 };
 
 export const PANEL_EVENT_TYPE = {
-  CursorLineMove: "cursorLineMove",
-  TrackItemDrag: "trackItemDrag",
-  TrackItemResize: "trackItemResize",
+  CURSOR_LINE_MOVE: "cursorLineMove",
+  TRACK_ITEM_DRAG: "trackItemDrag",
+  TRACK_ITEM_RESIZE: "trackItemResize",
 };

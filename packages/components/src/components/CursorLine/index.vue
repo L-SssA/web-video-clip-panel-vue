@@ -1,7 +1,7 @@
 <template>
   <div class="cursor-line" :style="cursorLineStyles" v-show="showCursorLine">
     <i class="cursor-line-icon ri-home-fill"
-      @mousedown="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.CursorLineMove)"></i>
+      @mousedown="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.CURSOR_LINE_MOVE)"></i>
   </div>
 </template>
 

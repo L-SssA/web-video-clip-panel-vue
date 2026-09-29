@@ -1,13 +1,13 @@
 <template>
   <div class="track-item-drag-panel" :draggable="data.changeable"
-    @dragstart.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TrackItemDrag)">
+    @dragstart.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TRACK_ITEM_DRAG)">
   </div>
   <div class="resize-box" v-show="showResizeBox">
     <div class="resize-btn resize-btn-left"
-      @mousedown.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TrackItemResize, 'start')">|
+      @mousedown.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TRACK_ITEM_RESIZE, 'start')">|
     </div>
     <div class="resize-btn resize-btn-right"
-      @mousedown.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TrackItemResize, 'end')">|
+      @mousedown.prevent.stop="ctx.manager.data.activeEvent(PANEL_EVENT_TYPE.TRACK_ITEM_RESIZE, 'end')">|
     </div>
   </div>
 </template>

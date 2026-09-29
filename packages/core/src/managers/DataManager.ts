@@ -153,13 +153,13 @@ export class DataManager extends BaseData {
   activeEvent(eventType: string, ...args: any[]) {
     const activeFunc = (
       {
-        [PANEL_EVENT_TYPE.CursorLineMove]: this.cursorLineService.activateCursorLineMoving.bind(
+        [PANEL_EVENT_TYPE.CURSOR_LINE_MOVE]: this.cursorLineService.activateCursorLineMoving.bind(
           this.cursorLineService,
         ),
-        [PANEL_EVENT_TYPE.TrackItemDrag]: this.trackItemService.activateTrackItemDraging.bind(
+        [PANEL_EVENT_TYPE.TRACK_ITEM_DRAG]: this.trackItemService.activateTrackItemDraging.bind(
           this.trackItemService,
         ),
-        [PANEL_EVENT_TYPE.TrackItemResize]: this.trackItemService.activateTrackItemResizing.bind(
+        [PANEL_EVENT_TYPE.TRACK_ITEM_RESIZE]: this.trackItemService.activateTrackItemResizing.bind(
           this.trackItemService,
         ),
       } as Record<string, Function>
