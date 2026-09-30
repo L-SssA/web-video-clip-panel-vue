@@ -31,8 +31,8 @@ export class DataManager extends BaseData {
   private elEventService: ElEventService;
   // cursorline 相关逻辑
   private cursorLineService: CursorLineService;
-  // trackItem 相关逻辑
-  private trackItemService: TrackItemService;
+  // trackitem 相关逻辑
+  private trackitemService: TrackItemService;
 
   get ctx(): DataManagerContext {
     return {
@@ -67,7 +67,7 @@ export class DataManager extends BaseData {
     this.webavService = new WebavService(this);
     this.elEventService = new ElEventService(this);
     this.cursorLineService = new CursorLineService(this);
-    this.trackItemService = new TrackItemService(this);
+    this.trackitemService = new TrackItemService(this);
   }
 
   /**
@@ -133,7 +133,7 @@ export class DataManager extends BaseData {
    * 根据标识更新数据
    */
   triggerUpdateByTag() {
-    this.trackItemService.triggerUpdateByTag();
+    this.trackitemService.triggerUpdateByTag();
     this.cursorLineService.triggerUpdateByTag();
   }
 
@@ -141,7 +141,7 @@ export class DataManager extends BaseData {
    * 停用事件
    */
   deactiveEvents() {
-    this.trackItemService.deactiveEvents();
+    this.trackitemService.deactiveEvents();
     this.cursorLineService.deactiveEvents();
   }
 
@@ -156,11 +156,11 @@ export class DataManager extends BaseData {
         [PANEL_EVENT_TYPE.CURSOR_LINE_MOVE]: this.cursorLineService.activateCursorLineMoving.bind(
           this.cursorLineService,
         ),
-        [PANEL_EVENT_TYPE.TRACK_ITEM_DRAG]: this.trackItemService.activateTrackItemDraging.bind(
-          this.trackItemService,
+        [PANEL_EVENT_TYPE.TRACK_ITEM_DRAG]: this.trackitemService.activateTrackItemDraging.bind(
+          this.trackitemService,
         ),
-        [PANEL_EVENT_TYPE.TRACK_ITEM_RESIZE]: this.trackItemService.activateTrackItemResizing.bind(
-          this.trackItemService,
+        [PANEL_EVENT_TYPE.TRACK_ITEM_RESIZE]: this.trackitemService.activateTrackItemResizing.bind(
+          this.trackitemService,
         ),
       } as Record<string, Function>
     )[eventType];

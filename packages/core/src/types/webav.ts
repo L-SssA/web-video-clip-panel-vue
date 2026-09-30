@@ -40,14 +40,14 @@ export type MediaClip = ImgClip | MP4Clip | AudioClip;
 export type WebavClipBuilderFunction = (
   ctx: WebavClipBuilder,
   sourceData: ReadableStream<Uint8Array> | ImageBitmap,
-  trackItem: TrackItem,
+  trackitem: TrackItem,
   opts?: Record<string, any>,
 ) => Promise<MediaClip>;
 
 // webav 缩略图构建器函数
 export type WebavThumbnailsBuilderFunction = (
   clip: MediaClip,
-  trackItem: TrackItem,
+  trackitem: TrackItem,
 ) => Promise<string[]>;
 
 export interface WebavHelperOptions {

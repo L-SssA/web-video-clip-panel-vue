@@ -13,11 +13,11 @@ import { getResizeImageBlob } from "@/utils/tools";
 /**
  * 获取图像轨道项缩略图（支持静态图片和 GIF）
  * @param clip - 媒体片段实例
- * @param trackItem - 图像轨道项配置
+ * @param trackitem - 图像轨道项配置
  * @returns 返回缩略图 URL 数组的 Promise
  */
-export const getImageThumbnails = async (clip: MediaClip, trackItem: TrackItem) => {
-  const { gif, originWidth, originHeight } = trackItem as ImageTrackItem;
+export const getImageThumbnails = async (clip: MediaClip, trackitem: TrackItem) => {
+  const { gif, originWidth, originHeight } = trackitem as ImageTrackItem;
 
   // GIF 动画：逐帧提取缩略图
   if (gif) {
@@ -50,11 +50,11 @@ export const getImageThumbnails = async (clip: MediaClip, trackItem: TrackItem) 
 /**
  * 获取视频轨道项缩略图
  * @param clip - 媒体片段实例
- * @param trackItem - 视频轨道项配置
+ * @param trackitem - 视频轨道项配置
  * @returns 返回缩略图 URL 数组的 Promise
  */
-export const getVideoThumbnails = async (clip: MediaClip, trackItem: TrackItem) => {
-  const { duration } = trackItem as VideoTrackItem;
+export const getVideoThumbnails = async (clip: MediaClip, trackitem: TrackItem) => {
+  const { duration } = trackitem as VideoTrackItem;
 
   if (!clip) return [];
 
@@ -81,12 +81,12 @@ export class WebavThumbnailsBuilder {
   /**
    * 构建缩略图
    * @param clip - 媒体片段实例
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @returns 返回缩略图 URL 数组的 Promise
    */
-  async buildThumbnails(clip: MediaClip, trackItem: TrackItem) {
-    const builder = this.builders[trackItem.type];
+  async buildThumbnails(clip: MediaClip, trackitem: TrackItem) {
+    const builder = this.builders[trackitem.type];
     if (!builder) return [] as string[];
-    return builder(clip, trackItem);
+    return builder(clip, trackitem);
   }
 }

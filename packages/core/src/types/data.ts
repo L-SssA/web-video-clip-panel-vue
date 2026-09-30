@@ -102,7 +102,7 @@ export interface TrackLineContext {
   marginLeft: number;
   trackHeights: Record<string, number>;
   trackIcons: Record<string, string>;
-  trackItemColors: Record<string, string>;
+  trackitemColors: Record<string, string>;
   styles: TrackLineStyles;
   audioBarWidth: number;
   audioBarSpacing: number;
@@ -118,7 +118,7 @@ export interface TrackLineDataOptions {
   marginLeft: number;
   trackHeights: Record<string, number>;
   trackIcons: Record<string, string>;
-  trackItemColors: Record<string, string>;
+  trackitemColors: Record<string, string>;
   styles: Partial<TrackLineStyles>;
   audioBarWidth: number;
   audioBarSpacing: number;

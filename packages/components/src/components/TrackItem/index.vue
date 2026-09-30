@@ -4,7 +4,7 @@
     'track-item-ghost': data.ghost,
     'track-item-overlap': draggingOverlap,
     'unchange': !data.changeable,
-  }" :style="trackItemStyle" @mousedown="setActiveTrackItem">
+  }" :style="trackitemStyle" @mousedown="setActiveTrackItem">
     <TrackItemCtrl :data="data" />
     <TrackItemHeader :data="data" />
     <TrackItemPreviews :data="data" />
@@ -37,24 +37,24 @@ const props = defineProps({
 const draggingOverlap = ctx.manager.data.trackline.draggingOverlap
 
 const setActiveTrackItem = () => {
-  // 点击后，使当前 trackItem 作为 activeitem，相当于 focus
+  // 点击后，使当前 trackitem 作为 activeitem，相当于 focus
   ctx.manager.data.trackline.activeTrackItem.value = props.data
 }
 const currActive = computed(() => {
-  // 判断当前 trackItem 是否处于 active 状态
+  // 判断当前 trackitem 是否处于 active 状态
   const { activeTrackItem } = ctx.manager.data.trackline
   return props.data.id === activeTrackItem.value?.id
 })
-const trackItemStyle = computed(() => {
+const trackitemStyle = computed(() => {
   // 相关动态样式
   const { framesPerGap, gapWidth, fps } = ctx.manager.data.timeline
-  const { trackItemColors, trackHeights } = ctx.manager.data.trackline
+  const { trackitemColors, trackHeights } = ctx.manager.data.trackline
   const { start, end } = props.data
   return {
     left: numberToStyleValue(timeToPixel(start, fps.value, framesPerGap.value, gapWidth.value)),
     width: numberToStyleValue(timeToPixel((end - start), fps.value, framesPerGap.value, gapWidth.value)),
     height: numberToStyleValue(trackHeights[props.data.type]),
-    backgroundColor: props.data.changeable ? trackItemColors[props.data.type] : (trackItemColors["unknown"] || "#686868"),
+    backgroundColor: props.data.changeable ? trackitemColors[props.data.type] : (trackitemColors["unknown"] || "#686868"),
   }
 })
 </script>

@@ -27,39 +27,39 @@ export class WebavService extends BaseService {
     opts: Partial<VideoTrackItem> = {},
   ): Promise<{ object: VideoTrackItem; clip: MP4Clip }> {
     // 创建空的轨道数据
-    const trackItem = reactive(defineVideoTrackItemConfig());
-    trackItem.source = source;
+    const trackitem = reactive(defineVideoTrackItemConfig());
+    trackitem.source = source;
 
     // 解码视频获取元数据
-    const clip = await this._data.webav.loadClip(trackItem, source);
+    const clip = await this._data.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
     const videoMeta = clip.meta;
-    trackItem.originWidth = videoMeta.width;
-    trackItem.originHeight = videoMeta.height;
-    trackItem.start = 0;
-    trackItem.fps = this._data.timeline.ctx.fps;
-    trackItem.duration = videoMeta.duration / 1e6;
-    trackItem.end = videoMeta.duration / 1e6;
-    trackItem.frameCount = Math.floor(this._data.timeline.ctx.fps * trackItem.duration);
-    Object.assign(trackItem, opts);
+    trackitem.originWidth = videoMeta.width;
+    trackitem.originHeight = videoMeta.height;
+    trackitem.start = 0;
+    trackitem.fps = this._data.timeline.ctx.fps;
+    trackitem.duration = videoMeta.duration / 1e6;
+    trackitem.end = videoMeta.duration / 1e6;
+    trackitem.frameCount = Math.floor(this._data.timeline.ctx.fps * trackitem.duration);
+    Object.assign(trackitem, opts);
 
-    trackItem.previewListLoader = this._data.webav.getThumbnails(trackItem).then((previewList) => {
-      trackItem.previewList = previewList;
+    trackitem.previewListLoader = this._data.webav.getThumbnails(trackitem).then((previewList) => {
+      trackitem.previewList = previewList;
       return previewList;
     });
-    trackItem.audioDataLoader = this._data.webav.genWaveData(trackItem).then((audioData) => {
-      trackItem.audioData = audioData;
+    trackitem.audioDataLoader = this._data.webav.genWaveData(trackitem).then((audioData) => {
+      trackitem.audioData = audioData;
       return audioData;
     });
 
-    Promise.allSettled([trackItem.previewListLoader, trackItem.audioDataLoader]).then(
-      () => (trackItem.loading = false),
+    Promise.allSettled([trackitem.previewListLoader, trackitem.audioDataLoader]).then(
+      () => (trackitem.loading = false),
     );
 
     // 添加轨道数据
-    this._data.trackline.addToTrackLine(trackItem);
+    this._data.trackline.addToTrackLine(trackitem);
 
-    return { object: trackItem, clip: clip as MP4Clip };
+    return { object: trackitem, clip: clip as MP4Clip };
   }
 
   /**
@@ -75,29 +75,29 @@ export class WebavService extends BaseService {
     opts: Partial<ImageTrackItem> = {},
   ): Promise<{ object: ImageTrackItem; clip: ImgClip }> {
     // 创建空的轨道数据
-    const trackItem = reactive(defineImageTrackItemConfig());
-    trackItem.source = source;
+    const trackitem = reactive(defineImageTrackItemConfig());
+    trackitem.source = source;
 
     // 解码图片获取元数据
-    const clip = await this._data.webav.loadClip(trackItem, source);
+    const clip = await this._data.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
     const imageMeta = clip.meta;
-    trackItem.originWidth = imageMeta.width;
-    trackItem.originHeight = imageMeta.height;
-    trackItem.start = 0;
-    trackItem.end = 5;
-    Object.assign(trackItem, opts);
+    trackitem.originWidth = imageMeta.width;
+    trackitem.originHeight = imageMeta.height;
+    trackitem.start = 0;
+    trackitem.end = 5;
+    Object.assign(trackitem, opts);
 
-    trackItem.previewListLoader = this._data.webav.getThumbnails(trackItem).then((previewList) => {
-      trackItem.previewList = previewList;
-      trackItem.loading = false;
+    trackitem.previewListLoader = this._data.webav.getThumbnails(trackitem).then((previewList) => {
+      trackitem.previewList = previewList;
+      trackitem.loading = false;
       return previewList;
     });
 
     // 添加轨道数据
-    this._data.trackline.addToTrackLine(trackItem);
+    this._data.trackline.addToTrackLine(trackitem);
 
-    return { object: trackItem, clip: clip as ImgClip };
+    return { object: trackitem, clip: clip as ImgClip };
   }
 
   /**
@@ -112,28 +112,28 @@ export class WebavService extends BaseService {
     opts: Partial<AudioTrackItem> = {},
   ): Promise<{ object: AudioTrackItem; clip: AudioClip }> {
     // 创建空的轨道数据
-    const trackItem = reactive(defineAudioTrackItemConfig());
-    trackItem.source = source;
+    const trackitem = reactive(defineAudioTrackItemConfig());
+    trackitem.source = source;
 
     // 解码图片获取元数据
-    const clip = await this._data.webav.loadClip(trackItem, source);
+    const clip = await this._data.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
     const audioMeta = clip.meta;
-    trackItem.duration = audioMeta.duration / 1e6;
-    trackItem.start = 0;
-    trackItem.end = audioMeta.duration / 1e6;
-    Object.assign(trackItem, opts);
+    trackitem.duration = audioMeta.duration / 1e6;
+    trackitem.start = 0;
+    trackitem.end = audioMeta.duration / 1e6;
+    Object.assign(trackitem, opts);
 
-    trackItem.audioDataLoader = this._data.webav.genWaveData(trackItem).then((audioData) => {
-      trackItem.audioData = audioData;
-      trackItem.loading = false;
+    trackitem.audioDataLoader = this._data.webav.genWaveData(trackitem).then((audioData) => {
+      trackitem.audioData = audioData;
+      trackitem.loading = false;
       return audioData;
     });
 
     // 添加轨道数据
-    this._data.trackline.addToTrackLine(trackItem);
+    this._data.trackline.addToTrackLine(trackitem);
 
-    return { object: trackItem, clip: clip as AudioClip };
+    return { object: trackitem, clip: clip as AudioClip };
   }
 
   /**
@@ -148,22 +148,22 @@ export class WebavService extends BaseService {
     opts: Partial<TextTrackItem> = {},
   ): Promise<{ object: TextTrackItem; clip: ImgClip }> {
     // 创建空的轨道数据
-    const trackItem = reactive(defineTextTrackItemConfig());
+    const trackitem = reactive(defineTextTrackItemConfig());
 
     // 解码图片获取元数据
     const source = await renderTxt2ImgBitmap(text, "font-size: 80px; color: red;");
-    const clip = await this._data.webav.loadClip(trackItem, source);
+    const clip = await this._data.webav.loadClip(trackitem, source);
     if (!clip) throw new Error("加载资源失败");
-    trackItem.text = text;
-    trackItem.name = text;
-    trackItem.loading = false;
-    trackItem.start = 0;
-    trackItem.end = 5;
-    Object.assign(trackItem, opts);
+    trackitem.text = text;
+    trackitem.name = text;
+    trackitem.loading = false;
+    trackitem.start = 0;
+    trackitem.end = 5;
+    Object.assign(trackitem, opts);
 
     // 添加轨道数据
-    this._data.trackline.addToTrackLine(trackItem);
+    this._data.trackline.addToTrackLine(trackitem);
 
-    return { object: trackItem, clip: clip as ImgClip };
+    return { object: trackitem, clip: clip as ImgClip };
   }
 }

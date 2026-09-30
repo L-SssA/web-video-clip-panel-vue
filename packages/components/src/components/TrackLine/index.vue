@@ -1,10 +1,11 @@
 <template>
-  <div class="track-line" :style="tracklineStyles" @mousedown="setActiveTrackline" @dragstart.self.prevent>
+  <div class="track-line" :style="tracklineStyles" @mousedown="setActiveTrackline"
+    @mouseenter="ctx.manager.data.trackline.markEnterTrackLineInfo(data)"
+    @mouseleave="ctx.manager.data.trackline.markLeaveTrackLineInfo(data, $event)">
     <div class="track-list" :style="tracklineListStyles">
-      <!-- <div class="new-track-line-sign"
-        v-show="data.id === trackState.newTrackLineNeighborId && trackState.showCreateLine"
-        :style="newTrackLineSignStyle"></div> -->
       <TrackItem v-for="item in data.data.filter(data => data.reloadFlag)" :key="item.id" :data="item" />
+      <div class="sign-for-new-trackline" v-show="newlineforTrackitem && currActive" :style="newTracklineSignStyle">
+      </div>
     </div>
   </div>
 </template>
@@ -15,11 +16,14 @@ import { computed, inject } from "vue";
 import type { VcpCtx } from "@/types/vcpContext.ts";
 import { vcpCtxSymbol } from "@/config/symbols.ts";
 
-import { numberToStyleValue, timeToPixel, type TrackLine } from "@web-vcp/core";
+import type { TrackLine } from "@web-vcp/core";
+import { numberToStyleValue, timeToPixel } from "@web-vcp/core";
+
 import TrackItem from "@/components/TrackItem/index.vue";
 
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
+const newlineforTrackitem = ctx.manager.data.trackline.newlineforTrackitem
 
 const props = defineProps({
   data: {
@@ -52,14 +56,13 @@ const tracklineListStyles = computed(() => {
     backgroundColor: currActive.value ? styles.value.activeBgColor : styles.value.backgroundColor,
   }
 })
-
-// const newTrackLineSignStyle = computed<Record<string, string>>(() => {
-//   const style: Record<string, string> = {}
-//   if (trackState.newTrackLineNeighborId !== props.data.id) return style
-//   if (trackState.newTrackLineCreateDirection === "after") style["bottom"] = `-${props.lineGap / 2}px`
-//   else style["top"] = `-${props.lineGap / 2}px`
-//   return style
-// })
+const newTracklineSignStyle = computed<Record<string, string>>(() => {
+  const style: Record<string, string> = {}
+  if (!currActive.value) return style
+  const { directionToNewline, gapHeight } = ctx.manager.data.trackline
+  style[directionToNewline.value] = numberToStyleValue(-gapHeight / 2)
+  return style
+})
 </script>
 
 <style scoped lang="scss">
@@ -90,11 +93,14 @@ const tracklineListStyles = computed(() => {
     height: 100%;
     position: relative;
     flex-shrink: 0;
-  }
 
-  .operate-space {
-    position: absolute;
-    width: 400px;
+    .sign-for-new-trackline {
+      position: absolute;
+      background-color: #00c1cd;
+      left: 0;
+      right: 0;
+      height: 1px;
+    }
   }
 }
 </style>

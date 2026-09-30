@@ -16,12 +16,12 @@ export class TrackItemService extends BaseService {
   };
   private prevTrackItemData: MarkedTrackItemData | null = null;
   private nextTrackItemData: MarkedTrackItemData | null = null;
-  private trackItemDraging: boolean = false;
-  private trackItemResing: boolean = false;
-  private trackItemResizeSideTag: string = "";
+  private trackitemDraging: boolean = false;
+  private trackitemResing: boolean = false;
+  private trackitemResizeSideTag: string = "";
 
   /**
-   * trackItem 鼠标移动操作的无效校验
+   * trackitem 鼠标移动操作的无效校验
    */
   invalidTrackItemMouseAction() {
     return (
@@ -44,7 +44,7 @@ export class TrackItemService extends BaseService {
     try {
       this.markedX = this._data.system.mouseEvent.clientX;
       this.markedScrollOffset = this._data.timeline.ctx.scrollOffset;
-      // 保存必要的 trackItem 数据
+      // 保存必要的 trackitem 数据
       const { start, end, clipStart, clipEnd } = this._data.trackline.activeTrackItem.value;
       Object.assign(this.markedTrackItemData, { start, end, clipStart, clipEnd });
       // 保存 activeTrackItem 前后的 item
@@ -81,14 +81,15 @@ export class TrackItemService extends BaseService {
    * 根据标识更新数据
    */
   triggerUpdateByTag() {
-    // trackItem 拖拽移动
-    if (this.trackItemDraging && this._data.system.mouseEvent) {
+    // trackitem 拖拽移动
+    if (this.trackitemDraging && this._data.system.mouseEvent) {
       const movedX = this._data.system.mouseEvent.clientX;
       this.moveTrackItemByPixel(movedX);
+      this.checkIsNeedNewLineForTrackItem();
       this.searchForAlignment();
     }
-    // trackItem 缩放移动
-    if (this.trackItemResing && this._data.system.mouseEvent) {
+    // trackitem 缩放移动
+    if (this.trackitemResing && this._data.system.mouseEvent) {
       const movedX = this._data.system.mouseEvent.clientX;
       this.resizeTrackItemByPixel(movedX);
       this.searchForAlignment();
@@ -119,66 +120,65 @@ export class TrackItemService extends BaseService {
   }
 
   /**
-   * 重置对齐线
-   */
-  resetAlignment() {
-    this._data.trackline.showAlignmentLeft.value = false;
-    this._data.trackline.showAlignmentRight.value = false;
-    this._data.trackline.alignmentLeftPosition.value = 0;
-    this._data.trackline.alignmentRightPosition.value = 0;
-  }
-
-  /**
-   * 激活 trackItem 拖拽事件
+   * 激活 trackitem 拖拽事件
    */
   activateTrackItemDraging() {
     if (this.invalidTrackItemMouseAction()) return;
     if (!this.saveTrackItemStatus()) return;
-    this.trackItemDraging = true;
+    this.trackitemDraging = true;
     this._data.trackline.activeTrackItem.value!.ghost = true;
   }
 
   /**
-   * 停用 trackItem 拖拽事件
+   * 停用 trackitem 拖拽事件
    */
   deactivateTrackItemDraging() {
-    this.trackItemDraging = false;
+    this.trackitemDraging = false;
     this._data.trackline.draggingOverlap.value = false;
     const activeTrackItem = this._data.trackline.activeTrackItem;
     if (activeTrackItem.value) activeTrackItem.value.ghost = false;
     this.resetMarks();
-    this.resetAlignment();
+    this._data.trackline.resetAlignment();
+    this.checkAndDoNewLineForTrackItem();
+    // 因为拖拽存在移空 trackline 的情况，所以清理空 trackline
+    this._data.trackline.cleanEmptyTrackline();
   }
 
   /**
-   * 激活 trackItem 缩放事件
+   * 激活 trackitem 缩放事件
    * @param side: start | end 缩放的位置
    */
   activateTrackItemResizing(sideTag: string) {
     if (this.invalidTrackItemMouseAction()) return;
     if (!this.saveTrackItemStatus()) return;
-    this.trackItemResing = true;
-    this.trackItemResizeSideTag = sideTag;
+    this.trackitemResing = true;
+    this.trackitemResizeSideTag = sideTag;
   }
 
   /**
-   * 停用 trackItem 缩放事件
+   * 停用 trackitem 缩放事件
    */
   deactivateTrackItemResizing() {
-    this.trackItemResing = false;
-    this.trackItemResizeSideTag = "";
+    this.trackitemResing = false;
+    this.trackitemResizeSideTag = "";
     this.resetMarks();
-    this.resetAlignment();
+    this._data.trackline.resetAlignment();
   }
 
   /**
-   * 根据像素移动 trackItem
+   * 根据像素移动 trackitem
    * @param pixelX 移动的 x 像素
    */
   moveTrackItemByPixel(pixelX: number) {
-    const { activeTrackLine, activeTrackItem, draggingOverlap } = this._data.trackline;
+    const { activeTrackLine, activeTrackItem, draggingOverlap, targetTrackLineTo } =
+      this._data.trackline;
 
     if (!activeTrackItem.value) return;
+    // 如果存在需要移动到的目标轨道，则先做移动
+    if (targetTrackLineTo.value && targetTrackLineTo.value.id !== activeTrackLine.value?.id) {
+      this._data.trackline.moveTrackitem(activeTrackItem.value, targetTrackLineTo.value);
+      activeTrackLine.value = targetTrackLineTo.value;
+    }
 
     // 计算移动像素转换为秒数
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
@@ -205,7 +205,7 @@ export class TrackItemService extends BaseService {
     // 计算相对关系 -> 计算重叠关系
     activeTrackLine.value?.data.forEach((ti) => {
       if (activeTrackItem.value?.id === ti.id) return;
-      // 如果该 activeTrackItem 与其他 trackItem 重叠，则标记为重叠
+      // 如果该 activeTrackItem 与其他 trackitem 重叠，则标记为重叠
       if (
         // ti.start <= movedStart < ti.end
         isNumberInside(movedStart, ti.start, ti.end) ||
@@ -218,13 +218,13 @@ export class TrackItemService extends BaseService {
       }
     });
 
-    // 移动 trackItem
+    // 移动 trackitem
     activeTrackItem.value.start = movedStart;
     activeTrackItem.value.end = movedEnd;
   }
 
   /**
-   * 根据像素缩放 trackItem
+   * 根据像素缩放 trackitem
    * @param pixelX 移动的 x 像素
    */
   resizeTrackItemByPixel(pixelX: number) {
@@ -233,14 +233,14 @@ export class TrackItemService extends BaseService {
     // 计算移动像素转换为秒数
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
 
-    // 缩放 trackItem
+    // 缩放 trackitem
     const { start, end, clipStart, clipEnd } = this.markedTrackItemData;
     const { type } = this._data.trackline.activeTrackItem.value;
     const { gapWidth, fps, framesPerGap } = this._data.timeline.ctx;
 
     const oneGapEqualToSeconds = pixelToTime(gapWidth, fps, framesPerGap, gapWidth);
 
-    if (this.trackItemResizeSideTag === "start") {
+    if (this.trackitemResizeSideTag === "start") {
       // 缩放片段左侧
       // 1. 左侧边界:0,左侧片段的end; 右侧边界:end-[时间线一格宽度],右侧片段的start
       // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipStart 必须 >= 0
@@ -268,9 +268,9 @@ export class TrackItemService extends BaseService {
         this._data.trackline.activeTrackItem.value.clipStart = clipStart + offsetSeconds;
       }
       this._data.trackline.activeTrackItem.value.start = start + offsetSeconds;
-    } else if (this.trackItemResizeSideTag === "end") {
+    } else if (this.trackitemResizeSideTag === "end") {
       // 缩放片段右侧
-      // 1. 左侧边界:start+[时间线一格宽度],左侧片段的end; 右侧边界:右侧片段的start
+      // 1. 左侧边界:start+[时间线一格宽度], 左侧片段的end; 右侧边界:右侧片段的start
       // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipEnd 必须 >= 0
 
       // 左侧边界
@@ -348,7 +348,7 @@ export class TrackItemService extends BaseService {
    */
   searchForAlignment() {
     // 重置对齐线状态
-    this.resetAlignment();
+    this._data.trackline.resetAlignment();
 
     const {
       mergeTrackLineList,
@@ -382,5 +382,53 @@ export class TrackItemService extends BaseService {
         }
       });
     });
+  }
+
+  /**
+   * 检查是否需要为 trackitem 创建新的 trackline
+   */
+  checkIsNeedNewLineForTrackItem() {
+    const {
+      draggingOverlap,
+      newlineforTrackitem,
+      directionToNewline,
+      leaveTracklineFrom,
+      leaveDirection,
+      activeTrackLine,
+    } = this._data.trackline;
+    // 先重置状态
+    newlineforTrackitem.value = false;
+    // 出现从当前轨道离开且没有进入新的轨道时，需要创建新的 trackline
+    // 当前活跃轨道与当前离开轨道id相等时，视为上述条件
+    if (activeTrackLine.value?.id === leaveTracklineFrom.value?.id) {
+      directionToNewline.value = leaveDirection;
+      newlineforTrackitem.value = true;
+    }
+    // 出现重叠时，需要创建新的 trackline
+    else if (draggingOverlap.value) {
+      // 指定创建位置为当前 trackline 的下
+      directionToNewline.value = "bottom";
+      newlineforTrackitem.value = true;
+    }
+  }
+
+  /**
+   * 检查并创建新的 trackline
+   */
+  checkAndDoNewLineForTrackItem() {
+    const { activeTrackLine, activeTrackItem, newlineforTrackitem, directionToNewline } =
+      this._data.trackline;
+    if (!newlineforTrackitem.value || !activeTrackItem.value) return;
+    const targetId = activeTrackLine.value?.id;
+    // 将当前 trackitem 移出 trackline
+    this._data.trackline.moveTrackitem(activeTrackItem.value);
+    // 将当前 trackitem 添加到新的 trackline
+    this._data.trackline.addToNewTrackLine(activeTrackItem.value);
+    // 将 trackline 移动到正确的位置
+    const parentTrackline = this._data.trackline.mergeTrackLineList.value.find(
+      (tl) => tl.id === activeTrackItem.value?.parentId,
+    );
+    this._data.trackline.moveTrackline(parentTrackline!, targetId, directionToNewline.value);
+    newlineforTrackitem.value = false;
   }
 }

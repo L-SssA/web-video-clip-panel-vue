@@ -37,41 +37,41 @@ export default class WebavHelper {
 
   /**
    * 加载轨道片段
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @param source - 媒体数据源
    * @param opts - 额外选项
    * @returns 返回加载好的媒体片段
    */
-  async loadClip(trackItem: TrackItem, source: string | ImageBitmap, opts?: Record<string, any>) {
-    if (!trackItem.id) {
+  async loadClip(trackitem: TrackItem, source: string | ImageBitmap, opts?: Record<string, any>) {
+    if (!trackitem.id) {
       console.warn("Track item id is missing, this will generate a new one.");
-      trackItem.id = generateUUID();
+      trackitem.id = generateUUID();
     }
 
-    const cacheClip = await this.createClipFromCache(trackItem, opts);
+    const cacheClip = await this.createClipFromCache(trackitem, opts);
     if (cacheClip) return cacheClip;
 
     // 根据数据源类型选择加载方式
     if (source instanceof ImageBitmap) {
-      return this.loadImageBitmapClip(trackItem, source, opts);
+      return this.loadImageBitmapClip(trackitem, source, opts);
     } else {
-      return this.loadUrlClip(trackItem, source, opts);
+      return this.loadUrlClip(trackitem, source, opts);
     }
   }
 
   /**
    * 从 ImageBitmap 加载媒体片段（图片、GIF等）
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @param source - ImageBitmap 图像数据
    * @param opts - 额外选项
    * @returns 返回创建的图像片段
    */
-  async loadImageBitmapClip(trackItem: TrackItem, source: ImageBitmap, opts?: Record<string, any>) {
-    const clip = (await this.createClip(trackItem, source, opts)) as ImgClip;
+  async loadImageBitmapClip(trackitem: TrackItem, source: ImageBitmap, opts?: Record<string, any>) {
+    const clip = (await this.createClip(trackitem, source, opts)) as ImgClip;
 
-    this.clipCache.set(trackItem.id, {
-      id: trackItem.id,
-      type: trackItem.type,
+    this.clipCache.set(trackitem.id, {
+      id: trackitem.id,
+      type: trackitem.type,
       response: source,
       clip: clip,
     });
@@ -81,23 +81,23 @@ export default class WebavHelper {
 
   /**
    * 从 URL 加载媒体片段（视频、音频等）
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @param source - 资源的 URL 地址
    * @param opts - 额外选项
    * @returns 返回创建的媒体片段，如果响应无效则返回 undefined
    */
-  async loadUrlClip(trackItem: TrackItem, source: string, opts?: Record<string, any>) {
+  async loadUrlClip(trackitem: TrackItem, source: string, opts?: Record<string, any>) {
     const response = await fetch(source);
     if (!response.body) return;
 
-    const clip = await this.createClip(trackItem, response, opts);
+    const clip = await this.createClip(trackitem, response, opts);
 
-    this.clipCache.set(trackItem.id, {
-      id: trackItem.id,
-      type: trackItem.type,
+    this.clipCache.set(trackitem.id, {
+      id: trackitem.id,
+      type: trackitem.type,
       response,
       // 音频片段不缓存，避免内存占用
-      clip: trackItem.type == "audio" ? undefined : (clip as Exclude<MediaClip, AudioClip>),
+      clip: trackitem.type == "audio" ? undefined : (clip as Exclude<MediaClip, AudioClip>),
     });
 
     return clip;
@@ -105,28 +105,28 @@ export default class WebavHelper {
 
   /**
    * 从缓存创建片段，不存在则基于响应数据创建
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @returns 返回缓存中的片段或新创建的片段，如果缓存不存在则返回 null
    */
-  async createClipFromCache(trackItem: TrackItem, opts?: Record<string, any>) {
-    const cache = this.clipCache.get(trackItem.id);
+  async createClipFromCache(trackitem: TrackItem, opts?: Record<string, any>) {
+    const cache = this.clipCache.get(trackitem.id);
 
     if (!cache) return null;
     if (cache.clip) return cache.clip;
 
-    return this.createClip(trackItem, cache.response, opts);
+    return this.createClip(trackitem, cache.response, opts);
   }
 
   /**
    * 创建媒体片段
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @param response - 响应数据或图像位图
    * @param opts - 额外选项
    * @returns 返回创建好的媒体片段
    * @throws 当源数据类型不支持时抛出错误
    */
   async createClip(
-    trackItem: TrackItem,
+    trackitem: TrackItem,
     response: Response | ImageBitmap,
     opts?: Record<string, any>,
   ) {
@@ -137,20 +137,20 @@ export default class WebavHelper {
       throw new Error("Unsupported source data type");
     }
 
-    return this.webavClipBuilder.buildClip(sourceData, trackItem, opts);
+    return this.webavClipBuilder.buildClip(sourceData, trackitem, opts);
   }
 
   /**
    * 获取轨道项缩略图数组
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @returns 返回缩略图 URL 数组的 Promise
    */
-  async getThumbnails(trackItem: TrackItem) {
-    const cache = this.clipCache.get(trackItem.id);
+  async getThumbnails(trackitem: TrackItem) {
+    const cache = this.clipCache.get(trackitem.id);
     if (!cache) return [] as string[];
 
     if (!cache.thumbnails && cache.clip) {
-      cache.thumbnails = this.webavThumbnailsBuilder.buildThumbnails(cache.clip, trackItem);
+      cache.thumbnails = this.webavThumbnailsBuilder.buildThumbnails(cache.clip, trackitem);
     }
 
     return cache.thumbnails || [];
@@ -194,18 +194,18 @@ export default class WebavHelper {
 
   /**
    * 生成音频片段（音频轨道直接获取，视频轨道提取音频）
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @param opts - 额外选项
    * @returns 返回音频片段，如果无法生成则返回 undefined
    */
-  async genAudioClipFromCache(trackItem: TrackItem, opts?: Record<string, any>) {
+  async genAudioClipFromCache(trackitem: TrackItem, opts?: Record<string, any>) {
     // 根据轨道类型选择不同的音频获取方式
-    if (trackItem.type === "audio") {
-      return this.createClipFromCache(trackItem, opts);
+    if (trackitem.type === "audio") {
+      return this.createClipFromCache(trackitem, opts);
     }
 
-    if (trackItem.type === "video") {
-      return this.genAudioFromVideoCache(trackItem, opts);
+    if (trackitem.type === "video") {
+      return this.genAudioFromVideoCache(trackitem, opts);
     }
 
     return null;
@@ -213,12 +213,12 @@ export default class WebavHelper {
 
   /**
    * 从视频中提取音频片段
-   * @param trackItem - 视频轨道项配置
+   * @param trackitem - 视频轨道项配置
    * @param opts - AudioClip 配置选项
    * @returns 返回音频片段，如果缓存不存在则返回 undefined
    */
-  async genAudioFromVideoCache(trackItem: TrackItem, opts?: Record<string, any>) {
-    const cache = this.clipCache.get(trackItem.id);
+  async genAudioFromVideoCache(trackitem: TrackItem, opts?: Record<string, any>) {
+    const cache = this.clipCache.get(trackitem.id);
     if (!cache) return;
 
     const { response } = cache;
@@ -234,11 +234,11 @@ export default class WebavHelper {
 
   /**
    * 获取音频数据（PCM）
-   * @param trackItem - 轨道项配置（可以是音频或视频）
+   * @param trackitem - 轨道项配置（可以是音频或视频）
    * @returns 返回 PCM 音频数据数组，如果无法生成则返回空数组
    */
-  async getPCMData(trackItem: TrackItem) {
-    const audioClip = await this.genAudioClipFromCache(trackItem);
+  async getPCMData(trackitem: TrackItem) {
+    const audioClip = await this.genAudioClipFromCache(trackitem);
 
     if (audioClip) {
       const data = (audioClip as AudioClip).getPCMData()[0];
@@ -251,16 +251,16 @@ export default class WebavHelper {
 
   /**
    * 生成音频波形数据
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @returns 返回波形数据数组
    */
-  async genWaveData(trackItem: TrackItem) {
-    const pcmData = await this.getPCMData(trackItem);
+  async genWaveData(trackitem: TrackItem) {
+    const pcmData = await this.getPCMData(trackitem);
     if (!pcmData.length) return [] as number[];
     let fps = 30;
-    if ("fps" in trackItem) fps = trackItem.fps;
+    if ("fps" in trackitem) fps = trackitem.fps;
     const samplesPerFrame = Math.floor(48000 / fps);
-    const totalFrames = Math.floor((trackItem as AudioTrackItem | VideoTrackItem).duration * fps);
+    const totalFrames = Math.floor((trackitem as AudioTrackItem | VideoTrackItem).duration * fps);
 
     const waveform: number[] = [];
     // 遍历每一帧，计算每一帧的音波数据
@@ -289,19 +289,19 @@ export default class WebavHelper {
     const com = new Combinator();
     sourcesToRelease.push(com);
 
-    for (let trackLine of trackList) {
-      const { type, data } = trackLine;
+    for (let trackline of trackList) {
+      const { type, data } = trackline;
 
       // 跳过非音频轨道（文本和图像）
       if (type === "text" || type === "image") continue;
 
-      for (let trackItem of data) {
-        const { clipStart, start, end, volume, mute } = trackItem as
+      for (let trackitem of data) {
+        const { clipStart, start, end, volume, mute } = trackitem as
           | AudioTrackItem
           | VideoTrackItem;
         if (mute) continue;
 
-        let clip = await this.genAudioClipFromCache(trackItem, { volume });
+        let clip = await this.genAudioClipFromCache(trackitem, { volume });
         if (!clip) continue;
 
         sourcesToRelease.push(clip);

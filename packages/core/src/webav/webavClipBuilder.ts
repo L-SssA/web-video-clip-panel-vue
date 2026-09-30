@@ -10,17 +10,17 @@ import type { ChromaKeyOptions, ChromaKeyProcessor, WebavClipBuilderFunction } f
  * 构建视频片段
  * @param ctx - WebavClipBuilder 实例
  * @param sourceData - 视频数据源（可读流或图像位图）
- * @param trackItem - 轨道项配置
+ * @param trackitem - 轨道项配置
  * @param opts - 额外选项
  * @returns 返回准备好的 MP4Clip 实例
  */
 const buildVideoClip = async (
   ctx: WebavClipBuilder,
   sourceData: ReadableStream<Uint8Array> | ImageBitmap,
-  trackItem: TrackItem,
+  trackitem: TrackItem,
   opts?: Record<string, any>,
 ) => {
-  const { enableChromaKey } = trackItem as VideoTrackItem;
+  const { enableChromaKey } = trackitem as VideoTrackItem;
   // 创建 MP4 视频片段，禁用音频轨道
   const videoClip = new MP4Clip(sourceData as ReadableStream<Uint8Array>, {
     ...opts,
@@ -46,14 +46,14 @@ const buildVideoClip = async (
  * 构建音频片段
  * @param _ctx - WebavClipBuilder 实例（未使用）
  * @param sourceData - 音频数据源（可读流或图像位图）
- * @param _trackItem - 轨道项配置（未使用）
+ * @param _trackitem - 轨道项配置（未使用）
  * @param opts - 额外选项
  * @returns 返回准备好的 AudioClip 实例
  */
 const buildAudioClip = async (
   _ctx: WebavClipBuilder,
   sourceData: ReadableStream<Uint8Array> | ImageBitmap,
-  _trackItem: TrackItem,
+  _trackitem: TrackItem,
   opts?: Record<string, any>,
 ) => {
   const audioClip = new AudioClip(sourceData as ReadableStream<Uint8Array>, opts);
@@ -65,17 +65,17 @@ const buildAudioClip = async (
  * 构建图像片段
  * @param _ctx - WebavClipBuilder 实例（未使用）
  * @param sourceData - 图像数据源（可读流或图像位图）
- * @param trackItem - 轨道项配置
+ * @param trackitem - 轨道项配置
  * @param _opts - 额外选项（未使用）
  * @returns 返回准备好的 ImgClip 实例
  */
 const buildImageClip = async (
   _ctx: WebavClipBuilder,
   sourceData: ReadableStream<Uint8Array> | ImageBitmap,
-  trackItem: TrackItem,
+  trackitem: TrackItem,
   _opts?: Record<string, any>,
 ) => {
-  const { gif } = trackItem as ImageTrackItem;
+  const { gif } = trackitem as ImageTrackItem;
   let imageClip = null;
 
   // 根据是否为 GIF 格式选择不同的初始化方式
@@ -98,14 +98,14 @@ const buildImageClip = async (
  * 构建文本片段
  * @param _ctx - WebavClipBuilder 实例（未使用）
  * @param sourceData - 文本数据源（可读流或图像位图）
- * @param _trackItem - 轨道项配置（未使用）
+ * @param _trackitem - 轨道项配置（未使用）
  * @param _opts - 额外选项（未使用）
  * @returns 返回准备好的 ImgClip 实例
  */
 const buildTextClip = async (
   _ctx: WebavClipBuilder,
   sourceData: ReadableStream<Uint8Array> | ImageBitmap,
-  _trackItem: TrackItem,
+  _trackitem: TrackItem,
   _opts?: Record<string, any>,
 ) => {
   const textClip = new ImgClip(sourceData);
@@ -132,17 +132,17 @@ export class WebavClipBuilder {
   /**
    * 构建媒体片段
    * @param source - 媒体数据源
-   * @param trackItem - 轨道项配置
+   * @param trackitem - 轨道项配置
    * @param opts - 额外选项
    * @returns 返回构建好的媒体片段实例，如果类型不支持则返回 null
    */
   buildClip(
     source: ReadableStream<Uint8Array> | ImageBitmap,
-    trackItem: TrackItem,
+    trackitem: TrackItem,
     opts?: Record<string, any>,
   ) {
-    const builder = this.builders[trackItem.type];
+    const builder = this.builders[trackitem.type];
     if (!builder) return null;
-    return builder(this, source, trackItem, opts);
+    return builder(this, source, trackitem, opts);
   }
 }

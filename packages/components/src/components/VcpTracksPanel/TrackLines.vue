@@ -1,14 +1,14 @@
 <template>
   <div class="track-lines-container">
     <div ref="tracksTypesScrollbarRef" class="track-types-list" :style="{ width: numberToStyleValue(typesWidth) }">
-      <i class="type-icon" :class="trackIcons[trackLine.type]"
-        :style="{ height: numberToStyleValue(trackHeights[trackLine.type]), width: numberToStyleValue(typesWidth), ...trackIconStyles }"
-        v-for="trackLine in tracklines" :key="trackLine.id"></i>
+      <i class="type-icon" :class="trackIcons[trackline.type]"
+        :style="{ height: numberToStyleValue(trackHeights[trackline.type]), width: numberToStyleValue(typesWidth), ...trackIconStyles }"
+        v-for="trackline in tracklines" :key="trackline.id"></i>
     </div>
     <ElScrollbar ref="tracksLinesScrollbarRef" class="track-lines-list" :always="true" @scroll="handleTracksLinesScroll"
       :noresize="false">
-      <TrackLine :style="{ height: numberToStyleValue(trackHeights[trackLine.type]) }" v-for="trackLine in tracklines"
-        :key="trackLine.id" :data="trackLine" />
+      <TrackLine :style="{ height: numberToStyleValue(trackHeights[trackline.type]) }" v-for="trackline in tracklines"
+        :key="trackline.id" :data="trackline" />
     </ElScrollbar>
   </div>
 </template>
