@@ -21,7 +21,7 @@ import type { VcpCtx } from "@/types/vcpContext.ts";
 import { vcpCtxSymbol } from "@/config/symbols.ts";
 
 import TrackLine from "@/components/TrackLine/index.vue";
-import { numberToStyleValue } from "@web-vcp/core";
+import { numberToStyleValue, EDGE_SIDE } from "@web-vcp/core";
 
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
@@ -44,14 +44,32 @@ const trackIconStyles = computed(() => {
   }
 })
 
-
 const handleTracksLinesScroll = (event: { scrollLeft: number, scrollTop: number }) => {
   const { scrollLeft, scrollTop } = event
-  ctx.manager.data.timeline.scrollOffset.value = scrollLeft
+  ctx.manager.data.timeline.scrollLeft.value = scrollLeft
+  ctx.manager.data.timeline.scrollTop.value = scrollTop
   if (tracksTypesScrollbarRef.value) {
     tracksTypesScrollbarRef.value.scrollTop = scrollTop
   }
 }
+
+ctx.manager.onMouseCloseEdge((edgeSide: string) => {
+  const { trackitemDraging, trackitemResing } = ctx.manager.data.ctx.service
+  if (!tracksLinesScrollbarRef.value || (!trackitemDraging && !trackitemResing)) return
+  const { scrollLeft, scrollTop } = ctx.manager.data.timeline.ctx
+  if (edgeSide === EDGE_SIDE.LEFT) {
+    tracksLinesScrollbarRef.value.setScrollLeft(Math.max(scrollLeft - 10, 0))
+  }
+  if (edgeSide === EDGE_SIDE.RIGHT) {
+    tracksLinesScrollbarRef.value.setScrollLeft(scrollLeft + 10)
+  }
+  if (edgeSide === EDGE_SIDE.TOP) {
+    tracksLinesScrollbarRef.value.setScrollTop(Math.max(scrollTop - 10, 0))
+  }
+  if (edgeSide === EDGE_SIDE.BOTTOM) {
+    tracksLinesScrollbarRef.value.setScrollTop(scrollTop + 10)
+  }
+})
 
 watch([
   () => ctx.manager.data.trackline.getLongestTracklineSecond()

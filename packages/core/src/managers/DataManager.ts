@@ -39,6 +39,10 @@ export class DataManager extends BaseData {
       timeline: this.timeline.ctx,
       trackline: this.trackline.ctx,
       system: this.system.ctx,
+      service: {
+        ...this.trackitemService.ctx,
+        ...this.cursorLineService.ctx,
+      },
     };
   }
 
@@ -59,15 +63,15 @@ export class DataManager extends BaseData {
     // 音视频解码
     this.webav = new WebavHelper(options.webav);
 
-    this.unwatch = watch(this.observeList, () => this.triggerUpdate(), {
-      immediate: true,
-    });
-
     // service 实例
     this.webavService = new WebavService(this);
     this.elEventService = new ElEventService(this);
     this.cursorLineService = new CursorLineService(this);
     this.trackitemService = new TrackItemService(this);
+
+    this.unwatch = watch(this.observeList, () => this.triggerUpdate(), {
+      immediate: true,
+    });
   }
 
   /**
@@ -166,6 +170,13 @@ export class DataManager extends BaseData {
     )[eventType];
 
     if (activeFunc) activeFunc(...args);
+  }
+
+  /**
+   * 监听鼠标接近边缘
+   */
+  onMouseCloseEdge(func: (edgeSide: string) => void) {
+    this.elEventService.onMouseCloseEdge(func);
   }
 
   /**

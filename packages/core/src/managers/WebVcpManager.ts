@@ -37,6 +37,13 @@ export class WebVcpManager {
   }
 
   /**
+   * 监听鼠标接近边缘
+   */
+  onMouseCloseEdge(func: (edgeSide: string) => void) {
+    this.data.onMouseCloseEdge(func);
+  }
+
+  /**
    * 销毁
    */
   public destroy() {

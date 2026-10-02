@@ -1,7 +1,15 @@
+import type { CursorLineServiceContext } from "@/types/data";
+
 import { BaseService } from "./BaseService";
 
 export class CursorLineService extends BaseService {
   private cursorMoving: boolean = false;
+
+  get ctx(): CursorLineServiceContext {
+    return {
+      cursorMoving: this.cursorMoving,
+    };
+  }
 
   /**
    * 停用事件

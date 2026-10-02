@@ -38,7 +38,7 @@ const drawTimeLine = () => {
   // 清理 canvas
   canvasContext.clearRect(0, 0, canvasAttr.width, canvasAttr.height);
   // 样式
-  const { marginLeft, gapWidth, scrollOffset, gapsPerLabel, framesPerGap, styles } = ctx.manager.data.timeline.ctx
+  const { marginLeft, gapWidth, scrollLeft, gapsPerLabel, framesPerGap, styles } = ctx.manager.data.timeline.ctx
   const { lineColor, fontColor } = styles
   // =========== 顶线 ===========
   canvasContext.fillStyle = lineColor
@@ -46,7 +46,7 @@ const drawTimeLine = () => {
   // =========== 间隔竖线 ===========
   if (!gapWidth) return
   // 滚动条位移
-  const timelineOffsetPix = Math.max(scrollOffset, 0)
+  const timelineOffsetPix = Math.max(scrollLeft, 0)
   // 计算竖线起始位置（不满足一格的起始）
   let startPosition = timelineOffsetPix % gapWidth
   if (startPosition > 0) startPosition = gapWidth - startPosition

@@ -17,8 +17,8 @@ const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 
 // 游标线的视图位置
 const cursorLineViewPosition = computed(() => {
-  const { cursorLinePosition, scrollOffset } = ctx.manager.data.timeline
-  return cursorLinePosition.value - scrollOffset.value
+  const { cursorLinePosition, scrollLeft } = ctx.manager.data.timeline
+  return cursorLinePosition.value - scrollLeft.value
 })
 // 是否显示游标线
 const showCursorLine = computed(() => {

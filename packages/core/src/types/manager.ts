@@ -1,4 +1,5 @@
 import type {
+  DataServiceContext,
   SystemCommonContext,
   SystemCommonDataOptions,
   TimelineContext,
@@ -19,6 +20,7 @@ export interface DataManagerContext {
   timeline: TimelineContext;
   trackline: TrackLineContext;
   system: SystemCommonContext;
+  service: DataServiceContext;
 }
 
 export interface WebVcpManagerOptions {

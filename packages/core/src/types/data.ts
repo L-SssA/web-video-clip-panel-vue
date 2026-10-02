@@ -31,6 +31,7 @@ export interface SystemCommonStyles {
 export interface SystemCommonContext {
   styles: SystemCommonStyles;
   panelHeight: number;
+  closeEdgeDistance: number;
 }
 
 /**
@@ -39,6 +40,7 @@ export interface SystemCommonContext {
 export interface SystemCommonDataOptions {
   styles: Partial<SystemCommonStyles>;
   panelHeight: number;
+  closeEdgeDistance: number;
 }
 
 /**
@@ -64,7 +66,8 @@ export interface TimelineContext {
   gapsPerLabel: number;
   framesPerGap: number;
   marginLeft: number;
-  scrollOffset: number;
+  scrollLeft: number;
+  scrollTop: number;
   cursorLinePosition: number;
   styles: TimelineStyles;
   enableAutoAdsorb: boolean;
@@ -215,3 +218,14 @@ export type TrackLine<T extends TrackItem = TrackItem> = {
 }[T["type"]];
 
 export type pictureTrackLine = ImageTrackLine | VideoTrackLine;
+
+export interface TrackItemServiceContext {
+  trackitemDraging: boolean;
+  trackitemResing: boolean;
+}
+
+export interface CursorLineServiceContext {
+  cursorMoving: boolean;
+}
+
+export type DataServiceContext = TrackItemServiceContext & CursorLineServiceContext;

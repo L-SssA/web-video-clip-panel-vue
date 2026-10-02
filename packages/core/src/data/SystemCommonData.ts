@@ -8,6 +8,7 @@ import type {
   SystemCommonStyles,
 } from "@/types/data";
 
+import { DEFAULT_CLOSE_EDGE_DISTANCE, DEFAULT_PANEL_HEIGHT } from "@/config/constant";
 import { DEFAULT_SYSTEM_COMMON_STYLES, SYSTEM_COMMON_STYLES_MAP } from "@/config/theme";
 
 import { BaseData } from "./BaseData";
@@ -15,9 +16,14 @@ import { BaseData } from "./BaseData";
 export class SystemCommonData extends BaseData {
   public mouseEvent: MouseEvent | null = null;
 
+  // 面板边缘检测距离
+  public closeEdgeDistance: number;
+
+  // 面板高度
+  readonly panelHeight: Ref<number>;
+
   // 样式
   readonly styles: Ref<SystemCommonStyles>;
-  readonly panelHeight: Ref<number>;
 
   /**
    * 获取系统通用上下文数据
@@ -26,6 +32,7 @@ export class SystemCommonData extends BaseData {
     return {
       styles: this.styles.value,
       panelHeight: this.panelHeight.value,
+      closeEdgeDistance: this.closeEdgeDistance,
     };
   }
 
@@ -36,9 +43,14 @@ export class SystemCommonData extends BaseData {
   constructor(options: Partial<SystemCommonDataOptions> = {}) {
     super();
 
-    const { styles, panelHeight = 320 } = options;
+    const {
+      styles,
+      panelHeight = DEFAULT_PANEL_HEIGHT,
+      closeEdgeDistance = DEFAULT_CLOSE_EDGE_DISTANCE,
+    } = options;
 
     this.panelHeight = ref(panelHeight);
+    this.closeEdgeDistance = closeEdgeDistance;
 
     this.styles = ref(DEFAULT_SYSTEM_COMMON_STYLES);
     this.updateStyles(styles);

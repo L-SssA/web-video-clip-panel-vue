@@ -39,7 +39,8 @@ export class TimelineData extends BaseData {
   // 时间线默认位移(px) default 60
   readonly marginLeft: number;
   // 滚动位移
-  readonly scrollOffset: Ref<number> = ref(0);
+  readonly scrollLeft: Ref<number> = ref(0);
+  readonly scrollTop: Ref<number> = ref(0);
 
   // 启用自动吸附 default true
   readonly enableAutoAdsorb: Ref<boolean> = ref(true);
@@ -63,7 +64,8 @@ export class TimelineData extends BaseData {
       gapsPerLabel: this.gapsPerLabel.value,
       framesPerGap: this.framesPerGap.value,
       marginLeft: this.marginLeft,
-      scrollOffset: this.scrollOffset.value,
+      scrollLeft: this.scrollLeft.value,
+      scrollTop: this.scrollTop.value,
       cursorLinePosition: this.cursorLinePosition.value,
       // 样式
       styles: this.styles.value,
@@ -82,7 +84,7 @@ export class TimelineData extends BaseData {
       this.gapWidth,
       this.gapsPerLabel,
       this.framesPerGap,
-      this.scrollOffset,
+      this.scrollLeft,
       this.enableAutoAdsorb,
       this.autoAdsorbDistance,
       this.styles,
@@ -177,7 +179,7 @@ export class TimelineData extends BaseData {
    */
   setCurrentTimeByPixel(pixel: number): void {
     // 计算像素位置相对于时间线的偏移量
-    const offsetX = Math.max(pixel - this.marginLeft + this.scrollOffset.value, 0);
+    const offsetX = Math.max(pixel - this.marginLeft + this.scrollLeft.value, 0);
     this.currentTime.value = pixelToTime(
       offsetX,
       this.fps.value,

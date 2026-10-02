@@ -1,4 +1,4 @@
-import type { TrackItem } from "@/types/data";
+import type { TrackItem, TrackItemServiceContext } from "@/types/data";
 import type { MarkedTrackItemData } from "@/types/manager";
 
 import { isNumberInside, pixelToTime, timeToPixel } from "@/utils/tools";
@@ -7,7 +7,7 @@ import { BaseService } from "./BaseService";
 
 export class TrackItemService extends BaseService {
   private markedX: number = 0;
-  private markedScrollOffset: number = 0;
+  private markedScrollLeft: number = 0;
   private markedTrackItemData: MarkedTrackItemData = {
     start: 0,
     end: 0,
@@ -19,6 +19,13 @@ export class TrackItemService extends BaseService {
   private trackitemDraging: boolean = false;
   private trackitemResing: boolean = false;
   private trackitemResizeSideTag: string = "";
+
+  get ctx(): TrackItemServiceContext {
+    return {
+      trackitemDraging: this.trackitemDraging,
+      trackitemResing: this.trackitemResing,
+    };
+  }
 
   /**
    * trackitem 鼠标移动操作的无效校验
@@ -43,7 +50,7 @@ export class TrackItemService extends BaseService {
       return false;
     try {
       this.markedX = this._data.system.mouseEvent.clientX;
-      this.markedScrollOffset = this._data.timeline.ctx.scrollOffset;
+      this.markedScrollLeft = this._data.timeline.ctx.scrollLeft;
       // 保存必要的 trackitem 数据
       const { start, end, clipStart, clipEnd } = this._data.trackline.activeTrackItem.value;
       Object.assign(this.markedTrackItemData, { start, end, clipStart, clipEnd });
@@ -307,7 +314,7 @@ export class TrackItemService extends BaseService {
     // 移动 pixel
     const offsetX = pixelX - this.markedX;
     // 移动中的滚动
-    const offsetScroll = this._data.timeline.ctx.scrollOffset - this.markedScrollOffset;
+    const offsetScroll = this._data.timeline.ctx.scrollLeft - this.markedScrollLeft;
     // 移动的 pixel 转换为时间
     const { fps, framesPerGap, gapWidth } = this._data.timeline.ctx;
     let offsetSeconds = pixelToTime(offsetX + offsetScroll, fps, framesPerGap, gapWidth);
@@ -361,7 +368,7 @@ export class TrackItemService extends BaseService {
 
     if (!activeTrackItem.value) return;
 
-    const { fps, framesPerGap, gapWidth, scrollOffset, marginLeft } = this._data.timeline.ctx;
+    const { fps, framesPerGap, gapWidth, scrollLeft, marginLeft } = this._data.timeline.ctx;
     const { start, end } = activeTrackItem.value;
 
     // 计算相对关系 -> 计算对齐关系
@@ -372,13 +379,13 @@ export class TrackItemService extends BaseService {
         if (start === ti.start || start === ti.end) {
           showAlignmentLeft.value = true;
           alignmentLeftPosition.value =
-            timeToPixel(start, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
+            timeToPixel(start, fps, framesPerGap, gapWidth) - scrollLeft + marginLeft;
         }
         // 右侧定位线
         if (end === ti.start || end === ti.end) {
           showAlignmentRight.value = true;
           alignmentRightPosition.value =
-            timeToPixel(end, fps, framesPerGap, gapWidth) - scrollOffset + marginLeft;
+            timeToPixel(end, fps, framesPerGap, gapWidth) - scrollLeft + marginLeft;
         }
       });
     });

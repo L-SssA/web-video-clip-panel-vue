@@ -81,3 +81,14 @@ export const PANEL_EVENT_TYPE = {
   TRACK_ITEM_DRAG: "trackitemDrag",
   TRACK_ITEM_RESIZE: "trackitemResize",
 };
+
+export const DEFAULT_PANEL_HEIGHT = 320;
+
+export const DEFAULT_CLOSE_EDGE_DISTANCE = 100;
+
+export const EDGE_SIDE = {
+  LEFT: "left",
+  RIGHT: "right",
+  TOP: "top",
+  BOTTOM: "bottom",
+};
