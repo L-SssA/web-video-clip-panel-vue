@@ -210,18 +210,7 @@ export class TrackLineData extends BaseData {
    */
   addToTrackLine<T extends TrackItem>(trackitem: T): void {
     if (this.activeTrackLine.value && this.activeTrackLine.value.type === trackitem.type) {
-      // 如果当前活跃轨道与当前添加的轨道类型相同，则将数据添加到当前轨道
-      trackitem.parentId = this.activeTrackLine.value.id;
-      // 查找是否出现重叠的问题
-      const overlap = this.findOverlapTrackItem(this.activeTrackLine.value, trackitem);
-      if (overlap != null) {
-        // 如果重叠，则加入队尾
-        trackitem.start = Math.max(...this.activeTrackLine.value.data.map((item) => item.end), 0);
-        const duration = trackitem.end - trackitem.start || 5;
-        trackitem.end = trackitem.start + duration;
-      }
-      this.activeTrackLine.value.data.push(trackitem);
-      nextTick(() => (this.activeTrackItem.value = trackitem));
+      this.addToTargetTrackLine(trackitem, this.activeTrackLine.value);
     } else {
       // 如果当前活跃轨道与当前添加的轨道类型不同，则创建新的轨道
       this.addToNewTrackLine(trackitem);
@@ -229,10 +218,31 @@ export class TrackLineData extends BaseData {
   }
 
   /**
+   * 将 trackitem 添加到目标 trackline
+   * @param trackitem  目标 trackitem
+   * @param trackline  目标 trackline
+   */
+  addToTargetTrackLine<T extends TrackItem>(trackitem: T, trackline: TrackLine): void {
+    const duration = trackitem.end - trackitem.start || 5;
+    // 如果当前活跃轨道与当前添加的轨道类型相同，则将数据添加到当前轨道
+    trackitem.parentId = trackline.id;
+    // 查找是否出现重叠的问题
+    const overlap = this.findOverlapTrackItem(trackline, trackitem);
+    if (overlap != null) {
+      // 如果重叠，则加入队尾
+      trackitem.start = Math.max(...trackline.data.map((item) => item.end), 0);
+      trackitem.end = trackitem.start + duration;
+    }
+    trackline.data.push(trackitem);
+    nextTick(() => (this.activeTrackItem.value = trackitem));
+  }
+
+  /**
    * 将 trackitem 添加到新的轨道
    * @param trackitem 目标 trackitem
    */
   addToNewTrackLine<T extends TrackItem>(trackitem: T): void {
+    const duration = trackitem.end - trackitem.start || 5;
     const newTrackLine = defineTrackLineConfig<T>(trackitem.type);
     trackitem.parentId = newTrackLine.id;
     newTrackLine.data.push(trackitem);
@@ -241,7 +251,6 @@ export class TrackLineData extends BaseData {
     } else {
       this.pictureTrackLineList.value.push(newTrackLine as pictureTrackLine);
     }
-    const duration = trackitem.end - trackitem.start || 5;
     trackitem.end = trackitem.start + duration;
     this.activeTrackLine.value = newTrackLine;
     nextTick(() => (this.activeTrackItem.value = trackitem));
