@@ -8,7 +8,7 @@ import type {
   TrackLineDataOptions,
   TrackLineStyles,
   AudioTrackLine,
-  pictureTrackLine,
+  PictureTrackLine,
   VideoTrackLine,
   TrackLine,
 } from "@/types/data";
@@ -36,7 +36,7 @@ import { BaseData } from "./BaseData";
 
 export class TrackLineData extends BaseData {
   // 画面轨道列表
-  private pictureTrackLineList = ref<pictureTrackLine[]>([]);
+  private PictureTrackLineList = ref<PictureTrackLine[]>([]);
   // 主轨道（video track）
   private mainTrackLine = ref<VideoTrackLine>({
     id: MAIN_TRACK_ID,
@@ -143,7 +143,7 @@ export class TrackLineData extends BaseData {
 
     // 所有轨道合并，用于显示
     this.mergeTrackLineList = computed(() => [
-      ...this.pictureTrackLineList.value,
+      ...this.PictureTrackLineList.value,
       this.mainTrackLine.value,
       ...this.audioTrackLineList.value,
     ]);
@@ -249,7 +249,7 @@ export class TrackLineData extends BaseData {
     if (newTrackLine.type === "audio") {
       this.audioTrackLineList.value.push(newTrackLine as AudioTrackLine);
     } else {
-      this.pictureTrackLineList.value.push(newTrackLine as pictureTrackLine);
+      this.PictureTrackLineList.value.push(newTrackLine as PictureTrackLine);
     }
     trackitem.end = trackitem.start + duration;
     this.activeTrackLine.value = newTrackLine;
@@ -310,7 +310,7 @@ export class TrackLineData extends BaseData {
     if (trackline.type === "audio") {
       this.moveTrackInList(trackline, this.audioTrackLineList, targetId, direction);
     } else {
-      this.moveTrackInList(trackline, this.pictureTrackLineList, targetId, direction);
+      this.moveTrackInList(trackline, this.PictureTrackLineList, targetId, direction);
     }
   }
 
@@ -352,7 +352,7 @@ export class TrackLineData extends BaseData {
    */
   cleanEmptyTrackline() {
     const tracklineEmpty = (tl: TrackLine) => tl.data.length;
-    this.pictureTrackLineList.value = this.pictureTrackLineList.value.filter(tracklineEmpty);
+    this.PictureTrackLineList.value = this.PictureTrackLineList.value.filter(tracklineEmpty);
     this.audioTrackLineList.value = this.audioTrackLineList.value.filter(tracklineEmpty);
   }
 

@@ -193,7 +193,7 @@ export type TrackLine<T extends TrackItem = TrackItem> = {
   [K in T["type"]]: BaseTrackLine<T>;
 }[T["type"]];
 
-export type pictureTrackLine = ImageTrackLine | VideoTrackLine;
+export type PictureTrackLine = ImageTrackLine | VideoTrackLine;
 
 export interface TrackItemServiceContext {
   trackitemDraging: boolean;
