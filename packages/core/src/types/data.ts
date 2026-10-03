@@ -1,20 +1,3 @@
-export interface IData {
-  /**
-   * 添加更新回调
-   * @param callback 回调函数
-   */
-  onUpdate(callback: Function): void;
-  /**
-   * 移除更新回调
-   * @param callback 回调函数
-   */
-  offUpdate(callback: Function): void;
-  /**
-   * 释放资源
-   */
-  release(): void;
-}
-
 /**
  * 系统通用样式
  */
@@ -139,16 +122,16 @@ export interface BaseTrackItem {
   end: number; // 轨道片段结束时间
   changeable: boolean; // 是否可改变
   reloadFlag: boolean; // 是否需要重新加载
-  loading?: boolean; // 加载状态
   ghost?: boolean; // 是否为 ghost 片段
   clipStart: number; // 裁剪开始时间
   clipEnd: number; // 裁剪结束时间
+  clipReady: boolean; // clip 是否准备完成
+  previewReady: boolean; // 预览是否完成
 }
 
 export interface ImageTrackItem extends BaseTrackItem {
   type: "image";
   source: string; // 图片源
-  previewListLoader: Promise<string[]>; // 轨道预览图片加载器
   previewList: string[];
   // 图片信息
   gif: boolean;
@@ -159,12 +142,12 @@ export interface ImageTrackItem extends BaseTrackItem {
 export interface TextTrackItem extends BaseTrackItem {
   type: "text";
   text: string;
+  style: string;
 }
 
 export interface AudioTrackItem extends BaseTrackItem {
   type: "audio";
   source: string; // 音频源
-  audioDataLoader: Promise<number[]>; // 轨道音频数据加载器
   audioData: number[];
   /* 音频信息 */
   duration: number;
@@ -176,19 +159,12 @@ export interface AudioTrackItem extends BaseTrackItem {
 export interface VideoTrackItem extends BaseTrackItem {
   type: "video";
   source: string; // 视频源
-  audioSource: string; // 音频源
-  previewListLoader: Promise<string[]>; // 轨道预览图片加载器
   previewList: string[]; // 轨道预览图片
-  audioDataLoader: Promise<number[]>; // 轨道音频数据加载器
   audioData: number[];
-  audioTrackItem?: AudioTrackItem;
   /* 视频信息 */
+  duration: number;
   originWidth: number;
   originHeight: number;
-  fps: number;
-  frameCount: number;
-  previewDuration: number;
-  duration: number;
   /* 配置项 */
   mute: boolean;
   volume: number; // 音量

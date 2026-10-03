@@ -74,7 +74,7 @@ export function getDrawList(
   } else {
     // 单帧或多帧平铺
     let frameCount = 1;
-    if ("frameCount" in data) frameCount = data.frameCount;
+    if ("duration" in data) frameCount = data.duration * fps;
 
     const dataFrom = Math.floor(clipStart * fps);
     const dataTo = Math.floor(frameCount - clipEnd * fps);
@@ -115,7 +115,7 @@ export function drawAudioPreview(
   // 获取绘制列表
   // 获取
   let dataCount = 0;
-  if ("frameCount" in data) dataCount = data.frameCount;
+  if ("duration" in data) dataCount = data.duration * fps;
   else dataCount = Math.floor(duration * fps);
   // 可容纳的音频柱数量
   const targetAudioBarCount = Math.floor(viewWidth / (audioBarWidth + audioBarSpacing));

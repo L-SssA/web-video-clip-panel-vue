@@ -173,3 +173,91 @@ export function numberToStyleValue(value: number | string, unit: string = "px") 
 export function isNumberInside(num: number, min: number, max: number) {
   return min < num && num < max;
 }
+
+/**
+ * 加载视频地址元数据
+ * @param url 资源地址
+ */
+export function loadVideoUrlMetadata(url: string) {
+  return new Promise<{ duration: number; width: number; height: number }>((resolve, reject) => {
+    const video = document.createElement("video");
+    // 预加载提示：仅加载元数据
+    video.preload = "metadata";
+    video.src = url;
+
+    // 成功加载元数据
+    video.addEventListener("loadedmetadata", () => {
+      const meta = {
+        duration: video.duration,
+        width: video.videoWidth,
+        height: video.videoHeight,
+      };
+      video.remove();
+      resolve(meta);
+    });
+
+    video.addEventListener("error", (e) => {
+      video.remove();
+      reject(e);
+    });
+  });
+}
+
+/**
+ * 加载音频地址元数据
+ * @param url 资源地址
+ */
+export function loadAudioUrlMetadata(url: string) {
+  return new Promise<{ duration: number }>((resolve, reject) => {
+    const audio = document.createElement("audio");
+    // 预加载提示：仅加载元数据
+    audio.preload = "metadata";
+    audio.src = url;
+
+    // 成功加载元数据
+    audio.addEventListener("loadedmetadata", () => {
+      const meta = {
+        duration: audio.duration,
+      };
+      audio.remove();
+      resolve(meta);
+    });
+
+    audio.addEventListener("error", (e) => {
+      audio.remove();
+      reject(e);
+    });
+  });
+}
+
+/**
+ * 加载图片地址元数据
+ * @param url 资源地址
+ */ export function loadImageMetadata(url: string | ImageBitmap) {
+  if (url instanceof ImageBitmap) {
+    return {
+      width: url.width,
+      height: url.height,
+    };
+  } else {
+    return new Promise<{ width: number; height: number }>((resolve, reject) => {
+      const image = document.createElement("img");
+      image.src = url;
+
+      // 成功加载元数据
+      image.addEventListener("load", () => {
+        const meta = {
+          width: image.width,
+          height: image.height,
+        };
+        image.remove();
+        resolve(meta);
+      });
+
+      image.addEventListener("error", (e) => {
+        image.remove();
+        reject(e);
+      });
+    });
+  }
+}

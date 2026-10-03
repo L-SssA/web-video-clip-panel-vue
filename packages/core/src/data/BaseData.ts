@@ -1,8 +1,6 @@
-import type { IData } from "@/types/data";
-
 import { EventCallback } from "@/utils/eventCallback";
 
-export class BaseData implements IData {
+export class BaseData {
   // 更新事件管理
   protected updateEvent = new EventCallback();
 

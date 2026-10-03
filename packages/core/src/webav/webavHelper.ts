@@ -145,12 +145,12 @@ export default class WebavHelper {
    * @param trackitem - 轨道项配置
    * @returns 返回缩略图 URL 数组的 Promise
    */
-  async getThumbnails(trackitem: TrackItem) {
+  async getThumbnails(trackitem: TrackItem, fps: number) {
     const cache = this.clipCache.get(trackitem.id);
     if (!cache) return [] as string[];
 
     if (!cache.thumbnails && cache.clip) {
-      cache.thumbnails = this.webavThumbnailsBuilder.buildThumbnails(cache.clip, trackitem);
+      cache.thumbnails = this.webavThumbnailsBuilder.buildThumbnails(cache.clip, trackitem, fps);
     }
 
     return cache.thumbnails || [];
@@ -254,11 +254,9 @@ export default class WebavHelper {
    * @param trackitem - 轨道项配置
    * @returns 返回波形数据数组
    */
-  async genWaveData(trackitem: TrackItem) {
+  async genWaveData(trackitem: TrackItem, fps: number) {
     const pcmData = await this.getPCMData(trackitem);
     if (!pcmData.length) return [] as number[];
-    let fps = 30;
-    if ("fps" in trackitem) fps = trackitem.fps;
     const samplesPerFrame = Math.floor(48000 / fps);
     const totalFrames = Math.floor((trackitem as AudioTrackItem | VideoTrackItem).duration * fps);
 
