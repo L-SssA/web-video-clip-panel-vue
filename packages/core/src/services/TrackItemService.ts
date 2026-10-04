@@ -483,7 +483,7 @@ export class TrackItemService extends BaseService {
     if (!newlineforTrackitem.value || !activeTrackItem.value) return;
     const targetId = tracklineBesideToNewline.value?.id;
     // 将当前 trackitem 移出 trackline
-    this._data.trackline.moveTrackitem(activeTrackItem.value);
+    this._data.trackline.removeTrackitem(activeTrackItem.value);
     // 将当前 trackitem 添加到新的 trackline
     this._data.trackline.addToNewTrackLine(activeTrackItem.value);
     // 将 trackline 移动到正确的位置

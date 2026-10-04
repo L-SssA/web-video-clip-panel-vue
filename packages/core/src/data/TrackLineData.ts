@@ -280,7 +280,7 @@ export class TrackLineData extends BaseData {
   }
 
   /**
-   * 将 trackitem 移动到目标 trackline, trackline 为空时，只做移出
+   * 将 trackitem 移动到目标 trackline, trackline 为空时，只做移除
    * @param trackitem 需要移动的 trackitem
    * @param trackline 需要移动到的 trackline
    */
@@ -294,6 +294,14 @@ export class TrackLineData extends BaseData {
       trackitem.parentId = trackline.id;
       trackline.data.push(trackitem);
     }
+  }
+
+  /**
+   * 移除 trackitem
+   * @param trackitem 需要删除的 trackitem
+   */
+  removeTrackitem(trackitem: TrackItem) {
+    return this.moveTrackitem(trackitem);
   }
 
   /**
