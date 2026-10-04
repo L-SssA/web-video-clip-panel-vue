@@ -4,7 +4,8 @@
     @mouseleave="ctx.manager.data.trackline.markLeaveTrackLineInfo(data, $event)">
     <div class="track-list" :style="tracklineListStyles">
       <TrackItem v-for="item in data.data.filter(data => data.reloadFlag)" :key="item.id" :data="item" />
-      <div class="sign-for-new-trackline" v-show="newlineforTrackitem && currActive" :style="newTracklineSignStyle">
+      <div class="sign-for-new-trackline" v-show="newlineforTrackitem && besideToNewline"
+        :style="newTracklineSignStyle">
       </div>
     </div>
   </div>
@@ -56,9 +57,13 @@ const tracklineListStyles = computed(() => {
     backgroundColor: currActive.value ? styles.value.activeBgColor : styles.value.backgroundColor,
   }
 })
+const besideToNewline = computed(() => {
+  const { tracklineBesideToNewline } = ctx.manager.data.trackline
+  return props.data.id === tracklineBesideToNewline.value?.id
+})
 const newTracklineSignStyle = computed<Record<string, string>>(() => {
   const style: Record<string, string> = {}
-  if (!currActive.value) return style
+  if (!besideToNewline.value) return style
   const { directionToNewline, gapHeight } = ctx.manager.data.trackline
   style[directionToNewline.value] = numberToStyleValue(-gapHeight / 2)
   return style

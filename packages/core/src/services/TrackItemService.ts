@@ -1,6 +1,7 @@
-import type { TrackItem, TrackItemServiceContext } from "@/types/data";
+import type { TrackItem, TrackItemServiceContext, TrackLine } from "@/types/data";
 import type { MarkedTrackItemData } from "@/types/manager";
 
+import { MAIN_TRACK_ID } from "@/config/constant";
 import { isNumberInside, pixelToTime, timeToPixel } from "@/utils/tools";
 
 import { BaseService } from "./BaseService";
@@ -182,7 +183,11 @@ export class TrackItemService extends BaseService {
 
     if (!activeTrackItem.value) return;
     // 如果存在需要移动到的目标轨道，则先做移动
-    if (targetTrackLineTo.value && targetTrackLineTo.value.id !== activeTrackLine.value?.id) {
+    if (
+      targetTrackLineTo.value &&
+      targetTrackLineTo.value.id !== activeTrackLine.value?.id &&
+      targetTrackLineTo.value.type === activeTrackItem.value.type
+    ) {
       this._data.trackline.moveTrackitem(activeTrackItem.value, targetTrackLineTo.value);
       activeTrackLine.value = targetTrackLineTo.value;
     }
@@ -399,34 +404,84 @@ export class TrackItemService extends BaseService {
       draggingOverlap,
       newlineforTrackitem,
       directionToNewline,
-      leaveTracklineFrom,
+      targetTrackLineTo,
+      activeTrackItem,
       leaveDirection,
+      tracklineBesideToNewline,
+      leaveTracklineFrom,
       activeTrackLine,
+      mainTrackLine,
     } = this._data.trackline;
+    if (!activeTrackItem.value || !leaveTracklineFrom.value) return;
     // 先重置状态
     newlineforTrackitem.value = false;
-    // 出现从当前轨道离开且没有进入新的轨道时，需要创建新的 trackline
-    // 当前活跃轨道与当前离开轨道id相等时，视为上述条件
-    if (activeTrackLine.value?.id === leaveTracklineFrom.value?.id) {
-      directionToNewline.value = leaveDirection;
+    // 当没有进入轨道 或 当进入的轨道与当前轨道片段类型不同时，则说明需要新建轨道
+    if (!targetTrackLineTo.value || targetTrackLineTo.value.type !== activeTrackItem.value.type) {
       newlineforTrackitem.value = true;
+      // 创建轨道的位置需要遵循以下规则：
+      if (this.availablePositionForNewline(activeTrackItem.value, leaveTracklineFrom.value)) {
+        // 1. 正常来说，使用离开轨道的方向和位置
+        // 2. 轨道类型严格区分，从上到下： 图像轨道*n -> 主轨道 -> 音频轨道
+        //   2.1 根据轨道类型，区分【图像轨道】和【音频轨道】
+        //   2.2 主轨道上方是图像轨道，下方是音频轨道
+        directionToNewline.value = leaveDirection;
+        tracklineBesideToNewline.value = leaveTracklineFrom.value;
+      } else {
+        // 3. 如果超过轨道区域，则在队头或队尾创建（图像轨道队尾，音频轨道队头）
+        //   3.1 这里通过主轨道来定义【图像轨道队尾，音频轨道队头】
+        directionToNewline.value = activeTrackItem.value.type === "audio" ? "bottom" : "top";
+        tracklineBesideToNewline.value = mainTrackLine.value;
+      }
     }
     // 出现重叠时，需要创建新的 trackline
     else if (draggingOverlap.value) {
-      // 指定创建位置为当前 trackline 的下
-      directionToNewline.value = "bottom";
+      // 指定创建位置为当前 trackline 的上方
       newlineforTrackitem.value = true;
+      directionToNewline.value = "top";
+      tracklineBesideToNewline.value = activeTrackLine.value;
     }
+
+    // 如果 trackitem 是 "video", 同时离开位置是【主轨道下方】或者是【音频轨道】，则说明 trackitem 进入主轨道，此时只有重叠需要新建轨道容纳它
+    if (
+      !draggingOverlap.value &&
+      activeTrackItem.value.type === "video" &&
+      ((leaveTracklineFrom.value.id === MAIN_TRACK_ID && leaveDirection === "bottom") ||
+        leaveTracklineFrom.value.type === "audio")
+    ) {
+      newlineforTrackitem.value = false;
+    }
+  }
+
+  /**
+   * 检查 trackitem 将要新建轨道的位置是否可行
+   * @param trackItem 当前移动的 trackitem
+   * @param trackline 将要创建新轨道的位置的临近轨道
+   */
+  availablePositionForNewline(trackItem: TrackItem, trackline: TrackLine) {
+    if (trackItem.type === "audio" && trackline.type === "audio") {
+      // 都是音频类型
+      return true;
+    }
+    const pictureTypes = ["video", "image", "text"];
+    if (
+      pictureTypes.includes(trackItem.type) &&
+      pictureTypes.includes(trackline.type) &&
+      trackline.id !== MAIN_TRACK_ID
+    ) {
+      // 都是画面轨道，并且不是主轨道（先排除主轨道，主轨道需要特殊判断）
+      return true;
+    }
+    return false;
   }
 
   /**
    * 检查并创建新的 trackline
    */
   checkAndDoNewLineForTrackItem() {
-    const { activeTrackLine, activeTrackItem, newlineforTrackitem, directionToNewline } =
+    const { tracklineBesideToNewline, activeTrackItem, newlineforTrackitem, directionToNewline } =
       this._data.trackline;
     if (!newlineforTrackitem.value || !activeTrackItem.value) return;
-    const targetId = activeTrackLine.value?.id;
+    const targetId = tracklineBesideToNewline.value?.id;
     // 将当前 trackitem 移出 trackline
     this._data.trackline.moveTrackitem(activeTrackItem.value);
     // 将当前 trackitem 添加到新的 trackline

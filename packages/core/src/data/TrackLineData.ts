@@ -36,9 +36,9 @@ import { BaseData } from "./BaseData";
 
 export class TrackLineData extends BaseData {
   // 画面轨道列表
-  private PictureTrackLineList = ref<PictureTrackLine[]>([]);
+  readonly PictureTrackLineList = ref<PictureTrackLine[]>([]);
   // 主轨道（video track）
-  private mainTrackLine = ref<VideoTrackLine>({
+  readonly mainTrackLine = ref<VideoTrackLine>({
     id: MAIN_TRACK_ID,
     type: "video",
     data: [],
@@ -46,7 +46,7 @@ export class TrackLineData extends BaseData {
     mute: false,
   });
   // 音频轨道列表
-  private audioTrackLineList = ref<AudioTrackLine[]>([]);
+  readonly audioTrackLineList = ref<AudioTrackLine[]>([]);
   // 按类型顺序排列轨道
   readonly mergeTrackLineList: ComputedRef<TrackLine[]>;
 
@@ -90,6 +90,7 @@ export class TrackLineData extends BaseData {
   // 需要创建一条新的 trackline
   public newlineforTrackitem: Ref<boolean> = ref(false);
   // 创建新的 trackline 的位置
+  public tracklineBesideToNewline: Ref<TrackLine | null> = ref(null);
   public directionToNewline: Ref<"bottom" | "top" | ""> = ref("");
 
   get ctx(): TrackLineContext {
@@ -261,12 +262,7 @@ export class TrackLineData extends BaseData {
    * @param trackline 将要移动到的 TrackLine
    */
   markEnterTrackLineInfo(trackline: TrackLine) {
-    if (this.activeTrackItem.value?.type !== trackline.type) return;
     this.targetTrackLineTo.value = trackline;
-    if (this.leaveTracklineFrom.value?.id === trackline.id) {
-      // 如果离开的id与进入的id相同，则代表重新进入该轨道
-      this.leaveTracklineFrom.value = null;
-    }
   }
 
   /**
@@ -275,11 +271,12 @@ export class TrackLineData extends BaseData {
    * @param event 离开的事件信息
    */
   markLeaveTrackLineInfo(trackline: TrackLine, event: MouseEvent) {
-    if (trackline.id !== this.activeTrackLine.value?.id) return;
     const domHeight = (event.target as HTMLElement | null)?.clientHeight;
     if (!domHeight) return;
     this.leaveDirection = event.offsetY >= domHeight / 2 ? "bottom" : "top";
     this.leaveTracklineFrom.value = trackline;
+    // 离开轨道时，清空目标轨道
+    this.targetTrackLineTo.value = null;
   }
 
   /**
@@ -307,9 +304,19 @@ export class TrackLineData extends BaseData {
    */
   moveTrackline(trackline: TrackLine, targetId?: string | symbol, direction?: string) {
     // 画面轨道和音频轨道存在不同的列表中
+    // 特殊处理：当 targetId === MAIN_TRACK_ID 时，音频轨道放在队头，图像轨道放在队尾
     if (trackline.type === "audio") {
+      if (targetId === MAIN_TRACK_ID) {
+        // 首位的顶部，指队头，首位可能为空，即音频列表为空，则自动插入队尾（即队头）
+        targetId = this.audioTrackLineList.value[0]?.id;
+        direction = "top";
+      }
       this.moveTrackInList(trackline, this.audioTrackLineList, targetId, direction);
     } else {
+      if (targetId === MAIN_TRACK_ID) {
+        targetId = this.PictureTrackLineList.value[this.PictureTrackLineList.value.length - 1]?.id;
+        direction = "bottom";
+      }
       this.moveTrackInList(trackline, this.PictureTrackLineList, targetId, direction);
     }
   }
