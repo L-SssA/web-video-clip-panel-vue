@@ -7,7 +7,6 @@ import { DEFAULT_CHROMAKEY_OPTIONS } from "@/config/constant";
 import { generateUUID } from "@/utils/tools";
 
 import { WebavClipBuilder } from "./webavClipBuilder";
-import { WebavThumbnailsBuilder } from "./webavThumbnailsBuilder";
 
 /**
  * WebAV 辅助类
@@ -18,8 +17,6 @@ export default class WebavHelper {
   private clipCache: Map<string | symbol, WebavClipCacheData>;
   /** WebAV 片段构建器实例 */
   private webavClipBuilder: WebavClipBuilder;
-  /** WebAV 缩略图构建器实例 */
-  private webavThumbnailsBuilder: WebavThumbnailsBuilder;
 
   /**
    * 构造函数
@@ -31,8 +28,6 @@ export default class WebavHelper {
     this.clipCache = new Map<string, WebavClipCacheData>();
     // 初始化 WebAV 片段构建器，用于创建媒体片段
     this.webavClipBuilder = new WebavClipBuilder(chromaKeyOptions);
-    // 初始化 WebAV 缩略图构建器，用于生成视频缩略图
-    this.webavThumbnailsBuilder = new WebavThumbnailsBuilder();
   }
 
   /**
@@ -130,10 +125,10 @@ export default class WebavHelper {
     response: Response | ImageBitmap,
     opts?: Record<string, any>,
   ) {
-    // 提取源数据：Response 需克隆 body，ImageBitmap 直接使用
-    const sourceData = response instanceof Response ? response.clone().body : response;
+    // 提取源数据：Response 需克隆，ImageBitmap 直接使用
+    const sourceData = response instanceof Response ? response.clone() : response;
 
-    if (!sourceData) {
+    if (!sourceData || !(sourceData instanceof Response && sourceData.body)) {
       throw new Error("Unsupported source data type");
     }
 
@@ -141,28 +136,22 @@ export default class WebavHelper {
   }
 
   /**
-   * 获取轨道项缩略图数组
+   * 获取轨道片段单帧画面
    * @param trackitem - 轨道项配置
-   * @returns 返回缩略图 URL 数组的 Promise
+   * @param time - 时间点（微秒）
    */
-  async getThumbnails(trackitem: TrackItem, fps: number) {
+  tick(trackitem: TrackItem, time: number) {
     const cache = this.clipCache.get(trackitem.id);
-    if (!cache) return [] as string[];
-
-    if (!cache.thumbnails && cache.clip) {
-      cache.thumbnails = this.webavThumbnailsBuilder.buildThumbnails(cache.clip, trackitem, fps);
-    }
-
-    return cache.thumbnails || [];
+    if (!cache || !cache.clip) return null;
+    return cache.clip.tick(time);
   }
-
   /**
    * 复制媒体片段到新ID
    * @param id - 新轨道项的ID
    * @param oldTrackItem - 原始轨道项配置
    * @returns 返回克隆后的媒体片段，如果原始片段不存在则返回null
    */
-  async copyClip(id: string, oldTrackItem: TrackItem) {
+  async copyClip(id: string | symbol, oldTrackItem: TrackItem) {
     const { id: oldId } = oldTrackItem;
     const cache = this.clipCache.get(oldId);
     if (!cache) return null;
@@ -187,9 +176,19 @@ export default class WebavHelper {
    * @param id - 轨道项ID
    * @returns 返回布尔值，表示该ID对应的片段是否存在且已加载
    */
-  async clipExists(id: string) {
+  clipExists(id: string | symbol) {
     const cache = this.clipCache.get(id);
     return !!cache?.clip;
+  }
+
+  /**
+   * 获取片段元数据
+   * @param id - 轨道项ID
+   * @returns 返回片段的元数据，如果片段不存在则返回 undefined
+   */
+  getClipMeta(id: string | symbol) {
+    const cache = this.clipCache.get(id);
+    return cache?.clip?.meta;
   }
 
   /**

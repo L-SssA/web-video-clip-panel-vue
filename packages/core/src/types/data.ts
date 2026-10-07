@@ -125,16 +125,13 @@ export interface BaseTrackItem {
   ghost?: boolean; // 是否为 ghost 片段
   clipStart: number; // 裁剪开始时间
   clipEnd: number; // 裁剪结束时间
-  clipReady: boolean; // clip 是否准备完成
-  previewReady: boolean; // 预览是否完成
+  ready: boolean; // clip 是否准备完成
 }
 
 export interface ImageTrackItem extends BaseTrackItem {
   type: "image";
   source: string; // 图片源
-  previewList: string[];
   // 图片信息
-  gif: boolean;
   originWidth: number;
   originHeight: number;
 }
@@ -159,7 +156,6 @@ export interface AudioTrackItem extends BaseTrackItem {
 export interface VideoTrackItem extends BaseTrackItem {
   type: "video";
   source: string; // 视频源
-  previewList: string[]; // 轨道预览图片
   audioData: number[];
   /* 视频信息 */
   duration: number;

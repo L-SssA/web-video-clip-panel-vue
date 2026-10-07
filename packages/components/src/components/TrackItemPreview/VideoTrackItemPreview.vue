@@ -4,8 +4,7 @@
       <canvas ref="imageViewCanvas" v-bind="imageViewAttr" :style="imageViewStyle"></canvas>
     </div>
     <div class="preview-audio-list" v-show="!data.mute">
-      <canvas class="preview-audio-list-canvas" ref="audioViewCanvas" v-bind="audioViewAttr"
-        :style="audioViewStyle"></canvas>
+      <canvas ref="audioViewCanvas" v-bind="audioViewAttr" :style="audioViewStyle"></canvas>
     </div>
   </div>
 </template>
@@ -64,12 +63,12 @@ const audioViewStyle = computed(() => ({
 
 const drawAudioList = debounce(() => {
   if (!audioCanvasContext) return
-  drawAudioPreview(props.data, ctx.manager.data.ctx, audioCanvasContext)
+  drawAudioPreview(props.data, ctx.manager.data, audioCanvasContext)
 }, 50)
 
 const drawImageList = debounce(() => {
   if (!imageCanvasContext) return
-  drawImagePreview(props.data, ctx.manager.data.ctx, imageCanvasContext)
+  drawImagePreview(props.data, ctx.manager.data, imageCanvasContext)
 }, 50)
 
 const updatePrewview = () => {
@@ -100,8 +99,6 @@ watch(
     () => props.data.end,
     ctx.manager.data.timeline.scale,
     () => props.data.ghost,
-    () => props.data.previewList,
-    () => props.data.audioData,
   ],
   (newVal, oldVal) => {
     const startOffset = newVal[0] - oldVal[0]

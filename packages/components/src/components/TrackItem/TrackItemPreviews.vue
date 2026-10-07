@@ -1,6 +1,6 @@
 <template>
   <div class="track-item-previews">
-    <TrackItemLoading v-if="!data.previewReady" />
+    <TrackItemLoading v-if="!data.ready" />
     <VideoTrackItemPreview v-else-if="data.type === 'video'" :data="data">
     </VideoTrackItemPreview>
     <AudioTrackItemPreview v-else-if="data.type === 'audio'" :data="data">

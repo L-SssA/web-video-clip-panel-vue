@@ -1,7 +1,10 @@
-import { reactive } from "vue";
-
+import type { DataManager } from "@/managers/DataManager";
 import type { ImageTrackItem, VideoTrackItem, AudioTrackItem } from "@/types/data";
-import type { DataManagerContext } from "@/types/manager";
+
+import { SimpleScheduler, type Task } from "./scheduler";
+import { timeToPixel } from "./tools";
+
+const drawScheduler = new SimpleScheduler();
 
 /**
  * 绘制图像预览
@@ -12,82 +15,91 @@ import type { DataManagerContext } from "@/types/manager";
  */
 export function drawImagePreview(
   data: VideoTrackItem | ImageTrackItem,
-  dataCtx: DataManagerContext,
+  dataManager: DataManager,
   renderCtx: CanvasRenderingContext2D,
 ) {
   // 清空画布
   const { width: viewWidth, height: viewHeight } = renderCtx.canvas;
   renderCtx.clearRect(0, 0, viewWidth, viewHeight);
+  // 清空绘制任务
+  drawScheduler.delete(data.id);
 
   // 绘制新内容
   const { originWidth, originHeight } = data;
-  const { trackHeights, audioBarHeight } = dataCtx.trackline;
+  const { trackHeights, audioBarHeight } = dataManager.ctx.trackline;
   const previewHeight = trackHeights[data.type] - audioBarHeight - 20;
   const previewWidth = (originWidth / originHeight) * previewHeight;
   if (!previewWidth) return;
 
-  const targetFrameCount = Math.ceil(viewWidth / previewWidth);
-  if (!targetFrameCount) return;
+  // 获取绘制的时间点列表
+  const timePoints = getTimePointList(data, dataManager, viewWidth, previewWidth);
 
-  // 获取绘制列表
-  const drawList = getDrawList(data, dataCtx, targetFrameCount, "gif" in data && data.gif);
+  if (!timePoints.length) return;
 
-  if (!drawList.length) reactive;
   // 绘制预览列表
-  drawList.forEach((url, index) => {
+  const taskList = [] as Task[];
+  timePoints.forEach((time, index) => {
     const x = index * previewWidth;
     if (x > viewWidth) return;
-    const img = new Image();
-    img.src = url;
-    img.onload = function () {
-      renderCtx.drawImage(img, x, 0, previewWidth, viewHeight);
-      img.remove();
+    const task = async () => {
+      const { video } = (await dataManager.webav.tick(data, Math.ceil(time * 1e6))) || {};
+      if (!video) return;
+      renderCtx.drawImage(video, x, 0, previewWidth, viewHeight);
+      video.close();
     };
+    taskList.push(task);
   });
+  drawScheduler.add(taskList, data.id);
 }
 
 /**
- * 从数据源中计算出绘制列表
+ * 计算需要绘制的时间点列表
  * @param data 数据源
  * @param dataCtx 数据管理器上下文
  * @param targetFrameCount 目标帧数
  * @param gif 是否是gif
  * @returns 绘制列表
  */
-export function getDrawList(
+export function getTimePointList(
   data: VideoTrackItem | ImageTrackItem,
-  dataCtx: DataManagerContext,
-  targetFrameCount: number,
-  gif: boolean,
+  dataManager: DataManager,
+  viewWidth: number,
+  previewWidth: number,
 ) {
-  const { framesPerGap, fps } = dataCtx.timeline;
-  const { previewList = [], clipStart, clipEnd } = data;
+  const { framesPerGap, fps, gapWidth } = dataManager.ctx.timeline;
+  const { type, clipStart, clipEnd } = data;
 
-  if (!previewList.length) return [];
+  const targetFrameCount = Math.ceil(viewWidth / previewWidth);
+  if (!targetFrameCount) return [];
 
-  const drawList: string[] = [];
-  if (gif) {
+  const meta = dataManager.webav.getClipMeta(data.id);
+  if (!meta) return [];
+
+  if (type === "image" && meta.duration && meta.duration !== Infinity) {
     // gif动图循环
-    const loopList = previewList.filter((_, index) => index % framesPerGap === 0);
-    const repeatCount = Math.ceil(targetFrameCount / loopList.length);
-    drawList.push(...Array<string[]>(repeatCount).fill(loopList).flat());
+    const seconds = Math.ceil((meta.duration / 1e6) * 100) / 100;
+    const loopFrameCount = Math.ceil(
+      timeToPixel(meta.duration / 1e6, fps, framesPerGap, gapWidth) / previewWidth,
+    );
+    const loopList = Array<number>(loopFrameCount)
+      .fill(0)
+      .map((_, idx) => Math.ceil(idx * (seconds / loopFrameCount) * 100) / 100);
+    const repeatCount = targetFrameCount / loopList.length;
+    return Array<number[]>(repeatCount).fill(loopList).flat();
+  } else if (type === "image") {
+    // 静态图片
+    return Array<number>(targetFrameCount + 1).fill(0);
   } else {
-    // 单帧或多帧平铺
-    let frameCount = 1;
-    if ("duration" in data) frameCount = data.duration * fps;
+    // 视频平铺
+    const seconds = Math.ceil((meta.duration / 1e6) * 100) / 100;
+    const timeFrom = Math.floor(clipStart);
+    const timeTo = Math.floor(seconds - clipEnd);
+    const stepGo = (timeTo - timeFrom) / targetFrameCount;
 
-    const dataFrom = Math.floor(clipStart * fps);
-    const dataTo = Math.floor(frameCount - clipEnd * fps);
-    const stepGo = (dataTo - dataFrom) / targetFrameCount;
-
-    for (let i = dataFrom; i < dataTo + stepGo; i += stepGo) {
-      let data = previewList[Math.floor(i)];
-      if (!data) data = previewList[dataTo - 1] || previewList[previewList.length - 1];
-      drawList.push(data);
-    }
+    return Array<number>(targetFrameCount + 1)
+      .fill(0)
+      .map((_, idx) => Math.ceil((timeFrom + idx * stepGo) * 100) / 100);
   }
-
-  return drawList;
 }
 
 /**
@@ -99,7 +111,7 @@ export function getDrawList(
  */
 export function drawAudioPreview(
   data: VideoTrackItem | AudioTrackItem,
-  dataCtx: DataManagerContext,
+  dataManager: DataManager,
   renderCtx: CanvasRenderingContext2D,
 ) {
   // 清空画布
@@ -107,8 +119,8 @@ export function drawAudioPreview(
   renderCtx.clearRect(0, 0, viewWidth, viewHeight);
 
   // 绘制新内容
-  const { fps } = dataCtx.timeline;
-  const { audioBarWidth, audioBarSpacing } = dataCtx.trackline;
+  const { fps } = dataManager.ctx.timeline;
+  const { audioBarWidth, audioBarSpacing } = dataManager.ctx.trackline;
   const { audioData, clipStart, clipEnd, duration } = data;
   if (!audioData || !audioData.length) return;
 

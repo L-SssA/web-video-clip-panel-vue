@@ -30,8 +30,7 @@ export function defineBaseTrackItemConfig(id: string, type: SourceType): BaseTra
     ghost: false,
     clipStart: 0, // 裁剪开始时间
     clipEnd: 0, // 裁剪结束时间
-    clipReady: false,
-    previewReady: false,
+    ready: false,
   };
 }
 
@@ -47,7 +46,6 @@ export function defineVideoTrackItemConfig(): VideoTrackItem {
     ...baseConfig,
     type: "video",
     source: "", // 视频源
-    previewList: [], // 轨道预览图片
     audioData: [],
     /* 视频信息 */
     duration: 0,
@@ -109,9 +107,7 @@ export function defineImageTrackItemConfig(): ImageTrackItem {
     ...baseConfig,
     type: "image",
     source: "", // 图片源
-    previewList: [],
     /* 图片信息 */
-    gif: false,
     originWidth: 0,
     originHeight: 0,
   };

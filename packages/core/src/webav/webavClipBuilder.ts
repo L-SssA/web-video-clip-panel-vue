@@ -3,7 +3,7 @@
  */
 import { createChromakey, AudioClip, MP4Clip, ImgClip } from "@webav/av-cliper";
 
-import type { TrackItem, ImageTrackItem, VideoTrackItem } from "@/types/data";
+import type { TrackItem, VideoTrackItem } from "@/types/data";
 import type { ChromaKeyOptions, ChromaKeyProcessor, WebavClipBuilderFunction } from "@/types/webav";
 
 /**
@@ -16,13 +16,13 @@ import type { ChromaKeyOptions, ChromaKeyProcessor, WebavClipBuilderFunction } f
  */
 const buildVideoClip = async (
   ctx: WebavClipBuilder,
-  sourceData: ReadableStream<Uint8Array> | ImageBitmap,
+  sourceData: Response | ImageBitmap,
   trackitem: TrackItem,
   opts?: Record<string, any>,
 ) => {
   const { enableChromaKey } = trackitem as VideoTrackItem;
   // 创建 MP4 视频片段，禁用音频轨道
-  const videoClip = new MP4Clip(sourceData as ReadableStream<Uint8Array>, {
+  const videoClip = new MP4Clip((sourceData as Response).body!, {
     ...opts,
     audio: false,
   });
@@ -52,11 +52,11 @@ const buildVideoClip = async (
  */
 const buildAudioClip = async (
   _ctx: WebavClipBuilder,
-  sourceData: ReadableStream<Uint8Array> | ImageBitmap,
+  sourceData: Response | ImageBitmap,
   _trackitem: TrackItem,
   opts?: Record<string, any>,
 ) => {
-  const audioClip = new AudioClip(sourceData as ReadableStream<Uint8Array>, opts);
+  const audioClip = new AudioClip((sourceData as Response).body!, opts);
   await audioClip.ready;
   return audioClip;
 };
@@ -71,23 +71,33 @@ const buildAudioClip = async (
  */
 const buildImageClip = async (
   _ctx: WebavClipBuilder,
-  sourceData: ReadableStream<Uint8Array> | ImageBitmap,
-  trackitem: TrackItem,
+  sourceData: Response | ImageBitmap,
+  _trackitem: TrackItem,
   _opts?: Record<string, any>,
 ) => {
-  const { gif } = trackitem as ImageTrackItem;
   let imageClip = null;
+  let contentType = null;
+  if (sourceData instanceof Response) {
+    const rawContentType = sourceData.headers.get("content-type") || "";
+    contentType = rawContentType.split(";")[0].trim();
+  }
 
-  // 根据是否为 GIF 格式选择不同的初始化方式
-  if (gif) {
+  const availableContentType = ["image/avif", "image/webp", "image/png", "image/gif"] as const;
+
+  if (
+    sourceData instanceof Response &&
+    contentType &&
+    (availableContentType as readonly string[]).includes(contentType)
+  ) {
     // GIF 需要指定 MIME 类型和流
     imageClip = new ImgClip({
-      type: "image/gif",
-      stream: sourceData as ReadableStream<Uint8Array>,
+      type: contentType as (typeof availableContentType)[number],
+      stream: sourceData.body!,
     });
   } else {
+    const stream = sourceData instanceof Response ? sourceData.body! : sourceData;
     // 普通图片直接使用数据源
-    imageClip = new ImgClip(sourceData);
+    imageClip = new ImgClip(stream);
   }
 
   await imageClip.ready;
@@ -104,11 +114,12 @@ const buildImageClip = async (
  */
 const buildTextClip = async (
   _ctx: WebavClipBuilder,
-  sourceData: ReadableStream<Uint8Array> | ImageBitmap,
+  sourceData: Response | ImageBitmap,
   _trackitem: TrackItem,
   _opts?: Record<string, any>,
 ) => {
-  const textClip = new ImgClip(sourceData);
+  const stream = sourceData instanceof Response ? sourceData.body! : sourceData;
+  const textClip = new ImgClip(stream);
   await textClip.ready;
   return textClip;
 };
@@ -136,11 +147,7 @@ export class WebavClipBuilder {
    * @param opts - 额外选项
    * @returns 返回构建好的媒体片段实例，如果类型不支持则返回 null
    */
-  buildClip(
-    source: ReadableStream<Uint8Array> | ImageBitmap,
-    trackitem: TrackItem,
-    opts?: Record<string, any>,
-  ) {
+  buildClip(source: Response | ImageBitmap, trackitem: TrackItem, opts?: Record<string, any>) {
     const builder = this.builders[trackitem.type];
     if (!builder) return null;
     return builder(this, source, trackitem, opts);

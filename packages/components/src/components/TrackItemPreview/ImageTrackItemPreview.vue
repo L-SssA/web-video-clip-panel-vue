@@ -46,7 +46,7 @@ const imageViewStyle = computed(() => ({
 
 const drawImageList = debounce(() => {
   if (!imageCanvasContext) return
-  drawImagePreview(props.data, ctx.manager.data.ctx, imageCanvasContext)
+  drawImagePreview(props.data, ctx.manager.data, imageCanvasContext)
 }, 50)
 
 const updatePrewview = () => {
@@ -73,7 +73,6 @@ watch(
     () => props.data.end,
     ctx.manager.data.timeline.scale,
     () => props.data.ghost,
-    () => props.data.previewList,
   ],
   (newVal, oldVal) => {
     const startOffset = newVal[0] - oldVal[0]

@@ -235,10 +235,10 @@ export function loadAudioUrlMetadata(url: string) {
  * @param url 资源地址
  */ export function loadImageMetadata(url: string | ImageBitmap) {
   if (url instanceof ImageBitmap) {
-    return {
+    return Promise.resolve({
       width: url.width,
       height: url.height,
-    };
+    });
   } else {
     return new Promise<{ width: number; height: number }>((resolve, reject) => {
       const image = document.createElement("img");
@@ -260,4 +260,14 @@ export function loadAudioUrlMetadata(url: string) {
       });
     });
   }
+}
+
+/**
+ * Promise 休眠
+ * @param time 时间（毫秒）
+ */
+export function sleep(time: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
 }
