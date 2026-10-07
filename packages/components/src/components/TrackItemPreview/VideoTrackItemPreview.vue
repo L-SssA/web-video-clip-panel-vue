@@ -1,8 +1,6 @@
 <template>
   <div class="track-item-preview-video" ref="previewBox">
-    <div class="preview-image-list">
-      <canvas ref="imageViewCanvas" v-bind="imageViewAttr" :style="imageViewStyle"></canvas>
-    </div>
+    <div class="preview-image-list" :style="previewListStyles"></div>
     <div class="preview-audio-list" v-show="!data.mute">
       <canvas ref="audioViewCanvas" v-bind="audioViewAttr" :style="audioViewStyle"></canvas>
     </div>
@@ -13,7 +11,7 @@
 import { computed, inject, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
 import type { VideoTrackItem } from "@web-vcp/core";
-import { debounce, numberToStyleValue, drawAudioPreview, drawImagePreview } from '@web-vcp/core';
+import { debounce, numberToStyleValue, drawAudioPreview, getResizeImageBlob } from '@web-vcp/core';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
@@ -29,28 +27,26 @@ const props = defineProps({
 })
 
 const previewBox = ref<HTMLDivElement>();
-const imageViewCanvas = ref<HTMLCanvasElement>();
 const audioViewCanvas = ref<HTMLCanvasElement>();
+const previewUrl = ref<string>("")
 
 let audioCanvasContext: CanvasRenderingContext2D | null = null
-let imageCanvasContext: CanvasRenderingContext2D | null = null
-
 
 const outboxAttr = reactive({
   width: 0,
   height: 0,
 })
 
-const imageViewAttr = computed(() => ({
-  width: outboxAttr.width,
-  height: Math.max(outboxAttr.height - ctx.manager.data.trackline.audioBarHeight, 0)
-}))
-
-const imageViewStyle = computed(() => ({
-  width: numberToStyleValue(imageViewAttr.value.width),
-  height: numberToStyleValue(imageViewAttr.value.height),
-}))
-
+const previewListStyles = computed(() => {
+  const { audioBarHeight } = ctx.manager.data.ctx.trackline;
+  return {
+    backgroundImage: `url(${previewUrl.value})`,
+    backgroundRepeat: "repeat-x",
+    backgroundSize: "contain",
+    width: numberToStyleValue(outboxAttr.width),
+    height: numberToStyleValue(outboxAttr.height - audioBarHeight)
+  }
+})
 const audioViewAttr = computed(() => ({
   width: outboxAttr.width,
   height: ctx.manager.data.trackline.audioBarHeight
@@ -66,9 +62,14 @@ const drawAudioList = debounce(() => {
   drawAudioPreview(props.data, ctx.manager.data, audioCanvasContext)
 }, 50)
 
-const drawImageList = debounce(() => {
-  if (!imageCanvasContext) return
-  drawImagePreview(props.data, ctx.manager.data, imageCanvasContext)
+
+const drawImageList = debounce(async () => {
+  const { video } = await ctx.manager.data.webav.tick(props.data, 0) || {}
+  if (!video) return;
+  const { originWidth, originHeight } = props.data;
+  const blob = await getResizeImageBlob(video, originWidth, originHeight)
+  previewUrl.value = URL.createObjectURL(blob)
+  video.close()
 }, 50)
 
 const updatePrewview = () => {
@@ -81,9 +82,6 @@ const updatePrewview = () => {
   }
   if (audioViewCanvas.value && !audioCanvasContext) {
     audioCanvasContext = audioViewCanvas.value.getContext('2d')
-  }
-  if (imageViewCanvas.value && !imageCanvasContext) {
-    imageCanvasContext = imageViewCanvas.value.getContext('2d')
   }
   nextTick(() => drawAudioList())
   nextTick(() => drawImageList())
