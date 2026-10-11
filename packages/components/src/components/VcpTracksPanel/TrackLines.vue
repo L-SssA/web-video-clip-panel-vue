@@ -21,7 +21,7 @@ import type { VcpCtx } from "@/types/vcpContext.ts";
 import { vcpCtxSymbol } from "@/config/symbols.ts";
 
 import TrackLine from "@/components/TrackLine/index.vue";
-import { numberToStyleValue, EDGE_SIDE } from "@web-vcp/core";
+import { numberToStyleValue, EDGE_SIDE, timeToPixel } from "@web-vcp/core";
 
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
@@ -71,13 +71,17 @@ ctx.manager.onMouseCloseEdge((edgeSide: string) => {
   }
 })
 
-watch([
-  () => ctx.manager.data.trackline.getLongestTracklineSecond()
-], () => {
-  if (tracksLinesScrollbarRef.value) {
-    tracksLinesScrollbarRef.value.update()
-  }
-})
+watch(
+  computed(() => {
+    const maxTime = ctx.manager.data.trackline.getLongestTracklineSecond()
+    const { fps, framesPerGap, gapWidth } = ctx.manager.data.timeline
+    return timeToPixel(maxTime, fps.value, framesPerGap.value, gapWidth.value)
+  }),
+  () => {
+    if (tracksLinesScrollbarRef.value) {
+      tracksLinesScrollbarRef.value.update()
+    }
+  })
 </script>
 
 <style lang="scss" scoped>

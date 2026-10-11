@@ -1,5 +1,5 @@
 <template>
-  <div class="track-item-preview-video" ref="previewBox">
+  <div class="track-item-preview-video" ref="previewBoxRef">
     <div class="preview-image-list" :style="previewListStyles"></div>
     <div class="preview-audio-list" v-show="!data.mute">
       <canvas ref="audioViewCanvas" v-bind="audioViewAttr" :style="audioViewStyle"></canvas>
@@ -26,7 +26,7 @@ const props = defineProps({
   },
 })
 
-const previewBox = ref<HTMLDivElement>();
+const previewBoxRef = ref<HTMLDivElement>();
 const audioViewCanvas = ref<HTMLCanvasElement>();
 const previewUrl = ref<string>("")
 
@@ -73,12 +73,10 @@ const drawImageList = debounce(async () => {
 }, 50)
 
 const updatePrewview = () => {
-  if (previewBox.value) {
-    const { width, height } = previewBox.value.getBoundingClientRect();
-    if (width && height) {
-      outboxAttr.width = Math.floor(width);
-      outboxAttr.height = Math.floor(height);
-    }
+  if (previewBoxRef.value) {
+    const { clientWidth, clientHeight } = previewBoxRef.value;
+    outboxAttr.width = clientWidth || 0;
+    outboxAttr.height = clientHeight || 0;
   }
   if (audioViewCanvas.value && !audioCanvasContext) {
     audioCanvasContext = audioViewCanvas.value.getContext('2d')

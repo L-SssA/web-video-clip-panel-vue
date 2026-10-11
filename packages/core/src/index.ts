@@ -14,6 +14,7 @@ export * from "./managers/WebVcpManager";
 // 工具导出
 export * from "./utils/tools";
 export * from "./utils/preview";
+export * from "./canvas/CanvasTileMap";
 
 // 默认值导出
 export * from "./config/constant";

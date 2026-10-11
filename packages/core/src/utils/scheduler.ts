@@ -1,4 +1,4 @@
-export type Task = () => void;
+import type { Task } from "@/types/utils";
 
 export class SimpleScheduler {
   private running: boolean = false;

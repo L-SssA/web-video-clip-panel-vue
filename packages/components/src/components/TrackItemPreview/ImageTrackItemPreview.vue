@@ -1,5 +1,5 @@
 <template>
-  <div class="track-item-preview-image" ref="previewBox">
+  <div class="track-item-preview-image" ref="previewBoxRef">
     <div class="preview-image-list" :style="previewListStyles"></div>
   </div>
 </template>
@@ -22,7 +22,7 @@ const props = defineProps({
   },
 })
 
-const previewBox = ref<HTMLDivElement>();
+const previewBoxRef = ref<HTMLDivElement>();
 const previewUrl = ref<string>("")
 
 const outboxAttr = reactive({
@@ -51,12 +51,10 @@ const drawImageList = debounce(async () => {
 }, 50)
 
 const updatePrewview = () => {
-  if (previewBox.value) {
-    const { width, height } = previewBox.value.getBoundingClientRect();
-    if (width && height) {
-      outboxAttr.width = Math.floor(width);
-      outboxAttr.height = Math.floor(height);
-    }
+  if (previewBoxRef.value) {
+    const { clientWidth, clientHeight } = previewBoxRef.value;
+    outboxAttr.width = clientWidth || 0;
+    outboxAttr.height = clientHeight || 0;
   }
   nextTick(() => drawImageList())
 }

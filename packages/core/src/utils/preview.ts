@@ -1,7 +1,9 @@
+import type { CanvasTileMapContext } from "@/canvas/CanvasTileMapContext";
 import type { DataManager } from "@/managers/DataManager";
 import type { ImageTrackItem, VideoTrackItem, AudioTrackItem } from "@/types/data";
+import type { Task } from "@/types/utils";
 
-import { SimpleScheduler, type Task } from "./scheduler";
+import { SimpleScheduler } from "./scheduler";
 import { timeToPixel } from "./tools";
 
 const drawScheduler = new SimpleScheduler();
@@ -42,7 +44,7 @@ export function drawImagePreview(
     const x = index * previewWidth;
     if (x > viewWidth) return;
     const task = async () => {
-      const { video } = (await dataManager.webav.tick(data, Math.ceil(time * 1e6))) || {};
+      const { video } = (await dataManager.webav.tick(data, Math.floor(time * 1e6))) || {};
       if (!video) return;
       renderCtx.drawImage(video, x, 0, previewWidth, viewHeight);
       video.close();
@@ -77,13 +79,13 @@ export function getTimePointList(
 
   if (type === "image" && meta.duration && meta.duration !== Infinity) {
     // gif动图循环
-    const seconds = Math.ceil((meta.duration / 1e6) * 100) / 100;
+    const seconds = Math.floor((meta.duration / 1e6) * 100) / 100;
     const loopFrameCount = Math.ceil(
       timeToPixel(meta.duration / 1e6, fps, framesPerGap, gapWidth) / previewWidth,
     );
     const loopList = Array<number>(loopFrameCount)
       .fill(0)
-      .map((_, idx) => Math.ceil(idx * (seconds / loopFrameCount) * 100) / 100);
+      .map((_, idx) => Math.floor(idx * (seconds / loopFrameCount) * 100) / 100);
     const repeatCount = targetFrameCount / loopList.length;
     return Array<number[]>(repeatCount).fill(loopList).flat();
   } else if (type === "image") {
@@ -91,14 +93,14 @@ export function getTimePointList(
     return Array<number>(targetFrameCount + 1).fill(0);
   } else {
     // 视频平铺
-    const seconds = Math.ceil((meta.duration / 1e6) * 100) / 100;
+    const seconds = Math.round((meta.duration / 1e6) * 100) / 100;
     const timeFrom = Math.floor(clipStart);
     const timeTo = Math.floor(seconds - clipEnd);
     const stepGo = (timeTo - timeFrom) / targetFrameCount;
 
     return Array<number>(targetFrameCount + 1)
       .fill(0)
-      .map((_, idx) => Math.ceil((timeFrom + idx * stepGo) * 100) / 100);
+      .map((_, idx) => Math.round((timeFrom + idx * stepGo) * 100) / 100);
   }
 }
 
@@ -112,7 +114,7 @@ export function getTimePointList(
 export function drawAudioPreview(
   data: VideoTrackItem | AudioTrackItem,
   dataManager: DataManager,
-  renderCtx: CanvasRenderingContext2D,
+  renderCtx: CanvasTileMapContext,
 ) {
   // 清空画布
   const { width: viewWidth, height: viewHeight } = renderCtx.canvas;
@@ -152,7 +154,7 @@ export function drawAudioPreview(
     const y = Math.round(dyncAudioBarHeight - barHeight + startAudioBarHeight);
     if (x > viewWidth) return;
     // 设置柱子的颜色
-    renderCtx.fillStyle = "#ffffff";
+    renderCtx.setStateValue("fillStyle", "#ffffff");
     // 绘制矩形柱子
     renderCtx.fillRect(x, y, audioBarWidth, barHeight);
   });

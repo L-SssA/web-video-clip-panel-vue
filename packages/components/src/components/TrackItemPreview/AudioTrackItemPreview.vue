@@ -1,22 +1,22 @@
 <template>
-  <div class="track-item-preview-audio" ref="previewBox">
-    <div class="preview-audio-list" v-show="!data.mute">
-      <canvas ref="audioViewCanvas" v-bind="audioViewAttr" :style="audioViewStyle"></canvas>
+  <div class="track-item-preview-audio" ref="previewBoxRef">
+    <div class="preview-audio-data" ref="audioDataRef" v-show="!data.mute">
     </div>
   </div>
 </template>
 
 <script setup lang='ts'>
-import { computed, inject, nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { inject, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
 import type { AudioTrackItem } from "@web-vcp/core";
-import { debounce, drawAudioPreview, numberToStyleValue, } from '@web-vcp/core';
+import { debounce, CanvasTileMap, drawAudioPreview } from '@web-vcp/core';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
 
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
+const canvasBlocker = new CanvasTileMap()
 
 const props = defineProps({
   data: {
@@ -25,48 +25,30 @@ const props = defineProps({
   },
 })
 
-const previewBox = ref<HTMLDivElement>();
-const audioViewCanvas = ref<HTMLCanvasElement>();
-
-let audioCanvasContext: CanvasRenderingContext2D | null = null
+const previewBoxRef = ref<HTMLDivElement>();
+const audioDataRef = ref<HTMLDivElement>()
 
 const outboxAttr = reactive({
   width: 0,
   height: 0,
 })
 
-const audioViewAttr = computed(() => ({
-  width: outboxAttr.width,
-  height: outboxAttr.height,
-}))
-
-const audioViewStyle = computed(() => ({
-  width: numberToStyleValue(audioViewAttr.value.width),
-  height: numberToStyleValue(audioViewAttr.value.height),
-}))
-
-
 const drawAudioList = debounce(() => {
-  if (!audioCanvasContext) return
-  drawAudioPreview(props.data, ctx.manager.data, audioCanvasContext)
+  drawAudioPreview(props.data, ctx.manager.data, canvasBlocker.getContext())
 }, 50)
 
 const updatePrewview = () => {
-  if (previewBox.value) {
-    const { width, height } = previewBox.value.getBoundingClientRect();
-    if (width && height) {
-      outboxAttr.width = Math.floor(width);
-      outboxAttr.height = Math.floor(height);
-    }
+  if (previewBoxRef.value) {
+    const { clientWidth, clientHeight } = previewBoxRef.value;
+    outboxAttr.width = clientWidth || 0;
+    outboxAttr.height = clientHeight || 0;
   }
-  if (audioViewCanvas.value && !audioCanvasContext) {
-    audioCanvasContext = audioViewCanvas.value.getContext('2d')
-  }
-
+  canvasBlocker.update()
   nextTick(() => drawAudioList())
 }
 
 onMounted(() => {
+  if (audioDataRef.value) canvasBlocker.setElement(audioDataRef.value)
   updatePrewview()
 })
 
@@ -76,6 +58,7 @@ watch(
     () => props.data.end,
     ctx.manager.data.timeline.scale,
     () => props.data.ghost,
+    () => props.data.mute
   ],
   (newVal, oldVal) => {
     const startOffset = newVal[0] - oldVal[0]
@@ -97,7 +80,7 @@ watch(
   height: 100%;
 
 
-  .preview-audio-list {
+  .preview-audio-data {
     height: 100%;
     width: 100%;
     font-size: 0;

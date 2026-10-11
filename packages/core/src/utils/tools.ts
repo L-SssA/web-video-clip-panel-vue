@@ -271,3 +271,13 @@ export function sleep(time: number) {
     setTimeout(resolve, time);
   });
 }
+
+/**
+ * 判断 child 是否是 parent 的后代（不含自身）
+ * @param parent
+ * @param child
+ */
+export function isDescendantElement(parent: HTMLElement, child: HTMLElement) {
+  if (!parent || !child) return false;
+  return parent !== child && parent.contains(child);
+}
