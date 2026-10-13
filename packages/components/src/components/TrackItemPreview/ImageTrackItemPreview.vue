@@ -11,9 +11,8 @@ import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
 import type { ImageTrackItem } from "@web-vcp/core";
 import { debounce, getResizeImageBlob, numberToStyleValue } from '@web-vcp/core';
+import { getBackgroundColor } from '@/utils/trackline';
 
-
-const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
 
 const props = defineProps({
   data: {
@@ -21,6 +20,9 @@ const props = defineProps({
     required: true
   },
 })
+
+const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
+const backgroundColor = getBackgroundColor(props.data, ctx.manager.data)
 
 const previewBoxRef = ref<HTMLDivElement>();
 const previewUrl = ref<string>("")
@@ -92,7 +94,7 @@ watch(
     white-space: nowrap;
     overflow: hidden;
     font-size: 0;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: color-mix(in srgb, v-bind(backgroundColor), white 10%);
   }
 
   .preview-audio-list {

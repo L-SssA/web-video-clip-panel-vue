@@ -1,8 +1,7 @@
 <template>
   <div class="track-item-preview-video" ref="previewBoxRef">
     <div class="preview-image-list" :style="previewListStyles"></div>
-    <div class="preview-audio-list" v-show="!data.mute">
-      <canvas ref="audioViewCanvas" v-bind="audioViewAttr" :style="audioViewStyle"></canvas>
+    <div class="preview-audio-data" ref="audioDataRef" v-show="!data.mute">
     </div>
   </div>
 </template>
@@ -11,13 +10,11 @@
 import { computed, inject, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
 import type { VideoTrackItem } from "@web-vcp/core";
-import { debounce, numberToStyleValue, drawAudioPreview, getResizeImageBlob } from '@web-vcp/core';
+import { debounce, numberToStyleValue, drawAudioPreview, getResizeImageBlob, CanvasTileMap } from '@web-vcp/core';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
-
-
-const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
+import { getBackgroundColor } from '@/utils/trackline';
 
 const props = defineProps({
   data: {
@@ -26,11 +23,16 @@ const props = defineProps({
   },
 })
 
-const previewBoxRef = ref<HTMLDivElement>();
-const audioViewCanvas = ref<HTMLCanvasElement>();
-const previewUrl = ref<string>("")
 
-let audioCanvasContext: CanvasRenderingContext2D | null = null
+const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
+const canvasBlocker = new CanvasTileMap()
+const { audioBarHeight } = ctx.manager.data.trackline.ctx
+const audioBarHeightStyle = numberToStyleValue(audioBarHeight)
+const backgroundColor = getBackgroundColor(props.data, ctx.manager.data)
+
+const previewBoxRef = ref<HTMLDivElement>();
+const audioDataRef = ref<HTMLDivElement>()
+const previewUrl = ref<string>("")
 
 const outboxAttr = reactive({
   width: 0,
@@ -38,7 +40,6 @@ const outboxAttr = reactive({
 })
 
 const previewListStyles = computed(() => {
-  const { audioBarHeight } = ctx.manager.data.ctx.trackline;
   return {
     backgroundImage: `url(${previewUrl.value})`,
     backgroundRepeat: "repeat-x",
@@ -47,19 +48,9 @@ const previewListStyles = computed(() => {
     height: numberToStyleValue(outboxAttr.height - audioBarHeight)
   }
 })
-const audioViewAttr = computed(() => ({
-  width: outboxAttr.width,
-  height: ctx.manager.data.trackline.audioBarHeight
-}))
-
-const audioViewStyle = computed(() => ({
-  width: numberToStyleValue(audioViewAttr.value.width),
-  height: numberToStyleValue(audioViewAttr.value.height),
-}))
 
 const drawAudioList = debounce(() => {
-  if (!audioCanvasContext) return
-  drawAudioPreview(props.data, ctx.manager.data, audioCanvasContext)
+  drawAudioPreview(props.data, ctx.manager.data, canvasBlocker.getContext())
 }, 50)
 
 
@@ -78,14 +69,13 @@ const updatePrewview = () => {
     outboxAttr.width = clientWidth || 0;
     outboxAttr.height = clientHeight || 0;
   }
-  if (audioViewCanvas.value && !audioCanvasContext) {
-    audioCanvasContext = audioViewCanvas.value.getContext('2d')
-  }
+  canvasBlocker.update()
   nextTick(() => drawAudioList())
   nextTick(() => drawImageList())
 }
 
 onMounted(() => {
+  if (audioDataRef.value) canvasBlocker.setElement(audioDataRef.value)
   updatePrewview()
 })
 
@@ -95,6 +85,7 @@ watch(
     () => props.data.end,
     ctx.manager.data.timeline.scale,
     () => props.data.ghost,
+    () => props.data.mute
   ],
   (newVal, oldVal) => {
     const startOffset = newVal[0] - oldVal[0]
@@ -122,11 +113,11 @@ watch(
     white-space: nowrap;
     overflow: hidden;
     font-size: 0;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: color-mix(in srgb, v-bind(backgroundColor), white 10%);
   }
 
-  .preview-audio-list {
-    height: 10px;
+  .preview-audio-data {
+    height: v-bind(audioBarHeightStyle);
     width: 100%;
     font-size: 0;
     overflow: hidden;
