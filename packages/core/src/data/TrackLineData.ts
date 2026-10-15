@@ -371,6 +371,7 @@ export class TrackLineData extends BaseData {
     const tracklineEmpty = (tl: TrackLine) => tl.data.length;
     this.PictureTrackLineList.value = this.PictureTrackLineList.value.filter(tracklineEmpty);
     this.audioTrackLineList.value = this.audioTrackLineList.value.filter(tracklineEmpty);
+    if (!this.activeTrackLine.value?.data.length) this.activeTrackLine.value = null;
   }
 
   /**
