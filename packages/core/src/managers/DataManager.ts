@@ -1,6 +1,6 @@
 import type { Ref } from "vue";
 
-import { watch } from "vue";
+import { ref, watch } from "vue";
 
 import type { DataManagerOptions, DataManagerContext } from "@/types/manager";
 
@@ -20,7 +20,7 @@ export class DataManager extends BaseData {
   public timeline: TimelineData;
   public trackline: TrackLineData;
   public system: SystemCommonData;
-  public unwatch: Function;
+  public theme: Ref<string>;
 
   // webav 相关音视频解码工具
   public webav: WebavHelper;
@@ -33,6 +33,9 @@ export class DataManager extends BaseData {
   private cursorLineService: CursorLineService;
   // trackitem 相关逻辑
   private trackitemService: TrackItemService;
+
+  // 监听主题变化
+  private unwatchTheme: Function;
 
   get ctx(): DataManagerContext {
     return {
@@ -62,6 +65,7 @@ export class DataManager extends BaseData {
     this.system = new SystemCommonData(options.system);
     // 音视频解码
     this.webav = new WebavHelper(options.webav);
+    this.theme = ref(options.theme || "light");
 
     // service 实例
     this.webavService = new WebavService(this);
@@ -70,6 +74,10 @@ export class DataManager extends BaseData {
     this.trackitemService = new TrackItemService(this);
 
     this.unwatch = watch(this.observeList, () => this.triggerUpdate(), {
+      immediate: true,
+    });
+
+    this.unwatchTheme = watch(this.theme, (themeTag) => this.setTheme(themeTag), {
       immediate: true,
     });
   }
@@ -183,7 +191,6 @@ export class DataManager extends BaseData {
    * 释放资源
    */
   release(): void {
-    this.unwatch();
     // 释放 data
     this.timeline.release();
     this.trackline.release();
@@ -191,6 +198,8 @@ export class DataManager extends BaseData {
     this.webav.release();
     // 释放 service 实例
     this.elEventService.release();
+
+    this.unwatchTheme();
 
     super.release();
   }

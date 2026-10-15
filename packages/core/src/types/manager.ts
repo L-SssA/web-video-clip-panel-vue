@@ -14,6 +14,7 @@ export interface DataManagerOptions {
   trackline: Partial<TrackLineDataOptions>;
   system: Partial<SystemCommonDataOptions>;
   webav: Partial<WebavHelperOptions>;
+  theme?: string;
 }
 
 export interface DataManagerContext {
@@ -25,7 +26,6 @@ export interface DataManagerContext {
 
 export interface WebVcpManagerOptions {
   data: Partial<DataManagerOptions>;
-  webav: Partial<WebavHelperOptions>;
 }
 
 export interface MarkedTrackItemData {

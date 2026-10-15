@@ -85,7 +85,6 @@ export class TimelineData extends BaseData {
       this.gapsPerLabel,
       this.framesPerGap,
       this.scrollLeft,
-      this.enableAutoAdsorb,
       this.autoAdsorbDistance,
       this.styles,
     ];

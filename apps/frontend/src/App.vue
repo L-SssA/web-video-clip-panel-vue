@@ -1,5 +1,5 @@
 <template>
-  <VideoClipPanel :theme="theme" :manager="manager"></VideoClipPanel>
+  <VideoClipPanel :manager="manager"></VideoClipPanel>
   <ElSwitch v-model="theme" :active-value="'dark'" :inactive-value="'light'"></ElSwitch>
   <ElButton @click="addVideoSource">添加视频</ElButton>
   <ElButton @click="addImageSource">添加图片</ElButton>
@@ -10,12 +10,10 @@
 import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager } from "@web-vcp/components";
 import { ElSwitch, ElButton } from "element-plus";
 
-import { ref } from "vue";
-
-const theme = ref("dark");
 const manager = new WebVcpManager({
-  data: { timeline: { scale: 50 } }
+  data: { timeline: { scale: 50 }, theme: "dark" }
 });
+const theme = manager.data.theme
 
 const addVideoSource = () => {
   manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, 'http://127.0.0.1:5500/video.mp4')

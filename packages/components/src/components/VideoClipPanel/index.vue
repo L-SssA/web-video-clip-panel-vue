@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, toRef, watch } from "vue";
+import { computed, provide } from "vue";
 import { WebVcpManager } from "@web-vcp/core";
 
 import type { VcpCtx } from "@/types/vcpContext.ts";
@@ -19,11 +19,6 @@ import VcpToolbar from "@/components/VcpToolbar/index.vue";
 import VcpTracksPanel from "@/components/VcpTracksPanel/index.vue";
 
 const props = defineProps({
-  theme: {
-    type: String,
-    default: "light",
-    validator: (value: string) => ["light", "dark"].includes(value),
-  },
   manager: {
     type: WebVcpManager,
     default: () => new WebVcpManager(),
@@ -37,15 +32,7 @@ const styleList = computed(() => ({
   ...cssProps.value
 }));
 
-const theme = toRef(props, 'theme')
-watch(theme, (newTheme) => {
-  props.manager.setTheme(newTheme);
-}, {
-  immediate: true
-})
-
 provide<VcpCtx>(vcpCtxSymbol, {
-  theme,
   manager: props.manager,
 })
 </script>
