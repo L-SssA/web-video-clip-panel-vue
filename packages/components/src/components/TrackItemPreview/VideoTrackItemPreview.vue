@@ -15,6 +15,7 @@ import { debounce, numberToStyleValue, drawAudioPreview, getResizeImageBlob, Can
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
 import { getBackgroundColor } from '@/utils/trackline';
+import { isBlobUrlValid } from '@/utils/tools';
 
 const props = defineProps({
   data: {
@@ -34,7 +35,7 @@ const previewBoxRef = ref<HTMLDivElement>();
 const audioDataRef = ref<HTMLDivElement>()
 const previewUrl = ref<string>("")
 
-const outboxAttr = reactive({
+const clientRect = reactive({
   width: 0,
   height: 0,
 })
@@ -44,8 +45,8 @@ const previewListStyles = computed(() => {
     backgroundImage: `url(${previewUrl.value})`,
     backgroundRepeat: "repeat-x",
     backgroundSize: "contain",
-    width: numberToStyleValue(outboxAttr.width),
-    height: numberToStyleValue(outboxAttr.height - audioBarHeight)
+    width: numberToStyleValue(clientRect.width),
+    height: numberToStyleValue(clientRect.height - audioBarHeight)
   }
 })
 
@@ -54,29 +55,32 @@ const drawAudioList = debounce(() => {
 }, 50)
 
 
-const drawImageList = debounce(async () => {
-  const { video } = await ctx.manager.data.webav.tick(props.data, 0) || {}
-  if (!video) return;
-  const { originWidth, originHeight } = props.data;
-  const blob = await getResizeImageBlob(video, originWidth, originHeight)
-  previewUrl.value = URL.createObjectURL(blob)
-  video.close()
+const getPreviewImage = debounce(async () => {
+  if (props.data.previewUrl && await isBlobUrlValid(props.data.previewUrl)) {
+    previewUrl.value = props.data.previewUrl
+  } else {
+    const { video } = await ctx.manager.data.webav.tick(props.data, 0) || {}
+    if (!video) return;
+    const { originWidth, originHeight } = props.data;
+    const blob = await getResizeImageBlob(video, originWidth, originHeight)
+    props.data.previewUrl = previewUrl.value = URL.createObjectURL(blob)
+    video.close()
+  }
 }, 50)
-
 const updatePrewview = () => {
   if (previewBoxRef.value) {
     const { clientWidth, clientHeight } = previewBoxRef.value;
-    outboxAttr.width = clientWidth || 0;
-    outboxAttr.height = clientHeight || 0;
+    clientRect.width = clientWidth || 0;
+    clientRect.height = clientHeight || 0;
   }
   canvasBlocker.update()
   nextTick(() => drawAudioList())
-  nextTick(() => drawImageList())
 }
 
 onMounted(() => {
   if (audioDataRef.value) canvasBlocker.setElement(audioDataRef.value)
   updatePrewview()
+  getPreviewImage()
 })
 
 watch(

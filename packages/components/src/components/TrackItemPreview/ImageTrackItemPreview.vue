@@ -12,6 +12,7 @@ import { vcpCtxSymbol } from '@/config/symbols';
 import type { ImageTrackItem } from "@web-vcp/core";
 import { debounce, getResizeImageBlob, numberToStyleValue } from '@web-vcp/core';
 import { getBackgroundColor } from '@/utils/trackline';
+import { isBlobUrlValid } from '@/utils/tools';
 
 
 const props = defineProps({
@@ -27,7 +28,7 @@ const backgroundColor = getBackgroundColor(props.data, ctx.manager.data)
 const previewBoxRef = ref<HTMLDivElement>();
 const previewUrl = ref<string>("")
 
-const outboxAttr = reactive({
+const clientRect = reactive({
   width: 0,
   height: 0,
 })
@@ -38,31 +39,35 @@ const previewListStyles = computed(() => {
     backgroundImage: `url(${previewUrl.value})`,
     backgroundRepeat: "repeat-x",
     backgroundSize: "contain",
-    width: numberToStyleValue(outboxAttr.width),
-    height: numberToStyleValue(outboxAttr.height - audioBarHeight)
+    width: numberToStyleValue(clientRect.width),
+    height: numberToStyleValue(clientRect.height - audioBarHeight)
   }
 })
 
-const drawImageList = debounce(async () => {
-  const { video } = await ctx.manager.data.webav.tick(props.data, 0) || {}
-  if (!video) return;
-  const { originWidth, originHeight } = props.data;
-  const blob = await getResizeImageBlob(video, originWidth, originHeight)
-  previewUrl.value = URL.createObjectURL(blob)
-  video.close()
+const getPreviewImage = debounce(async () => {
+  if (props.data.previewUrl && await isBlobUrlValid(props.data.previewUrl)) {
+    previewUrl.value = props.data.previewUrl
+  } else {
+    const { video } = await ctx.manager.data.webav.tick(props.data, 0) || {}
+    if (!video) return;
+    const { originWidth, originHeight } = props.data;
+    const blob = await getResizeImageBlob(video, originWidth, originHeight)
+    props.data.previewUrl = previewUrl.value = URL.createObjectURL(blob)
+    video.close()
+  }
 }, 50)
 
 const updatePrewview = () => {
   if (previewBoxRef.value) {
     const { clientWidth, clientHeight } = previewBoxRef.value;
-    outboxAttr.width = clientWidth || 0;
-    outboxAttr.height = clientHeight || 0;
+    clientRect.width = clientWidth || 0;
+    clientRect.height = clientHeight || 0;
   }
-  nextTick(() => drawImageList())
 }
 
 onMounted(() => {
   updatePrewview()
+  getPreviewImage()
 })
 
 watch(

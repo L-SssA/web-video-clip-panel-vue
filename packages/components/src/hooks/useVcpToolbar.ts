@@ -8,6 +8,7 @@ import IconButton from "@/components/IconButton/index.vue";
 
 export const useVcpToolbar = (ctx: VcpCtx) => {
   const theme = ctx.manager.data.theme;
+  const activeTrackItem = ctx.manager.data.trackline.activeTrackItem;
   const leftToolbarConfigs = computed<VcpToolbarConfig[]>(() => [
     {
       key: "undo",
@@ -38,11 +39,14 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-delete-bin-6-line",
+        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
         tipsText: "删除（'Delete'键）",
         effect: theme.value,
       },
       events: {
-        click: () => console.log("delete"),
+        click: () =>
+          activeTrackItem.value &&
+          ctx.manager.data.trackline.removeTrackitem(activeTrackItem.value),
       },
     },
     {
@@ -50,6 +54,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-file-copy-fill",
+        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
         tipsText: "复制",
         effect: theme.value,
       },
@@ -62,6 +67,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-scissors-cut-fill",
+        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
         tipsText: "裁剪",
         effect: theme.value,
       },
@@ -73,7 +79,15 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       key: "mute",
       component: IconButton,
       props: {
-        iconClass: "ri-volume-mute-line",
+        iconClass:
+          activeTrackItem.value && "mute" in activeTrackItem.value && activeTrackItem.value.mute
+            ? "ri-volume-mute-line"
+            : "ri-volume-down-line",
+        disabled: !(
+          activeTrackItem.value &&
+          activeTrackItem.value.changeable &&
+          "mute" in activeTrackItem.value
+        ),
         tipsText: "声音",
         effect: theme.value,
       },
@@ -86,6 +100,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-picture-in-picture-2-line",
+        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
         tipsText: "替换资源",
         effect: theme.value,
       },

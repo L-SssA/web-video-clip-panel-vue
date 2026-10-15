@@ -288,7 +288,8 @@ export class TrackLineData extends BaseData {
     if (trackitem.parentId === trackline?.id) return;
     const parentTrackline = this.mergeTrackLineList.value.find((t) => t.id === trackitem.parentId);
     if (parentTrackline) {
-      parentTrackline.data = parentTrackline.data.filter((t) => t.id !== trackitem.id);
+      const targetIdx = parentTrackline.data.findIndex((t) => t.id === trackitem.id);
+      if (targetIdx > -1) parentTrackline.data.splice(targetIdx, 1);
     }
     if (trackline) {
       trackitem.parentId = trackline.id;
@@ -301,7 +302,8 @@ export class TrackLineData extends BaseData {
    * @param trackitem 需要删除的 trackitem
    */
   removeTrackitem(trackitem: TrackItem) {
-    return this.moveTrackitem(trackitem);
+    this.moveTrackitem(trackitem);
+    this.cleanEmptyTrackline();
   }
 
   /**
