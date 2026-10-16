@@ -1,6 +1,4 @@
-import type { ComputedRef, Ref } from "vue";
-
-import { computed, nextTick, ref, watch } from "vue";
+import { type ComputedRef, type Ref, nextTick, ref, watch } from "vue";
 
 import type {
   TrackItem,
@@ -9,8 +7,8 @@ import type {
   TrackLineStyles,
   AudioTrackLine,
   PictureTrackLine,
-  VideoTrackLine,
   TrackLine,
+  VideoTrackLine,
 } from "@/types/data";
 
 import {
@@ -33,22 +31,15 @@ import { isNumberInside } from "@/utils/tools";
 import { defineTrackLineConfig } from "@/utils/trackline";
 
 import { BaseData } from "./BaseData";
+import { TrackLineList } from "./TrackLineList";
 
 export class TrackLineData extends BaseData {
-  // 画面轨道列表
-  readonly PictureTrackLineList = ref<PictureTrackLine[]>([]);
-  // 主轨道（video track）
-  readonly mainTrackLine = ref<VideoTrackLine>({
-    id: MAIN_TRACK_ID,
-    type: "video",
-    data: [],
-    main: true,
-    mute: false,
-  });
-  // 音频轨道列表
-  readonly audioTrackLineList = ref<AudioTrackLine[]>([]);
-  // 按类型顺序排列轨道
-  readonly mergeTrackLineList: ComputedRef<TrackLine[]>;
+  // 轨道列表
+  readonly trackLineList: TrackLineList;
+  readonly pictureList: Ref<PictureTrackLine[]>;
+  readonly mainList: Ref<VideoTrackLine>;
+  readonly audioList: Ref<AudioTrackLine[]>;
+  readonly mergeList: ComputedRef<TrackLine[]>;
 
   // 轨道默认上边距
   readonly marginTop: number;
@@ -95,7 +86,7 @@ export class TrackLineData extends BaseData {
 
   get ctx(): TrackLineContext {
     return {
-      mergeTrackLineList: this.mergeTrackLineList.value,
+      mergeTrackLineList: this.trackLineList.merge.value,
       marginTop: this.marginTop,
       gapHeight: this.gapHeight,
       marginLeft: this.marginLeft,
@@ -110,7 +101,7 @@ export class TrackLineData extends BaseData {
   }
 
   get observeList(): Ref[] {
-    return [this.mergeTrackLineList, this.styles];
+    return [this.mergeList, this.styles];
   }
 
   constructor(options: Partial<TrackLineDataOptions> = {}) {
@@ -129,6 +120,7 @@ export class TrackLineData extends BaseData {
       audioBarHeight = DEFAULT_AUDIO_BAR_HEIGHT,
     } = options;
 
+    // 尺寸数据
     this.marginTop = marginTop;
     this.gapHeight = gapHeight;
     this.marginLeft = marginLeft;
@@ -136,18 +128,19 @@ export class TrackLineData extends BaseData {
     this.audioBarSpacing = audioBarSpacing;
     this.audioBarHeight = audioBarHeight;
 
+    // 样式数据
     this.trackHeights = { ...DEFAULT_TRACK_HEIGHTS, ...trackHeights };
     this.trackIcons = { ...DEFAULT_ICONS_SOURCES, ...trackIcons };
     this.trackitemColors = { ...DEFAULT_TRACK_COLOR, ...trackitemColors };
     this.styles = ref(DEFAULT_TRACKLINE_STYLES);
     this.updateStyles(styles);
 
-    // 所有轨道合并，用于显示
-    this.mergeTrackLineList = computed(() => [
-      ...this.PictureTrackLineList.value,
-      this.mainTrackLine.value,
-      ...this.audioTrackLineList.value,
-    ]);
+    // 轨道列表
+    this.trackLineList = new TrackLineList();
+    this.pictureList = this.trackLineList.picture;
+    this.mainList = this.trackLineList.main;
+    this.audioList = this.trackLineList.audio;
+    this.mergeList = this.trackLineList.merge;
 
     this.unwatch = watch(this.observeList, () => {
       this.triggerUpdate();
@@ -176,15 +169,12 @@ export class TrackLineData extends BaseData {
    * @returns
    */
   getLongestTracklineSecond(): number {
-    if (this.mergeTrackLineList.value.length > 0) {
-      return this.mergeTrackLineList.value.reduce((max, trackline) => {
-        return Math.max(
-          max,
-          trackline.data.reduce((max, item) => Math.max(max, item.end), 0),
-        );
-      }, 0);
-    }
-    return 0;
+    return this.mergeList.value.reduce((max, trackline) => {
+      return Math.max(
+        max,
+        trackline.data.reduce((max, item) => Math.max(max, item.end), 0),
+      );
+    }, 0);
   }
 
   /**
@@ -242,19 +232,20 @@ export class TrackLineData extends BaseData {
    * 将 trackitem 添加到新的轨道
    * @param trackitem 目标 trackitem
    */
-  addToNewTrackLine<T extends TrackItem>(trackitem: T): void {
+  addToNewTrackLine<T extends TrackItem>(trackitem: T): TrackLine<T> {
     const duration = trackitem.end - trackitem.start || 5;
     const newTrackLine = defineTrackLineConfig<T>(trackitem.type);
     trackitem.parentId = newTrackLine.id;
     newTrackLine.data.push(trackitem);
     if (newTrackLine.type === "audio") {
-      this.audioTrackLineList.value.push(newTrackLine as AudioTrackLine);
+      this.audioList.value.push(newTrackLine as AudioTrackLine);
     } else {
-      this.PictureTrackLineList.value.push(newTrackLine as PictureTrackLine);
+      this.pictureList.value.push(newTrackLine as PictureTrackLine);
     }
     trackitem.end = trackitem.start + duration;
     this.activeTrackLine.value = newTrackLine;
     nextTick(() => (this.activeTrackItem.value = trackitem));
+    return newTrackLine;
   }
 
   /**
@@ -286,7 +277,7 @@ export class TrackLineData extends BaseData {
    */
   moveTrackitem(trackitem: TrackItem, trackline: TrackLine | null = null) {
     if (trackitem.parentId === trackline?.id) return;
-    const parentTrackline = this.mergeTrackLineList.value.find((t) => t.id === trackitem.parentId);
+    const parentTrackline = this.mergeList.value.find((t) => t.id === trackitem.parentId);
     if (parentTrackline) {
       const targetIdx = parentTrackline.data.findIndex((t) => t.id === trackitem.id);
       if (targetIdx > -1) parentTrackline.data.splice(targetIdx, 1);
@@ -318,16 +309,16 @@ export class TrackLineData extends BaseData {
     if (trackline.type === "audio") {
       if (targetId === MAIN_TRACK_ID) {
         // 首位的顶部，指队头，首位可能为空，即音频列表为空，则自动插入队尾（即队头）
-        targetId = this.audioTrackLineList.value[0]?.id;
+        targetId = this.audioList.value[0]?.id;
         direction = "top";
       }
-      this.moveTrackInList(trackline, this.audioTrackLineList, targetId, direction);
+      this.moveTrackInList(trackline, this.audioList, targetId, direction);
     } else {
       if (targetId === MAIN_TRACK_ID) {
-        targetId = this.PictureTrackLineList.value[this.PictureTrackLineList.value.length - 1]?.id;
+        targetId = this.pictureList.value[this.pictureList.value.length - 1]?.id;
         direction = "bottom";
       }
-      this.moveTrackInList(trackline, this.PictureTrackLineList, targetId, direction);
+      this.moveTrackInList(trackline, this.pictureList, targetId, direction);
     }
   }
 
@@ -369,8 +360,8 @@ export class TrackLineData extends BaseData {
    */
   cleanEmptyTrackline() {
     const tracklineEmpty = (tl: TrackLine) => tl.data.length;
-    this.PictureTrackLineList.value = this.PictureTrackLineList.value.filter(tracklineEmpty);
-    this.audioTrackLineList.value = this.audioTrackLineList.value.filter(tracklineEmpty);
+    this.pictureList.value = this.pictureList.value.filter(tracklineEmpty);
+    this.audioList.value = this.audioList.value.filter(tracklineEmpty);
     if (!this.activeTrackLine.value?.data.length) this.activeTrackLine.value = null;
   }
 

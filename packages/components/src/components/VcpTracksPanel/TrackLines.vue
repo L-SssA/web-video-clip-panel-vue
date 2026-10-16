@@ -32,9 +32,8 @@ const trackHeights = ctx.manager.data.trackline.trackHeights
 const trackIcons = ctx.manager.data.trackline.trackIcons
 const typesWidth = ctx.manager.data.timeline.marginLeft
 
-const tracklines = computed(() => {
-  return ctx.manager.data.trackline.mergeTrackLineList.value
-})
+const tracklines = ctx.manager.data.trackline.mergeList
+
 const trackIconStyles = computed(() => {
   const { styles, gapHeight } = ctx.manager.data.trackline
   return {

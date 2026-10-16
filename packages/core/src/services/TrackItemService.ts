@@ -336,9 +336,9 @@ export class TrackItemService extends BaseService {
     if (!enableAutoAdsorb) return tartgetSecond;
     const autoAdsorbDistanceSeconds = pixelToTime(autoAdsorbDistance, fps, framesPerGap, gapWidth);
     // 查找范围内的吸附点，去重并排序
-    const { mergeTrackLineList, activeTrackItem } = this._data.trackline;
+    const { mergeList, activeTrackItem } = this._data.trackline;
     const points = new Set<number>();
-    mergeTrackLineList.value.forEach((tl) => {
+    mergeList.value.forEach((tl) => {
       tl.data.forEach((ti) => {
         if (ti.id === activeTrackItem.value?.id) return;
         if (Math.abs(ti.start - tartgetSecond) <= autoAdsorbDistanceSeconds) points.add(ti.start);
@@ -363,7 +363,7 @@ export class TrackItemService extends BaseService {
     this._data.trackline.resetAlignment();
 
     const {
-      mergeTrackLineList,
+      mergeList,
       activeTrackItem,
       showAlignmentLeft,
       alignmentLeftPosition,
@@ -377,7 +377,7 @@ export class TrackItemService extends BaseService {
     const { start, end } = activeTrackItem.value;
 
     // 计算相对关系 -> 计算对齐关系
-    mergeTrackLineList.value.forEach((tl) => {
+    mergeList.value.forEach((tl) => {
       tl.data.forEach((ti) => {
         if (ti.id === activeTrackItem.value?.id) return;
         // 左侧定位线
@@ -410,7 +410,7 @@ export class TrackItemService extends BaseService {
       tracklineBesideToNewline,
       leaveTracklineFrom,
       activeTrackLine,
-      mainTrackLine,
+      mainList,
     } = this._data.trackline;
     if (!activeTrackItem.value || !leaveTracklineFrom.value) return;
     // 先重置状态
@@ -430,7 +430,7 @@ export class TrackItemService extends BaseService {
         // 3. 如果超过轨道区域，则在队头或队尾创建（图像轨道队尾，音频轨道队头）
         //   3.1 这里通过主轨道来定义【图像轨道队尾，音频轨道队头】
         directionToNewline.value = activeTrackItem.value.type === "audio" ? "bottom" : "top";
-        tracklineBesideToNewline.value = mainTrackLine.value;
+        tracklineBesideToNewline.value = mainList.value;
       }
     }
     // 出现重叠时，需要创建新的 trackline
@@ -485,12 +485,9 @@ export class TrackItemService extends BaseService {
     // 将当前 trackitem 移出 trackline
     this._data.trackline.removeTrackitem(activeTrackItem.value);
     // 将当前 trackitem 添加到新的 trackline
-    this._data.trackline.addToNewTrackLine(activeTrackItem.value);
+    const newTrackLine = this._data.trackline.addToNewTrackLine(activeTrackItem.value);
     // 将 trackline 移动到正确的位置
-    const parentTrackline = this._data.trackline.mergeTrackLineList.value.find(
-      (tl) => tl.id === activeTrackItem.value?.parentId,
-    );
-    this._data.trackline.moveTrackline(parentTrackline!, targetId, directionToNewline.value);
+    this._data.trackline.moveTrackline(newTrackLine, targetId, directionToNewline.value);
     newlineforTrackitem.value = false;
   }
 }
