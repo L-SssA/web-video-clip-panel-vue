@@ -305,6 +305,7 @@ export class TrackLineData extends BaseData {
    */
   removeTrackitem(trackitem: TrackItem, saveSnapshot: boolean = true) {
     this.moveTrackitem(trackitem);
+    this.activeTrackItem.value = null;
     this.cleanEmptyTrackline();
     saveSnapshot && this.saveSnapshot();
   }
