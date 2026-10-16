@@ -281,3 +281,86 @@ export function isDescendantElement(parent: HTMLElement, child: HTMLElement) {
   if (!parent || !child) return false;
   return parent !== child && parent.contains(child);
 }
+
+/**
+ * 完整深拷贝函数
+ * @param source 待拷贝数据
+ * @param cache 循环引用缓存，外部不要传
+ */
+function deepCopy<T>(source: T, cache = new WeakMap<object, object>()): T {
+  // 1. 基础类型 / null 直接返回
+  if (source === null || typeof source !== "object") {
+    return source;
+  }
+
+  // 2. 循环引用：已经拷贝过的对象直接返回缓存
+  if (cache.has(source)) {
+    return cache.get(source) as T;
+  }
+
+  // 3. Date
+  if (source instanceof Date) {
+    const copy = new Date(source);
+    cache.set(source, copy);
+    return copy as T;
+  }
+
+  // 4. RegExp
+  if (source instanceof RegExp) {
+    const copy = new RegExp(source.source, source.flags);
+    copy.lastIndex = source.lastIndex;
+    cache.set(source, copy);
+    return copy as T;
+  }
+
+  // 5. Set
+  if (source instanceof Set) {
+    const copy = new Set();
+    cache.set(source, copy);
+    for (const value of source) {
+      copy.add(deepCopy(value, cache));
+    }
+    return copy as T;
+  }
+
+  // 6. Map
+  if (source instanceof Map) {
+    const copy = new Map();
+    cache.set(source, copy);
+    for (const [key, value] of source) {
+      copy.set(deepCopy(key, cache), deepCopy(value, cache));
+    }
+    return copy as T;
+  }
+
+  // 7. Array
+  if (Array.isArray(source)) {
+    const copy: any[] = [];
+    cache.set(source, copy);
+    for (let i = 0; i < source.length; i++) {
+      copy[i] = deepCopy(source[i], cache);
+    }
+    return copy as T;
+  }
+
+  // 8. 普通对象（含 Symbol 键）
+  const copy = {} as Record<string | symbol, any>;
+  cache.set(source, copy);
+
+  // 遍历字符串 key
+  for (const key in source) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      copy[key] = deepCopy((source as Record<string, any>)[key], cache);
+    }
+  }
+
+  // 遍历 Symbol key
+  const symbolKeys = Object.getOwnPropertySymbols(source);
+  for (const symKey of symbolKeys) {
+    copy[symKey] = deepCopy((source as Record<symbol, any>)[symKey], cache);
+  }
+
+  return copy as T;
+}
+
+export default deepCopy;

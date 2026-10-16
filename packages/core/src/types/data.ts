@@ -109,6 +109,7 @@ export interface TrackLineDataOptions {
   audioBarWidth: number;
   audioBarSpacing: number;
   audioBarHeight: number;
+  maxSnapshotSize: number;
 }
 
 export type SourceType = "video" | "audio" | "text" | "image";
@@ -203,3 +204,11 @@ export interface CursorLineServiceContext {
 }
 
 export type DataServiceContext = TrackItemServiceContext & CursorLineServiceContext;
+
+export interface TrackLineListSnapshot {
+  picture: PictureTrackLine[];
+  main: VideoTrackLine;
+  audio: AudioTrackLine[];
+  activeLineId?: string | symbol;
+  activeItemId?: string | symbol;
+}

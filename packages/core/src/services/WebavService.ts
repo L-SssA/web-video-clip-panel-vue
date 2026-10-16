@@ -45,7 +45,10 @@ export class WebavService extends BaseService {
           .genWaveData(trackitem, this._data.ctx.timeline.fps)
           .then((audioData) => (trackitem.audioData = audioData));
       })
-      .then(() => (trackitem.ready = true));
+      .then(() => {
+        trackitem.ready = true;
+        this._data.trackline.saveSnapshot();
+      });
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
@@ -78,7 +81,10 @@ export class WebavService extends BaseService {
     trackitem.end = 5;
     Object.assign(trackitem, opts);
 
-    this._data.webav.loadClip(trackitem, source).then(() => (trackitem.ready = true));
+    this._data.webav.loadClip(trackitem, source).then(() => {
+      trackitem.ready = true;
+      this._data.trackline.saveSnapshot();
+    });
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
@@ -116,7 +122,10 @@ export class WebavService extends BaseService {
           .genWaveData(trackitem, this._data.ctx.timeline.fps)
           .then((audioData) => (trackitem.audioData = audioData));
       })
-      .then(() => (trackitem.ready = true));
+      .then(() => {
+        trackitem.ready = true;
+        this._data.trackline.saveSnapshot();
+      });
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
@@ -146,7 +155,10 @@ export class WebavService extends BaseService {
     trackitem.end = 5;
     Object.assign(trackitem, opts);
 
-    this._data.webav.loadClip(trackitem, source).then(() => (trackitem.ready = true));
+    this._data.webav.loadClip(trackitem, source).then(() => {
+      trackitem.ready = true;
+      this._data.trackline.saveSnapshot();
+    });
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);

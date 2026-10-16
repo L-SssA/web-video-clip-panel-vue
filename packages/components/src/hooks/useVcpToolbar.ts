@@ -17,9 +17,10 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         iconClass: "ri-arrow-go-back-fill",
         tipsText: "撤销（'Ctrl' + 'Z'键）",
         effect: theme.value,
+        disabled: !ctx.manager.data.trackline.undoAble.value,
       },
       events: {
-        click: () => console.log("undo"),
+        click: () => ctx.manager.data.trackline.undo(),
       },
     },
     {
@@ -29,9 +30,10 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         iconClass: "ri-arrow-go-forward-fill",
         tipsText: "重做（'Ctrl' + 'Y'键）",
         effect: theme.value,
+        disabled: !ctx.manager.data.trackline.redoAble.value,
       },
       events: {
-        click: () => console.log("redo"),
+        click: () => ctx.manager.data.trackline.redo(),
       },
     },
     {

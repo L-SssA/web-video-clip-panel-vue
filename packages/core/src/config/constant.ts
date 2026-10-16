@@ -57,6 +57,8 @@ export const DEFAULT_AUDIO_BAR_SPACING = 2;
 // 音频柱的高度
 export const DEFAULT_AUDIO_BAR_HEIGHT = 10;
 
+export const DEFAULT_MAX_SNAPSSHOT_SIZE = 10;
+
 // 扣绿选项
 export const DEFAULT_CHROMAKEY_OPTIONS = {
   keyColor: [0, 255, 0] as [number, number, number],

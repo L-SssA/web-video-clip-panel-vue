@@ -15,6 +15,7 @@ import {
   DEFAULT_AUDIO_BAR_HEIGHT,
   DEFAULT_AUDIO_BAR_SPACING,
   DEFAULT_AUDIO_BAR_WIDTH,
+  DEFAULT_MAX_SNAPSSHOT_SIZE,
   DEFAULT_TRACK_HEIGHTS,
   DEFAULT_TRACKLINE_GAP_HEIGHT,
   DEFAULT_TRACKLINE_MARGIN_LEFT,
@@ -35,11 +36,17 @@ import { TrackLineList } from "./TrackLineList";
 
 export class TrackLineData extends BaseData {
   // 轨道列表
-  readonly trackLineList: TrackLineList;
   readonly pictureList: Ref<PictureTrackLine[]>;
   readonly mainList: Ref<VideoTrackLine>;
   readonly audioList: Ref<AudioTrackLine[]>;
   readonly mergeList: ComputedRef<TrackLine[]>;
+  readonly undoAble: ComputedRef<boolean>;
+  readonly redoAble: ComputedRef<boolean>;
+
+  // 当前活跃的轨道
+  public activeTrackLine: Ref<TrackLine | null>;
+  // 当前活跃的轨道片段
+  public activeTrackItem: Ref<TrackItem | null>;
 
   // 轨道默认上边距
   readonly marginTop: number;
@@ -57,11 +64,6 @@ export class TrackLineData extends BaseData {
   readonly audioBarWidth: number;
   readonly audioBarSpacing: number;
   readonly audioBarHeight: number;
-
-  // 当前活跃的轨道
-  public activeTrackLine: Ref<TrackLine | null> = ref(null);
-  // 当前活跃的轨道片段
-  public activeTrackItem: Ref<TrackItem | null> = ref(null);
 
   // 交互
   // 拖拽过程中出现重叠现象
@@ -83,6 +85,9 @@ export class TrackLineData extends BaseData {
   // 创建新的 trackline 的位置
   public tracklineBesideToNewline: Ref<TrackLine | null> = ref(null);
   public directionToNewline: Ref<"bottom" | "top" | ""> = ref("");
+
+  // 轨道列表管理
+  private trackLineList: TrackLineList;
 
   get ctx(): TrackLineContext {
     return {
@@ -118,6 +123,7 @@ export class TrackLineData extends BaseData {
       audioBarWidth = DEFAULT_AUDIO_BAR_WIDTH,
       audioBarSpacing = DEFAULT_AUDIO_BAR_SPACING,
       audioBarHeight = DEFAULT_AUDIO_BAR_HEIGHT,
+      maxSnapshotSize = DEFAULT_MAX_SNAPSSHOT_SIZE,
     } = options;
 
     // 尺寸数据
@@ -136,11 +142,15 @@ export class TrackLineData extends BaseData {
     this.updateStyles(styles);
 
     // 轨道列表
-    this.trackLineList = new TrackLineList();
+    this.trackLineList = new TrackLineList(maxSnapshotSize);
     this.pictureList = this.trackLineList.picture;
     this.mainList = this.trackLineList.main;
     this.audioList = this.trackLineList.audio;
     this.mergeList = this.trackLineList.merge;
+    this.undoAble = this.trackLineList.undoAble;
+    this.redoAble = this.trackLineList.redoAble;
+    this.activeTrackLine = this.trackLineList.activeTrackLine;
+    this.activeTrackItem = this.trackLineList.activeTrackItem;
 
     this.unwatch = watch(this.observeList, () => {
       this.triggerUpdate();
@@ -199,12 +209,12 @@ export class TrackLineData extends BaseData {
    * 添加轨道数据
    * @param trackitem
    */
-  addToTrackLine<T extends TrackItem>(trackitem: T): void {
+  addToTrackLine<T extends TrackItem>(trackitem: T): TrackLine<T> {
     if (this.activeTrackLine.value && this.activeTrackLine.value.type === trackitem.type) {
-      this.addToTargetTrackLine(trackitem, this.activeTrackLine.value);
+      return this.addToTargetTrackLine(trackitem, this.activeTrackLine.value as TrackLine<T>);
     } else {
       // 如果当前活跃轨道与当前添加的轨道类型不同，则创建新的轨道
-      this.addToNewTrackLine(trackitem);
+      return this.addToNewTrackLine(trackitem);
     }
   }
 
@@ -213,7 +223,7 @@ export class TrackLineData extends BaseData {
    * @param trackitem  目标 trackitem
    * @param trackline  目标 trackline
    */
-  addToTargetTrackLine<T extends TrackItem>(trackitem: T, trackline: TrackLine): void {
+  addToTargetTrackLine<T extends TrackItem>(trackitem: T, trackline: TrackLine<T>): TrackLine<T> {
     const duration = trackitem.end - trackitem.start || 5;
     // 如果当前活跃轨道与当前添加的轨道类型相同，则将数据添加到当前轨道
     trackitem.parentId = trackline.id;
@@ -226,6 +236,7 @@ export class TrackLineData extends BaseData {
     }
     trackline.data.push(trackitem);
     nextTick(() => (this.activeTrackItem.value = trackitem));
+    return trackline;
   }
 
   /**
@@ -292,9 +303,10 @@ export class TrackLineData extends BaseData {
    * 移除 trackitem
    * @param trackitem 需要删除的 trackitem
    */
-  removeTrackitem(trackitem: TrackItem) {
+  removeTrackitem(trackitem: TrackItem, saveSnapshot: boolean = true) {
     this.moveTrackitem(trackitem);
     this.cleanEmptyTrackline();
+    saveSnapshot && this.saveSnapshot();
   }
 
   /**
@@ -347,7 +359,9 @@ export class TrackLineData extends BaseData {
     tracklist.value = newList;
   }
 
-  // 重置对齐线
+  /**
+   * 重置对齐线
+   */
   resetAlignment() {
     this.showAlignmentLeft.value = false;
     this.showAlignmentRight.value = false;
@@ -363,6 +377,27 @@ export class TrackLineData extends BaseData {
     this.pictureList.value = this.pictureList.value.filter(tracklineEmpty);
     this.audioList.value = this.audioList.value.filter(tracklineEmpty);
     if (!this.activeTrackLine.value?.data.length) this.activeTrackLine.value = null;
+  }
+
+  /**
+   * 保存快照
+   */
+  saveSnapshot() {
+    this.trackLineList.saveSnapshot();
+  }
+
+  /**
+   * 撤销
+   */
+  undo() {
+    this.trackLineList.undo();
+  }
+
+  /**
+   * 重做
+   */
+  redo() {
+    this.trackLineList.redo();
   }
 
   /**

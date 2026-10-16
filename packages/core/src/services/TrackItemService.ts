@@ -141,6 +141,7 @@ export class TrackItemService extends BaseService {
    * 停用 trackitem 拖拽事件
    */
   deactivateTrackItemDraging() {
+    if (!this.trackitemDraging) return;
     this.trackitemDraging = false;
     this._data.trackline.draggingOverlap.value = false;
     const activeTrackItem = this._data.trackline.activeTrackItem;
@@ -150,6 +151,7 @@ export class TrackItemService extends BaseService {
     this.checkAndDoNewLineForTrackItem();
     // 因为拖拽存在移空 trackline 的情况，所以清理空 trackline
     this._data.trackline.cleanEmptyTrackline();
+    this._data.trackline.saveSnapshot();
   }
 
   /**
@@ -167,10 +169,12 @@ export class TrackItemService extends BaseService {
    * 停用 trackitem 缩放事件
    */
   deactivateTrackItemResizing() {
+    if (!this.trackitemResing) return;
     this.trackitemResing = false;
     this.trackitemResizeSideTag = "";
     this.resetMarks();
     this._data.trackline.resetAlignment();
+    this._data.trackline.saveSnapshot();
   }
 
   /**
@@ -483,7 +487,7 @@ export class TrackItemService extends BaseService {
     if (!newlineforTrackitem.value || !activeTrackItem.value) return;
     const targetId = tracklineBesideToNewline.value?.id;
     // 将当前 trackitem 移出 trackline
-    this._data.trackline.removeTrackitem(activeTrackItem.value);
+    this._data.trackline.removeTrackitem(activeTrackItem.value, false);
     // 将当前 trackitem 添加到新的 trackline
     const newTrackLine = this._data.trackline.addToNewTrackLine(activeTrackItem.value);
     // 将 trackline 移动到正确的位置
