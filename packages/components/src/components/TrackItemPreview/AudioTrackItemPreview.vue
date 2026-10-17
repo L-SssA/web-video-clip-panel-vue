@@ -16,7 +16,7 @@ import { vcpCtxSymbol } from '@/config/symbols';
 
 
 const ctx = inject<VcpCtx>(vcpCtxSymbol, {} as VcpCtx);
-const canvasBlocker = new CanvasTileMap()
+const canvasTileMap = new CanvasTileMap()
 
 const props = defineProps({
   data: {
@@ -34,7 +34,7 @@ const outboxAttr = reactive({
 })
 
 const drawAudioList = debounce(() => {
-  drawAudioPreview(props.data, ctx.manager.data, canvasBlocker.getContext())
+  drawAudioPreview(props.data, ctx.manager.data, canvasTileMap.getContext())
 }, 50)
 
 const updatePrewview = () => {
@@ -43,12 +43,12 @@ const updatePrewview = () => {
     outboxAttr.width = clientWidth || 0;
     outboxAttr.height = clientHeight || 0;
   }
-  canvasBlocker.update()
+  canvasTileMap.update()
   nextTick(() => drawAudioList())
 }
 
 onMounted(() => {
-  if (audioDataRef.value) canvasBlocker.setElement(audioDataRef.value)
+  if (audioDataRef.value) canvasTileMap.setElement(audioDataRef.value)
   updatePrewview()
 })
 
@@ -77,8 +77,8 @@ watch(
 
 <style scoped lang="scss">
 .track-item-preview-audio {
+  width: 100%;
   height: 100%;
-
 
   .preview-audio-data {
     height: 100%;

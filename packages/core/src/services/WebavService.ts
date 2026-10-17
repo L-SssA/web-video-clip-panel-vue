@@ -16,6 +16,9 @@ import {
 import { BaseService } from "./BaseService";
 
 export class WebavService extends BaseService {
+  // loader 缓存池，用于同步等待加载这一行为
+  private sourceLoaderCache: Map<string | symbol, Promise<void>> = new Map();
+
   /**
    * 添加MP4源
    * @param source
@@ -38,17 +41,20 @@ export class WebavService extends BaseService {
     trackitem.end = metadata.duration;
     Object.assign(trackitem, opts);
 
-    this._data.webav
-      .loadClip(trackitem, source)
-      .then(() => {
-        return this._data.webav
-          .genWaveData(trackitem, this._data.ctx.timeline.fps)
-          .then((audioData) => (trackitem.audioData = audioData));
-      })
-      .then(() => {
-        trackitem.ready = true;
-        this._data.trackline.saveSnapshot();
-      });
+    this.sourceLoaderCache.set(
+      trackitem.id,
+      this._data.webav
+        .loadClip(trackitem, source)
+        .then(() => {
+          return this._data.webav
+            .genWaveData(trackitem, this._data.ctx.timeline.fps)
+            .then((audioData) => (trackitem.audioData = audioData));
+        })
+        .then(() => {
+          trackitem.ready = true;
+          this._data.trackline.saveSnapshot();
+        }),
+    );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
@@ -81,10 +87,13 @@ export class WebavService extends BaseService {
     trackitem.end = 5;
     Object.assign(trackitem, opts);
 
-    this._data.webav.loadClip(trackitem, source).then(() => {
-      trackitem.ready = true;
-      this._data.trackline.saveSnapshot();
-    });
+    this.sourceLoaderCache.set(
+      trackitem.id,
+      this._data.webav.loadClip(trackitem, source).then(() => {
+        trackitem.ready = true;
+        this._data.trackline.saveSnapshot();
+      }),
+    );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
@@ -115,17 +124,20 @@ export class WebavService extends BaseService {
     trackitem.end = metadata.duration;
     Object.assign(trackitem, opts);
 
-    this._data.webav
-      .loadClip(trackitem, source)
-      .then(() => {
-        return this._data.webav
-          .genWaveData(trackitem, this._data.ctx.timeline.fps)
-          .then((audioData) => (trackitem.audioData = audioData));
-      })
-      .then(() => {
-        trackitem.ready = true;
-        this._data.trackline.saveSnapshot();
-      });
+    this.sourceLoaderCache.set(
+      trackitem.id,
+      this._data.webav
+        .loadClip(trackitem, source)
+        .then(() => {
+          return this._data.webav
+            .genWaveData(trackitem, this._data.ctx.timeline.fps)
+            .then((audioData) => (trackitem.audioData = audioData));
+        })
+        .then(() => {
+          trackitem.ready = true;
+          this._data.trackline.saveSnapshot();
+        }),
+    );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
@@ -155,14 +167,25 @@ export class WebavService extends BaseService {
     trackitem.end = 5;
     Object.assign(trackitem, opts);
 
-    this._data.webav.loadClip(trackitem, source).then(() => {
-      trackitem.ready = true;
-      this._data.trackline.saveSnapshot();
-    });
+    this.sourceLoaderCache.set(
+      trackitem.id,
+      this._data.webav.loadClip(trackitem, source).then(() => {
+        trackitem.ready = true;
+        this._data.trackline.saveSnapshot();
+      }),
+    );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
 
     return trackitem;
+  }
+
+  /**
+   * 根据 id 获取 loader
+   * @param id
+   */
+  getLoaderById(id: string | symbol) {
+    return this.sourceLoaderCache.get(id);
   }
 }

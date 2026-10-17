@@ -154,6 +154,8 @@ export class DataManager extends BaseData {
    */
   copyTrackItem(trackitem: TrackItem | null = this.trackline.activeTrackItem.value) {
     if (!trackitem) return;
+    // 如果这个片段的clip不存在，则可以判断为这个片段无效或这个片段加载未完成
+    if (!this.webav.clipExists(trackitem.id)) return;
     const newTrackItem = this.trackline.copyTrackItem(trackitem);
     // 虽然是异步函数，但不需要等待，触发这个复制操作即可
     this.webav.copyClip(newTrackItem.id, trackitem);
@@ -180,6 +182,8 @@ export class DataManager extends BaseData {
     cutTime: number = this.timeline.currentTime.value,
   ) {
     if (!trackitem) return;
+    // 如果这个片段的clip不存在，则可以判断为这个片段无效或这个片段加载未完成
+    if (!this.webav.clipExists(trackitem.id)) return;
     // 裁剪时间点要在片段之间
     if (cutTime <= trackitem.start || cutTime >= trackitem.end) return;
     // 找到父级轨道，新 trackitem 需要放到同一轨道

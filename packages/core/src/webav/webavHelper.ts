@@ -13,9 +13,9 @@ import { WebavClipBuilder } from "./webavClipBuilder";
  * 负责管理媒体片段的缓存和创建
  */
 export default class WebavHelper {
-  /** 片段缓存池，用于存储已加载的媒体片段 */
-  private clipCache: Map<string | symbol, WebavClipCacheData>;
-  /** WebAV 片段构建器实例 */
+  // 片段缓存池，用于存储已加载的媒体片段
+  private clipCache: Map<string | symbol, WebavClipCacheData> = new Map();
+  // WebAV 片段构建器实例
   private webavClipBuilder: WebavClipBuilder;
 
   /**
@@ -24,22 +24,19 @@ export default class WebavHelper {
    */
   constructor(options: Partial<WebavHelperOptions> = {}) {
     const { chromaKeyOptions = DEFAULT_CHROMAKEY_OPTIONS } = options;
-    // 初始化缓存池，用于存储已加载的媒体片段
-    this.clipCache = new Map<string, WebavClipCacheData>();
     // 初始化 WebAV 片段构建器，用于创建媒体片段
     this.webavClipBuilder = new WebavClipBuilder(chromaKeyOptions);
   }
 
   /**
-   * 加载轨道片段
+   * 加载媒体片段
    * @param trackitem - 轨道项配置
    * @param source - 媒体数据源
    * @param opts - 额外选项
-   * @returns 返回加载好的媒体片段
    */
   async loadClip(trackitem: TrackItem, source: string | ImageBitmap, opts?: Record<string, any>) {
     if (!trackitem.id) {
-      console.warn("Track item id is missing, this will generate a new one.");
+      console.warn("trackitem 缺少 id, 系统将自动创建。");
       trackitem.id = generateUUID();
     }
 
@@ -83,7 +80,7 @@ export default class WebavHelper {
    */
   async loadUrlClip(trackitem: TrackItem, source: string, opts?: Record<string, any>) {
     const response = await fetch(source);
-    if (!response.body) return;
+    if (!response.body) return null;
 
     const clip = await this.createClip(trackitem, response, opts);
 
