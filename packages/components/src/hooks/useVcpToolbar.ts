@@ -20,7 +20,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         disabled: !ctx.manager.data.trackline.undoAble.value,
       },
       events: {
-        click: () => ctx.manager.data.trackline.undo(),
+        click: () => ctx.manager.data.undo(),
       },
     },
     {
@@ -33,7 +33,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         disabled: !ctx.manager.data.trackline.redoAble.value,
       },
       events: {
-        click: () => ctx.manager.data.trackline.redo(),
+        click: () => ctx.manager.data.redo(),
       },
     },
     {
@@ -46,9 +46,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         effect: theme.value,
       },
       events: {
-        click: () =>
-          activeTrackItem.value &&
-          ctx.manager.data.trackline.removeTrackitem(activeTrackItem.value),
+        click: () => ctx.manager.data.removeTrackitem(),
       },
     },
     {
@@ -56,12 +54,16 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-file-copy-fill",
-        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
+        disabled: !(
+          activeTrackItem.value &&
+          activeTrackItem.value.changeable &&
+          activeTrackItem.value.ready
+        ),
         tipsText: "复制",
         effect: theme.value,
       },
       events: {
-        click: () => console.log("copy"),
+        click: () => ctx.manager.data.copyTrackItem(),
       },
     },
     {
@@ -69,12 +71,16 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-scissors-cut-fill",
-        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
+        disabled: !(
+          activeTrackItem.value &&
+          activeTrackItem.value.changeable &&
+          activeTrackItem.value.ready
+        ),
         tipsText: "裁剪",
         effect: theme.value,
       },
       events: {
-        click: () => console.log("cut"),
+        click: () => ctx.manager.data.cutTrackItem(),
       },
     },
     {
@@ -94,7 +100,15 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         effect: theme.value,
       },
       events: {
-        click: () => console.log("mute"),
+        click: () => {
+          if (
+            activeTrackItem.value &&
+            activeTrackItem.value.changeable &&
+            "mute" in activeTrackItem.value
+          ) {
+            activeTrackItem.value.mute = !activeTrackItem.value.mute;
+          }
+        },
       },
     },
     {

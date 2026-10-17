@@ -2,6 +2,7 @@ import type { Ref } from "vue";
 
 import { ref, watch } from "vue";
 
+import type { TrackItem } from "@/types/data";
 import type { DataManagerOptions, DataManagerContext } from "@/types/manager";
 
 import { TRACKLINE_SOURCE_TYPE, PANEL_EVENT_TYPE } from "@/config/constant";
@@ -131,6 +132,87 @@ export class DataManager extends BaseData {
 
     if (processor) return await processor(source, opts);
     throw new Error(`Invalid source type: ${String(type)}`);
+  }
+
+  /**
+   * 移除 trackitem
+   * @param trackitem 需要删除的 trackitem
+   * @param saveSnapshot 保存快照
+   */
+  removeTrackitem(trackitem: TrackItem | null = this.trackline.activeTrackItem.value) {
+    if (!trackitem) return;
+    this.trackline.removeTrackitem(trackitem);
+    if (trackitem.id === this.trackline.activeTrackItem.value?.id) {
+      this.trackline.activeTrackItem.value = null;
+    }
+    this.trackline.saveSnapshot();
+  }
+
+  /**
+   * 复制 trackitem
+   * @param trackitem 要复制的 trackitem
+   */
+  copyTrackItem(trackitem: TrackItem | null = this.trackline.activeTrackItem.value) {
+    if (!trackitem) return;
+    const newTrackItem = this.trackline.copyTrackItem(trackitem);
+    // 虽然是异步函数，但不需要等待，触发这个复制操作即可
+    this.webav.copyClip(newTrackItem.id, trackitem);
+    // 将当前 trackitem 添加到新的 trackline
+    const newTrackLine = this.trackline.addToNewTrackLine(newTrackItem);
+    // 将 trackline 移动到当前轨道的下方
+    const targetTrackLine = this.trackline.mergeList.value.find(
+      (tl) => tl.id === trackitem.parentId,
+    );
+    if (targetTrackLine) this.trackline.moveTrackline(newTrackLine, targetTrackLine.id, "bottom");
+    this.trackline.activeTrackLine.value = newTrackLine;
+    this.trackline.activeTrackItem.value = newTrackItem;
+    // 保存快照
+    this.trackline.saveSnapshot();
+  }
+
+  /**
+   * 裁剪 trackitem
+   * @param trackitem 要裁剪的 trackitem
+   * @param cutTime 裁剪时间点
+   */
+  cutTrackItem(
+    trackitem: TrackItem | null = this.trackline.activeTrackItem.value,
+    cutTime: number = this.timeline.currentTime.value,
+  ) {
+    if (!trackitem) return;
+    // 裁剪时间点要在片段之间
+    if (cutTime <= trackitem.start || cutTime >= trackitem.end) return;
+    // 找到父级轨道，新 trackitem 需要放到同一轨道
+    const parentLine = this.trackline.mergeList.value.find((tl) => tl.id === trackitem.parentId);
+    if (!parentLine) return;
+    // 复制 trackitem
+    const newTrackItem = this.trackline.copyTrackItem(trackitem);
+    this.webav.copyClip(newTrackItem.id, trackitem);
+    // 裁剪旧item和新item，新item放在旧item后面
+    newTrackItem.start = cutTime;
+    trackitem.end = cutTime;
+    if (trackitem.type === "video" || trackitem.type === "audio") {
+      // 有 duration 的片段，要更新 clipStart 和 clipEnd
+      newTrackItem.clipStart = trackitem.clipStart + (trackitem.end - trackitem.start);
+      trackitem.clipEnd = trackitem.clipEnd + (newTrackItem.end - newTrackItem.start);
+    }
+    parentLine.data.push(newTrackItem);
+    // 保存快照
+    this.trackline.saveSnapshot();
+  }
+
+  /**
+   * 撤销
+   */
+  undo() {
+    this.trackline.undo();
+  }
+
+  /**
+   * 重做
+   */
+  redo() {
+    this.trackline.redo();
   }
 
   /**

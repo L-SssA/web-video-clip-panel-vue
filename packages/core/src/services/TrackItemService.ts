@@ -458,17 +458,17 @@ export class TrackItemService extends BaseService {
 
   /**
    * 检查 trackitem 将要新建轨道的位置是否可行
-   * @param trackItem 当前移动的 trackitem
+   * @param trackitem 当前移动的 trackitem
    * @param trackline 将要创建新轨道的位置的临近轨道
    */
-  availablePositionForNewline(trackItem: TrackItem, trackline: TrackLine) {
-    if (trackItem.type === "audio" && trackline.type === "audio") {
+  availablePositionForNewline(trackitem: TrackItem, trackline: TrackLine) {
+    if (trackitem.type === "audio" && trackline.type === "audio") {
       // 都是音频类型
       return true;
     }
     const pictureTypes = ["video", "image", "text"];
     if (
-      pictureTypes.includes(trackItem.type) &&
+      pictureTypes.includes(trackitem.type) &&
       pictureTypes.includes(trackline.type) &&
       trackline.id !== MAIN_TRACK_ID
     ) {
@@ -487,7 +487,7 @@ export class TrackItemService extends BaseService {
     if (!newlineforTrackitem.value || !activeTrackItem.value) return;
     const targetId = tracklineBesideToNewline.value?.id;
     // 将当前 trackitem 移出 trackline
-    this._data.trackline.removeTrackitem(activeTrackItem.value, false);
+    this._data.trackline.removeTrackitem(activeTrackItem.value);
     // 将当前 trackitem 添加到新的 trackline
     const newTrackLine = this._data.trackline.addToNewTrackLine(activeTrackItem.value);
     // 将 trackline 移动到正确的位置

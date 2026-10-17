@@ -28,7 +28,7 @@ import {
   DEFAULT_TRACKLINE_STYLES,
   TRACKLINE_STYLES_MAP,
 } from "@/config/theme";
-import { isNumberInside } from "@/utils/tools";
+import deepCopy, { generateUUID, isNumberInside } from "@/utils/tools";
 import { defineTrackLineConfig } from "@/utils/trackline";
 
 import { BaseData } from "./BaseData";
@@ -302,12 +302,11 @@ export class TrackLineData extends BaseData {
   /**
    * 移除 trackitem
    * @param trackitem 需要删除的 trackitem
+   * @param saveSnapshot 保存快照
    */
-  removeTrackitem(trackitem: TrackItem, saveSnapshot: boolean = true) {
+  removeTrackitem(trackitem: TrackItem) {
     this.moveTrackitem(trackitem);
-    this.activeTrackItem.value = null;
     this.cleanEmptyTrackline();
-    saveSnapshot && this.saveSnapshot();
   }
 
   /**
@@ -358,6 +357,15 @@ export class TrackLineData extends BaseData {
       newList.push(trackline);
     }
     tracklist.value = newList;
+  }
+
+  /**
+   * 获取复制片段
+   */
+  copyTrackItem(trackitem: TrackItem) {
+    const newTrackItem = deepCopy(trackitem);
+    newTrackItem.id = generateUUID();
+    return newTrackItem;
   }
 
   /**
