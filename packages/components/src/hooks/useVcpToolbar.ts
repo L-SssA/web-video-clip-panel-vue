@@ -111,19 +111,6 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
         },
       },
     },
-    {
-      key: "replace",
-      component: IconButton,
-      props: {
-        iconClass: "ri-picture-in-picture-2-line",
-        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
-        tipsText: "替换资源",
-        effect: theme.value,
-      },
-      events: {
-        click: () => console.log("replace"),
-      },
-    },
   ]);
 
   const centerToolbarConfigs = computed<VcpToolbarConfig[]>(() => [
