@@ -40,20 +40,20 @@ export class TrackLineList {
   readonly undoAble: ComputedRef<boolean>;
   readonly redoAble: ComputedRef<boolean>;
 
-  private snapshotList: TrackLineListSnapshot[] = [];
-  private snapshotIndex = ref(-1);
+  private _snapshotList: TrackLineListSnapshot[] = [];
+  private _snapshotIndex = ref(-1);
 
   constructor(maxSnapshotSize: number) {
     this.maxSnapshotSize = maxSnapshotSize;
-    this.undoAble = computed(() => this.snapshotIndex.value > -1);
-    this.redoAble = computed(() => this.snapshotIndex.value < this.snapshotList.length - 1);
+    this.undoAble = computed(() => this._snapshotIndex.value > -1);
+    this.redoAble = computed(() => this._snapshotIndex.value < this._snapshotList.length - 1);
   }
 
   /**
    * 保存快照
    */
   saveSnapshot() {
-    this.snapshotList.splice(this.snapshotIndex.value + 1);
+    this._snapshotList.splice(this._snapshotIndex.value + 1);
     const snapshot = {
       picture: deepCopy(this.picture.value),
       main: deepCopy(this.main.value),
@@ -61,25 +61,25 @@ export class TrackLineList {
       activeLineId: this.activeTrackLine.value?.id,
       activeItemId: this.activeTrackItem.value?.id,
     };
-    this.snapshotList.push(snapshot);
-    this.snapshotIndex.value++;
+    this._snapshotList.push(snapshot);
+    this._snapshotIndex.value++;
   }
 
   /**
    * 撤销
    */
   undo() {
-    const snapshot = this.snapshotList[this.snapshotIndex.value - 1];
+    const snapshot = this._snapshotList[this._snapshotIndex.value - 1];
     if (!snapshot) {
       this.applySnapshot({
         picture: [],
         main: { id: MAIN_TRACK_ID, type: "video", data: [], main: true, mute: false },
         audio: [],
       });
-      this.snapshotIndex.value = -1;
+      this._snapshotIndex.value = -1;
     } else {
       this.applySnapshot(snapshot);
-      this.snapshotIndex.value--;
+      this._snapshotIndex.value--;
     }
   }
 
@@ -87,10 +87,10 @@ export class TrackLineList {
    * 重做
    */
   redo() {
-    const snapshot = this.snapshotList[this.snapshotIndex.value + 1];
+    const snapshot = this._snapshotList[this._snapshotIndex.value + 1];
     if (!snapshot) return;
     this.applySnapshot(snapshot);
-    this.snapshotIndex.value++;
+    this._snapshotIndex.value++;
   }
 
   /**

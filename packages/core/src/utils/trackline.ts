@@ -30,7 +30,6 @@ export function defineBaseTrackItemConfig(id: string, type: SourceType): BaseTra
     ghost: false,
     clipStart: 0, // 裁剪开始时间
     clipEnd: 0, // 裁剪结束时间
-    ready: false,
   };
 }
 

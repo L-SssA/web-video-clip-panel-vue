@@ -128,7 +128,7 @@ const buildTextClip = async (
  * WebAV 剪辑构建器类
  */
 export class WebavClipBuilder {
-  private builders: Record<string, WebavClipBuilderFunction> = {
+  private _builders: Record<string, WebavClipBuilderFunction> = {
     video: buildVideoClip,
     audio: buildAudioClip,
     image: buildImageClip,
@@ -145,11 +145,11 @@ export class WebavClipBuilder {
    * @param source - 媒体数据源
    * @param trackitem - 轨道项配置
    * @param opts - 额外选项
-   * @returns 返回构建好的媒体片段实例，如果类型不支持则返回 null
+   * @returns 返回构建好的媒体片段实例，如果类型不支持则返回
    */
   buildClip(source: Response | ImageBitmap, trackitem: TrackItem, opts?: Record<string, any>) {
-    const builder = this.builders[trackitem.type];
-    if (!builder) return null;
+    const builder = this._builders[trackitem.type];
+    if (!builder) return;
     return builder(this, source, trackitem, opts);
   }
 }

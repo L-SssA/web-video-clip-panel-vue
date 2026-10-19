@@ -126,7 +126,6 @@ export interface BaseTrackItem {
   ghost?: boolean; // 是否为 ghost 片段
   clipStart: number; // 裁剪开始时间
   clipEnd: number; // 裁剪结束时间
-  ready: boolean; // clip 是否准备完成
 }
 
 export interface ImageTrackItem extends BaseTrackItem {

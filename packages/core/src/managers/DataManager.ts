@@ -13,7 +13,7 @@ import { TrackLineData } from "@/data/TrackLineData";
 import { CursorLineService } from "@/services/CursorLineService";
 import { ElEventService } from "@/services/ElEventService";
 import { TrackItemService } from "@/services/TrackItemService";
-import { WebavService } from "@/services/WebavService.ts";
+import { WebavSourceService } from "@/services/WebavSourceService";
 import { timeToPixel } from "@/utils/tools";
 import WebavHelper from "@/webav/WebavHelper";
 
@@ -26,17 +26,17 @@ export class DataManager extends BaseData {
   // webav 相关音视频解码工具
   public webav: WebavHelper;
 
-  // webav 相关逻辑
-  private webavService: WebavService;
+  // 音视频编解码相关逻辑
+  private _sourceService: WebavSourceService;
   // 用户事件相关逻辑
-  private elEventService: ElEventService;
+  private _elEventService: ElEventService;
   // cursorline 相关逻辑
-  private cursorLineService: CursorLineService;
+  private _cursorLineService: CursorLineService;
   // trackitem 相关逻辑
-  private trackitemService: TrackItemService;
+  private _trackitemService: TrackItemService;
 
   // 监听主题变化
-  private unwatchTheme: Function;
+  private _unwatchTheme: Function;
 
   get ctx(): DataManagerContext {
     return {
@@ -44,8 +44,8 @@ export class DataManager extends BaseData {
       trackline: this.trackline.ctx,
       system: this.system.ctx,
       service: {
-        ...this.trackitemService.ctx,
-        ...this.cursorLineService.ctx,
+        ...this._trackitemService.ctx,
+        ...this._cursorLineService.ctx,
       },
     };
   }
@@ -64,21 +64,23 @@ export class DataManager extends BaseData {
     this.timeline = new TimelineData(options.timeline);
     this.trackline = new TrackLineData(options.trackline);
     this.system = new SystemCommonData(options.system);
+
     // 音视频解码
     this.webav = new WebavHelper(options.webav);
-    this.theme = ref(options.theme || "light");
 
     // service 实例
-    this.webavService = new WebavService(this);
-    this.elEventService = new ElEventService(this);
-    this.cursorLineService = new CursorLineService(this);
-    this.trackitemService = new TrackItemService(this);
+    this._sourceService = new WebavSourceService(this);
+    this._elEventService = new ElEventService(this);
+    this._cursorLineService = new CursorLineService(this);
+    this._trackitemService = new TrackItemService(this);
+
+    this.theme = ref(options.theme || "light");
 
     this.unwatch = watch(this.observeList, () => this.triggerUpdate(), {
       immediate: true,
     });
 
-    this.unwatchTheme = watch(this.theme, (themeTag) => this.setTheme(themeTag), {
+    this._unwatchTheme = watch(this.theme, (themeTag) => this.setTheme(themeTag), {
       immediate: true,
     });
   }
@@ -124,14 +126,22 @@ export class DataManager extends BaseData {
    */
   async addSource(type: string, source: string, opts: any = {}) {
     const processor = {
-      [TRACKLINE_SOURCE_TYPE.VIDEO]: this.webavService.addMP4Source.bind(this.webavService),
-      [TRACKLINE_SOURCE_TYPE.IMAGE]: this.webavService.addImageSource.bind(this.webavService),
-      [TRACKLINE_SOURCE_TYPE.AUDIO]: this.webavService.addAudioSource.bind(this.webavService),
-      [TRACKLINE_SOURCE_TYPE.TEXT]: this.webavService.addTextSource.bind(this.webavService),
+      [TRACKLINE_SOURCE_TYPE.VIDEO]: this._sourceService.addMP4Source.bind(this._sourceService),
+      [TRACKLINE_SOURCE_TYPE.IMAGE]: this._sourceService.addImageSource.bind(this._sourceService),
+      [TRACKLINE_SOURCE_TYPE.AUDIO]: this._sourceService.addAudioSource.bind(this._sourceService),
+      [TRACKLINE_SOURCE_TYPE.TEXT]: this._sourceService.addTextSource.bind(this._sourceService),
     }[type];
 
     if (processor) return await processor(source, opts);
     throw new Error(`Invalid source type: ${String(type)}`);
+  }
+
+  /**
+   *  根据 id 获取 WebavSourceLoader
+   * @param id
+   */
+  getWebavSourceLoaderById(id: string | symbol) {
+    return this._sourceService.getLoaderById(id);
   }
 
   /**
@@ -156,9 +166,16 @@ export class DataManager extends BaseData {
     if (!trackitem) return;
     // 如果这个片段的clip不存在，则可以判断为这个片段无效或这个片段加载未完成
     if (!this.webav.clipExists(trackitem.id)) return;
+
+    // 复制新片段
     const newTrackItem = this.trackline.copyTrackItem(trackitem);
+
+    // 获取 loader，一方面确定 loader 是否存在，另一方面防止 loader 未完成导致复制片段失败
+    const loader = this._sourceService.copyLoaderById(newTrackItem.id, trackitem.id);
+    if (!loader) return;
     // 虽然是异步函数，但不需要等待，触发这个复制操作即可
-    this.webav.copyClip(newTrackItem.id, trackitem);
+    loader.then(() => this.webav.copyClip(newTrackItem.id, trackitem));
+
     // 将当前 trackitem 添加到新的 trackline
     const newTrackLine = this.trackline.addToNewTrackLine(newTrackItem);
     // 将 trackline 移动到当前轨道的下方
@@ -182,16 +199,22 @@ export class DataManager extends BaseData {
     cutTime: number = this.timeline.currentTime.value,
   ) {
     if (!trackitem) return;
-    // 如果这个片段的clip不存在，则可以判断为这个片段无效或这个片段加载未完成
-    if (!this.webav.clipExists(trackitem.id)) return;
     // 裁剪时间点要在片段之间
     if (cutTime <= trackitem.start || cutTime >= trackitem.end) return;
     // 找到父级轨道，新 trackitem 需要放到同一轨道
     const parentLine = this.trackline.mergeList.value.find((tl) => tl.id === trackitem.parentId);
     if (!parentLine) return;
+
     // 复制 trackitem
     const newTrackItem = this.trackline.copyTrackItem(trackitem);
-    this.webav.copyClip(newTrackItem.id, trackitem);
+
+    // 获取 loader，一方面确定 loader 是否存在，另一方面防止 loader 未完成导致复制片段失败
+    const loader = this._sourceService.copyLoaderById(newTrackItem.id, trackitem.id);
+    if (!loader) return;
+    // 虽然是异步函数，但不需要等待，触发这个复制操作即可
+    loader.then(() => this.webav.copyClip(newTrackItem.id, trackitem));
+    this._sourceService.copyLoaderById(newTrackItem.id, trackitem.id);
+
     // 裁剪旧item和新item，新item放在旧item后面
     newTrackItem.start = cutTime;
     trackitem.end = cutTime;
@@ -224,23 +247,23 @@ export class DataManager extends BaseData {
    * @param el 页面元素
    */
   setElementToListenMouseMove(el: HTMLElement | null) {
-    this.elEventService.setElementToListenMouseMove(el);
+    this._elEventService.setElementToListenMouseMove(el);
   }
 
   /**
    * 根据标识更新数据
    */
   triggerUpdateByTag() {
-    this.trackitemService.triggerUpdateByTag();
-    this.cursorLineService.triggerUpdateByTag();
+    this._trackitemService.triggerUpdateByTag();
+    this._cursorLineService.triggerUpdateByTag();
   }
 
   /**
    * 停用事件
    */
   deactiveEvents() {
-    this.trackitemService.deactiveEvents();
-    this.cursorLineService.deactiveEvents();
+    this._trackitemService.deactiveEvents();
+    this._cursorLineService.deactiveEvents();
   }
 
   /**
@@ -251,14 +274,14 @@ export class DataManager extends BaseData {
   activeEvent(eventType: string, ...args: any[]) {
     const activeFunc = (
       {
-        [PANEL_EVENT_TYPE.CURSOR_LINE_MOVE]: this.cursorLineService.activateCursorLineMoving.bind(
-          this.cursorLineService,
+        [PANEL_EVENT_TYPE.CURSOR_LINE_MOVE]: this._cursorLineService.activateCursorLineMoving.bind(
+          this._cursorLineService,
         ),
-        [PANEL_EVENT_TYPE.TRACK_ITEM_DRAG]: this.trackitemService.activateTrackItemDraging.bind(
-          this.trackitemService,
+        [PANEL_EVENT_TYPE.TRACK_ITEM_DRAG]: this._trackitemService.activateTrackItemDraging.bind(
+          this._trackitemService,
         ),
-        [PANEL_EVENT_TYPE.TRACK_ITEM_RESIZE]: this.trackitemService.activateTrackItemResizing.bind(
-          this.trackitemService,
+        [PANEL_EVENT_TYPE.TRACK_ITEM_RESIZE]: this._trackitemService.activateTrackItemResizing.bind(
+          this._trackitemService,
         ),
       } as Record<string, Function>
     )[eventType];
@@ -270,7 +293,7 @@ export class DataManager extends BaseData {
    * 监听鼠标接近边缘
    */
   onMouseCloseEdge(func: (edgeSide: string) => void) {
-    this.elEventService.onMouseCloseEdge(func);
+    this._elEventService.onMouseCloseEdge(func);
   }
 
   /**
@@ -283,9 +306,9 @@ export class DataManager extends BaseData {
     // 释放 helper
     this.webav.release();
     // 释放 service 实例
-    this.elEventService.release();
+    this._elEventService.release();
 
-    this.unwatchTheme();
+    this._unwatchTheme();
 
     super.release();
   }

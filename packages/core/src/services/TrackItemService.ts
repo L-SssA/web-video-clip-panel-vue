@@ -7,24 +7,24 @@ import { isNumberInside, pixelToTime, timeToPixel } from "@/utils/tools";
 import { BaseService } from "./BaseService";
 
 export class TrackItemService extends BaseService {
-  private markedX: number = 0;
-  private markedScrollLeft: number = 0;
-  private markedTrackItemData: MarkedTrackItemData = {
+  private _markedX: number = 0;
+  private _markedScrollLeft: number = 0;
+  private _markedTrackItemData: MarkedTrackItemData = {
     start: 0,
     end: 0,
     clipStart: 0,
     clipEnd: 0,
   };
-  private prevTrackItemData: MarkedTrackItemData | null = null;
-  private nextTrackItemData: MarkedTrackItemData | null = null;
-  private trackitemDraging: boolean = false;
-  private trackitemResing: boolean = false;
-  private trackitemResizeSideTag: string = "";
+  private _prevTrackItemData: MarkedTrackItemData | null = null;
+  private _nextTrackItemData: MarkedTrackItemData | null = null;
+  private _trackitemDraging: boolean = false;
+  private _trackitemResing: boolean = false;
+  private _trackitemResizeSideTag: string = "";
 
   get ctx(): TrackItemServiceContext {
     return {
-      trackitemDraging: this.trackitemDraging,
-      trackitemResing: this.trackitemResing,
+      trackitemDraging: this._trackitemDraging,
+      trackitemResing: this._trackitemResing,
     };
   }
 
@@ -50,11 +50,11 @@ export class TrackItemService extends BaseService {
     )
       return false;
     try {
-      this.markedX = this._data.system.mouseEvent.clientX;
-      this.markedScrollLeft = this._data.timeline.ctx.scrollLeft;
+      this._markedX = this._data.system.mouseEvent.clientX;
+      this._markedScrollLeft = this._data.timeline.ctx.scrollLeft;
       // 保存必要的 trackitem 数据
       const { start, end, clipStart, clipEnd } = this._data.trackline.activeTrackItem.value;
-      Object.assign(this.markedTrackItemData, { start, end, clipStart, clipEnd });
+      Object.assign(this._markedTrackItemData, { start, end, clipStart, clipEnd });
       // 保存 activeTrackItem 前后的 item
       const activeTrackLine = this._data.trackline.activeTrackLine.value;
       const { prevTrackItem, nextTrackItem } = activeTrackLine.data.reduce<{
@@ -72,11 +72,11 @@ export class TrackItemService extends BaseService {
       );
       if (prevTrackItem) {
         const { start, end, clipStart, clipEnd } = prevTrackItem;
-        this.prevTrackItemData = { start, end, clipStart, clipEnd };
+        this._prevTrackItemData = { start, end, clipStart, clipEnd };
       }
       if (nextTrackItem) {
         const { start, end, clipStart, clipEnd } = nextTrackItem;
-        this.nextTrackItemData = { start, end, clipStart, clipEnd };
+        this._nextTrackItemData = { start, end, clipStart, clipEnd };
       }
       return true;
     } catch (e) {
@@ -90,14 +90,14 @@ export class TrackItemService extends BaseService {
    */
   triggerUpdateByTag() {
     // trackitem 拖拽移动
-    if (this.trackitemDraging && this._data.system.mouseEvent) {
+    if (this._trackitemDraging && this._data.system.mouseEvent) {
       const movedX = this._data.system.mouseEvent.clientX;
       this.moveTrackItemByPixel(movedX);
       this.checkIsNeedNewLineForTrackItem();
       this.searchForAlignment();
     }
     // trackitem 缩放移动
-    if (this.trackitemResing && this._data.system.mouseEvent) {
+    if (this._trackitemResing && this._data.system.mouseEvent) {
       const movedX = this._data.system.mouseEvent.clientX;
       this.resizeTrackItemByPixel(movedX);
       this.searchForAlignment();
@@ -116,15 +116,15 @@ export class TrackItemService extends BaseService {
    * 清理事件标识
    */
   resetMarks() {
-    this.markedX = 0;
-    this.markedTrackItemData = {
+    this._markedX = 0;
+    this._markedTrackItemData = {
       start: 0,
       end: 0,
       clipStart: 0,
       clipEnd: 0,
     };
-    this.prevTrackItemData = null;
-    this.nextTrackItemData = null;
+    this._prevTrackItemData = null;
+    this._nextTrackItemData = null;
   }
 
   /**
@@ -133,7 +133,7 @@ export class TrackItemService extends BaseService {
   activateTrackItemDraging() {
     if (this.invalidTrackItemMouseAction()) return;
     if (!this.saveTrackItemStatus()) return;
-    this.trackitemDraging = true;
+    this._trackitemDraging = true;
     this._data.trackline.activeTrackItem.value!.ghost = true;
   }
 
@@ -141,8 +141,8 @@ export class TrackItemService extends BaseService {
    * 停用 trackitem 拖拽事件
    */
   deactivateTrackItemDraging() {
-    if (!this.trackitemDraging) return;
-    this.trackitemDraging = false;
+    if (!this._trackitemDraging) return;
+    this._trackitemDraging = false;
     this._data.trackline.draggingOverlap.value = false;
     const activeTrackItem = this._data.trackline.activeTrackItem;
     if (activeTrackItem.value) activeTrackItem.value.ghost = false;
@@ -161,17 +161,17 @@ export class TrackItemService extends BaseService {
   activateTrackItemResizing(sideTag: string) {
     if (this.invalidTrackItemMouseAction()) return;
     if (!this.saveTrackItemStatus()) return;
-    this.trackitemResing = true;
-    this.trackitemResizeSideTag = sideTag;
+    this._trackitemResing = true;
+    this._trackitemResizeSideTag = sideTag;
   }
 
   /**
    * 停用 trackitem 缩放事件
    */
   deactivateTrackItemResizing() {
-    if (!this.trackitemResing) return;
-    this.trackitemResing = false;
-    this.trackitemResizeSideTag = "";
+    if (!this._trackitemResing) return;
+    this._trackitemResing = false;
+    this._trackitemResizeSideTag = "";
     this.resetMarks();
     this._data.trackline.resetAlignment();
     this._data.trackline.saveSnapshot();
@@ -200,7 +200,7 @@ export class TrackItemService extends BaseService {
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
 
     // 计算边界
-    const { start, end } = this.markedTrackItemData;
+    const { start, end } = this._markedTrackItemData;
     if (start + offsetSeconds < 0) offsetSeconds = -start;
 
     // 计算自动吸附: 分别计算 start 和 end 的自动吸附，取偏移量最小的应用
@@ -250,29 +250,29 @@ export class TrackItemService extends BaseService {
     let offsetSeconds = this.calcOffsetSeconds(pixelX);
 
     // 缩放 trackitem
-    const { start, end, clipStart, clipEnd } = this.markedTrackItemData;
+    const { start, end, clipStart, clipEnd } = this._markedTrackItemData;
     const { type } = this._data.trackline.activeTrackItem.value;
     const { gapWidth, fps, framesPerGap } = this._data.timeline.ctx;
 
     const oneGapEqualToSeconds = pixelToTime(gapWidth, fps, framesPerGap, gapWidth);
 
-    if (this.trackitemResizeSideTag === "start") {
+    if (this._trackitemResizeSideTag === "start") {
       // 缩放片段左侧
       // 1. 左侧边界:0,左侧片段的end; 右侧边界:end-[时间线一格宽度],右侧片段的start
       // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipStart 必须 >= 0
 
       // 左侧边界
       if (start + offsetSeconds < 0) offsetSeconds = -start;
-      if (this.prevTrackItemData && start + offsetSeconds < this.prevTrackItemData.end) {
-        offsetSeconds = this.prevTrackItemData.end - start;
+      if (this._prevTrackItemData && start + offsetSeconds < this._prevTrackItemData.end) {
+        offsetSeconds = this._prevTrackItemData.end - start;
       }
 
       // 右侧边界
       if (start + offsetSeconds > end - oneGapEqualToSeconds) {
         offsetSeconds = end - oneGapEqualToSeconds - start;
       }
-      if (this.nextTrackItemData && start + offsetSeconds > this.nextTrackItemData.start) {
-        offsetSeconds = this.nextTrackItemData.start - start;
+      if (this._nextTrackItemData && start + offsetSeconds > this._nextTrackItemData.start) {
+        offsetSeconds = this._nextTrackItemData.start - start;
       }
 
       // 自动吸附
@@ -284,7 +284,7 @@ export class TrackItemService extends BaseService {
         this._data.trackline.activeTrackItem.value.clipStart = clipStart + offsetSeconds;
       }
       this._data.trackline.activeTrackItem.value.start = start + offsetSeconds;
-    } else if (this.trackitemResizeSideTag === "end") {
+    } else if (this._trackitemResizeSideTag === "end") {
       // 缩放片段右侧
       // 1. 左侧边界:start+[时间线一格宽度], 左侧片段的end; 右侧边界:右侧片段的start
       // 2. 片段为[视频]或[音频]片段时, 考虑剪辑边界 clipEnd 必须 >= 0
@@ -293,16 +293,16 @@ export class TrackItemService extends BaseService {
       if (end + offsetSeconds < start + oneGapEqualToSeconds) {
         offsetSeconds = start + oneGapEqualToSeconds - end;
       }
-      if (this.prevTrackItemData && end + offsetSeconds < this.prevTrackItemData.end) {
-        offsetSeconds = this.prevTrackItemData.end - end;
+      if (this._prevTrackItemData && end + offsetSeconds < this._prevTrackItemData.end) {
+        offsetSeconds = this._prevTrackItemData.end - end;
       }
 
       // 自动吸附
       offsetSeconds = this.searchForAutoAdsorb(end + offsetSeconds) - end;
 
       // 右侧边界
-      if (this.nextTrackItemData && end + offsetSeconds > this.nextTrackItemData.start) {
-        offsetSeconds = this.nextTrackItemData.start - end;
+      if (this._nextTrackItemData && end + offsetSeconds > this._nextTrackItemData.start) {
+        offsetSeconds = this._nextTrackItemData.start - end;
       }
 
       // 视频和音频片段的裁剪边界
@@ -321,9 +321,9 @@ export class TrackItemService extends BaseService {
    */
   calcOffsetSeconds(pixelX: number) {
     // 移动 pixel
-    const offsetX = pixelX - this.markedX;
+    const offsetX = pixelX - this._markedX;
     // 移动中的滚动
-    const offsetScroll = this._data.timeline.ctx.scrollLeft - this.markedScrollLeft;
+    const offsetScroll = this._data.timeline.ctx.scrollLeft - this._markedScrollLeft;
     // 移动的 pixel 转换为时间
     const { fps, framesPerGap, gapWidth } = this._data.timeline.ctx;
     let offsetSeconds = pixelToTime(offsetX + offsetScroll, fps, framesPerGap, gapWidth);

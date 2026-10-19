@@ -87,11 +87,11 @@ export class TrackLineData extends BaseData {
   public directionToNewline: Ref<"bottom" | "top" | ""> = ref("");
 
   // 轨道列表管理
-  private trackLineList: TrackLineList;
+  private _trackLineList: TrackLineList;
 
   get ctx(): TrackLineContext {
     return {
-      mergeTrackLineList: this.trackLineList.merge.value,
+      mergeTrackLineList: this._trackLineList.merge.value,
       marginTop: this.marginTop,
       gapHeight: this.gapHeight,
       marginLeft: this.marginLeft,
@@ -142,15 +142,15 @@ export class TrackLineData extends BaseData {
     this.updateStyles(styles);
 
     // 轨道列表
-    this.trackLineList = new TrackLineList(maxSnapshotSize);
-    this.pictureList = this.trackLineList.picture;
-    this.mainList = this.trackLineList.main;
-    this.audioList = this.trackLineList.audio;
-    this.mergeList = this.trackLineList.merge;
-    this.undoAble = this.trackLineList.undoAble;
-    this.redoAble = this.trackLineList.redoAble;
-    this.activeTrackLine = this.trackLineList.activeTrackLine;
-    this.activeTrackItem = this.trackLineList.activeTrackItem;
+    this._trackLineList = new TrackLineList(maxSnapshotSize);
+    this.pictureList = this._trackLineList.picture;
+    this.mainList = this._trackLineList.main;
+    this.audioList = this._trackLineList.audio;
+    this.mergeList = this._trackLineList.merge;
+    this.undoAble = this._trackLineList.undoAble;
+    this.redoAble = this._trackLineList.redoAble;
+    this.activeTrackLine = this._trackLineList.activeTrackLine;
+    this.activeTrackItem = this._trackLineList.activeTrackItem;
 
     this.unwatch = watch(this.observeList, () => {
       this.triggerUpdate();
@@ -392,21 +392,21 @@ export class TrackLineData extends BaseData {
    * 保存快照
    */
   saveSnapshot() {
-    this.trackLineList.saveSnapshot();
+    this._trackLineList.saveSnapshot();
   }
 
   /**
    * 撤销
    */
   undo() {
-    this.trackLineList.undo();
+    this._trackLineList.undo();
   }
 
   /**
    * 重做
    */
   redo() {
-    this.trackLineList.redo();
+    this._trackLineList.redo();
   }
 
   /**

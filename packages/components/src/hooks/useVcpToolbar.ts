@@ -54,11 +54,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-file-copy-fill",
-        disabled: !(
-          activeTrackItem.value &&
-          activeTrackItem.value.changeable &&
-          activeTrackItem.value.ready
-        ),
+        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
         tipsText: "复制",
         effect: theme.value,
       },
@@ -71,11 +67,7 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       component: IconButton,
       props: {
         iconClass: "ri-scissors-cut-fill",
-        disabled: !(
-          activeTrackItem.value &&
-          activeTrackItem.value.changeable &&
-          activeTrackItem.value.ready
-        ),
+        disabled: !(activeTrackItem.value && activeTrackItem.value.changeable),
         tipsText: "裁剪",
         effect: theme.value,
       },

@@ -1,7 +1,7 @@
-import { AudioClip, Combinator, OffscreenSprite, type ImgClip } from "@webav/av-cliper";
+import { AudioClip, type ImgClip } from "@webav/av-cliper";
 
-import type { AudioTrackItem, TrackItem, TrackLine, VideoTrackItem } from "@/types/data";
-import type { MediaClip, WebavClipCacheData, WebavHelperOptions } from "@/types/webav";
+import type { AudioTrackItem, TrackItem, VideoTrackItem } from "@/types/data";
+import type { WebavClipCacheData, WebavHelperOptions } from "@/types/webav";
 
 import { DEFAULT_CHROMAKEY_OPTIONS } from "@/config/constant";
 import { generateUUID } from "@/utils/tools";
@@ -14,9 +14,9 @@ import { WebavClipBuilder } from "./WebavClipBuilder";
  */
 export default class WebavHelper {
   // 片段缓存池，用于存储已加载的媒体片段
-  private clipCache: Map<string | symbol, WebavClipCacheData> = new Map();
+  private _clipCache: Map<string | symbol, WebavClipCacheData> = new Map();
   // WebAV 片段构建器实例
-  private webavClipBuilder: WebavClipBuilder;
+  private _webavClipBuilder: WebavClipBuilder;
 
   /**
    * 构造函数
@@ -25,7 +25,7 @@ export default class WebavHelper {
   constructor(options: Partial<WebavHelperOptions> = {}) {
     const { chromaKeyOptions = DEFAULT_CHROMAKEY_OPTIONS } = options;
     // 初始化 WebAV 片段构建器，用于创建媒体片段
-    this.webavClipBuilder = new WebavClipBuilder(chromaKeyOptions);
+    this._webavClipBuilder = new WebavClipBuilder(chromaKeyOptions);
   }
 
   /**
@@ -61,7 +61,7 @@ export default class WebavHelper {
   async loadImageBitmapClip(trackitem: TrackItem, source: ImageBitmap, opts?: Record<string, any>) {
     const clip = (await this.createClip(trackitem, source, opts)) as ImgClip;
 
-    this.clipCache.set(trackitem.id, {
+    this._clipCache.set(trackitem.id, {
       id: trackitem.id,
       type: trackitem.type,
       response: source,
@@ -84,12 +84,11 @@ export default class WebavHelper {
 
     const clip = await this.createClip(trackitem, response, opts);
 
-    this.clipCache.set(trackitem.id, {
+    this._clipCache.set(trackitem.id, {
       id: trackitem.id,
       type: trackitem.type,
       response,
-      // 音频片段不缓存，避免内存占用
-      clip: trackitem.type == "audio" ? undefined : (clip as Exclude<MediaClip, AudioClip>),
+      clip,
     });
 
     return clip;
@@ -101,7 +100,7 @@ export default class WebavHelper {
    * @returns 返回缓存中的片段或新创建的片段，如果缓存不存在则返回 null
    */
   async createClipFromCache(trackitem: TrackItem, opts?: Record<string, any>) {
-    const cache = this.clipCache.get(trackitem.id);
+    const cache = this._clipCache.get(trackitem.id);
 
     if (!cache) return null;
     if (cache.clip) return cache.clip;
@@ -129,7 +128,7 @@ export default class WebavHelper {
       throw new Error("Unsupported source data type");
     }
 
-    return this.webavClipBuilder.buildClip(sourceData, trackitem, opts);
+    return this._webavClipBuilder.buildClip(sourceData, trackitem, opts);
   }
 
   /**
@@ -138,7 +137,7 @@ export default class WebavHelper {
    * @param time - 时间点（微秒）
    */
   tick(trackitem: TrackItem, time: number) {
-    const cache = this.clipCache.get(trackitem.id);
+    const cache = this._clipCache.get(trackitem.id);
     if (!cache || !cache.clip) return null;
     return cache.clip.tick(time);
   }
@@ -150,7 +149,7 @@ export default class WebavHelper {
    */
   async copyClip(id: string | symbol, oldTrackItem: TrackItem) {
     const { id: oldId } = oldTrackItem;
-    const cache = this.clipCache.get(oldId);
+    const cache = this._clipCache.get(oldId);
     if (!cache) return null;
 
     // 克隆响应数据和片段实例
@@ -158,7 +157,7 @@ export default class WebavHelper {
       cache.response instanceof Response ? cache.response.clone() : cache.response;
     const cloneClip = await cache.clip?.clone();
 
-    this.clipCache.set(id, {
+    this._clipCache.set(id, {
       id: id,
       type: cache.type,
       response: cloneResponse,
@@ -174,7 +173,7 @@ export default class WebavHelper {
    * @returns 返回布尔值，表示该ID对应的片段是否存在且已加载
    */
   clipExists(id: string | symbol) {
-    const cache = this.clipCache.get(id);
+    const cache = this._clipCache.get(id);
     return !!cache?.clip;
   }
 
@@ -184,8 +183,52 @@ export default class WebavHelper {
    * @returns 返回片段的元数据，如果片段不存在则返回 undefined
    */
   getClipMeta(id: string | symbol) {
-    const cache = this.clipCache.get(id);
+    const cache = this._clipCache.get(id);
     return cache?.clip?.meta;
+  }
+
+  /**
+   * 生成音频波形数据
+   * @param trackitem - 轨道项配置
+   * @returns 返回波形数据数组
+   */
+  async genWaveData(trackitem: TrackItem, fps: number) {
+    const pcmData = await this.getPCMData(trackitem);
+    if (!pcmData.length) return [] as number[];
+    const samplesPerFrame = Math.floor(48000 / fps);
+    const totalFrames = Math.floor((trackitem as AudioTrackItem | VideoTrackItem).duration * fps);
+    const [chan01Buf, chan02Buf] = pcmData;
+    const waveform: number[] = [];
+    // 遍历每一帧，计算每一帧的音波数据
+    for (let i = 0; i < totalFrames; i++) {
+      const start = i * samplesPerFrame;
+      const end = Math.min(start + samplesPerFrame, pcmData.length);
+      if (start >= end) break;
+      const sum =
+        chan01Buf.slice(start, end).reduce((a, b) => a + b, 0) +
+        chan02Buf.slice(start, end).reduce((a, b) => a + b, 0);
+      const averageValue = sum / (end - start);
+      waveform.push(averageValue);
+    }
+    return waveform;
+  }
+
+  /**
+   * 获取音频数据（PCM）
+   * @param trackitem - 轨道项配置（可以是音频或视频）
+   * @returns 返回 PCM 音频数据数组，如果无法生成则返回空数组
+   */
+  async getPCMData(trackitem: TrackItem) {
+    const audioClip = await this.genAudioClipFromCache(trackitem);
+
+    if (audioClip) {
+      const [chan01Buf, chan02Buf] = (audioClip as AudioClip).getPCMData();
+      // video 的 clip 是临时创建的，需要释放
+      if (trackitem.type === "video") audioClip.destroy();
+      return [[...chan01Buf], [...chan02Buf]];
+    }
+
+    return [] as number[][];
   }
 
   /**
@@ -214,7 +257,7 @@ export default class WebavHelper {
    * @returns 返回音频片段，如果缓存不存在则返回 undefined
    */
   async genAudioFromVideoCache(trackitem: TrackItem, opts?: Record<string, any>) {
-    const cache = this.clipCache.get(trackitem.id);
+    const cache = this._clipCache.get(trackitem.id);
     if (!cache) return;
 
     const { response } = cache;
@@ -229,129 +272,25 @@ export default class WebavHelper {
   }
 
   /**
-   * 获取音频数据（PCM）
-   * @param trackitem - 轨道项配置（可以是音频或视频）
-   * @returns 返回 PCM 音频数据数组，如果无法生成则返回空数组
-   */
-  async getPCMData(trackitem: TrackItem) {
-    const audioClip = await this.genAudioClipFromCache(trackitem);
-
-    if (audioClip) {
-      const data = (audioClip as AudioClip).getPCMData()[0];
-      audioClip.destroy();
-      return [...data];
-    }
-
-    return [] as number[];
-  }
-
-  /**
-   * 生成音频波形数据
-   * @param trackitem - 轨道项配置
-   * @returns 返回波形数据数组
-   */
-  async genWaveData(trackitem: TrackItem, fps: number) {
-    const pcmData = await this.getPCMData(trackitem);
-    if (!pcmData.length) return [] as number[];
-    const samplesPerFrame = Math.floor(48000 / fps);
-    const totalFrames = Math.floor((trackitem as AudioTrackItem | VideoTrackItem).duration * fps);
-
-    const waveform: number[] = [];
-    // 遍历每一帧，计算每一帧的音波数据
-    for (let i = 0; i < totalFrames; i++) {
-      const start = i * samplesPerFrame;
-      const end = Math.min(start + samplesPerFrame, pcmData.length);
-      if (start >= end) break;
-      let sum = 0;
-      for (let j = start; j < end; j++) {
-        sum += Math.abs(pcmData[j]);
-      }
-      const averageValue = sum / (end - start);
-      waveform.push(averageValue);
-    }
-    return waveform;
-  }
-
-  /**
-   * 合并多个轨道的音频
-   * @param trackList - 轨道列表数组
-   * @param fullDuration - 完整时长（秒），用于填充空白音频
-   * @returns 合并后音频的 Blob URL
-   */
-  async getMergeAudio(trackList: TrackLine[], fullDuration: number) {
-    const sourcesToRelease = [];
-    const com = new Combinator();
-    sourcesToRelease.push(com);
-
-    for (let trackline of trackList) {
-      const { type, data } = trackline;
-
-      // 跳过非音频轨道（文本和图像）
-      if (type === "text" || type === "image") continue;
-
-      for (let trackitem of data) {
-        const { clipStart, start, end, volume, mute } = trackitem as
-          | AudioTrackItem
-          | VideoTrackItem;
-        if (mute) continue;
-
-        let clip = await this.genAudioClipFromCache(trackitem, { volume });
-        if (!clip) continue;
-
-        sourcesToRelease.push(clip);
-        // 如果指定了裁剪起始点，则分割音频片段
-        if (clipStart) clip = (await clip.split(clipStart * 1e6))[1];
-
-        const audioSpr = new OffscreenSprite(clip);
-        audioSpr.time = {
-          offset: start * 1e6,
-          duration: (end - start) * 1e6,
-        };
-
-        sourcesToRelease.push(audioSpr);
-        await com.addSprite(audioSpr);
-      }
-    }
-
-    // 创建空白音频确保输出时长正确
-    const emptyClip = new AudioClip(
-      [new Float32Array(fullDuration * 48000), new Float32Array(fullDuration * 48000)],
-      { volume: 0 },
-    );
-    sourcesToRelease.push(emptyClip);
-    await emptyClip.ready;
-
-    const emptySpr = new OffscreenSprite(emptyClip);
-    sourcesToRelease.push(emptySpr);
-    await com.addSprite(emptySpr);
-
-    const srcBlob = await new Response(com.output()).blob();
-
-    sourcesToRelease.forEach((source) => source.destroy());
-
-    return URL.createObjectURL(srcBlob);
-  }
-
-  /**
    * 释放指定 ID 的缓存片段
    * @param id - 轨道项 ID
    */
   releaseById(id: string | symbol) {
-    const cacheItem = this.clipCache.get(id);
+    const cacheItem = this._clipCache.get(id);
     if (!cacheItem) return;
 
     cacheItem.clip && cacheItem.clip.destroy();
-    this.clipCache.delete(id);
+    this._clipCache.delete(id);
   }
 
   /**
    * 释放所有缓存片段
    */
   release() {
-    this.clipCache.forEach((item) => {
+    this._clipCache.forEach((item) => {
       this.releaseById(item.id);
     });
 
-    this.clipCache.clear();
+    this._clipCache.clear();
   }
 }

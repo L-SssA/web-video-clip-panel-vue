@@ -3,14 +3,14 @@
  */
 export class EventCallback {
   // 回调函数集合
-  private callbacks = new Map<Function, Function>();
+  private _callbacks = new Map<Function, Function>();
 
   /**
    * 检查是否存在回调函数
    * @param callback
    */
   hasEvent(callback: Function): boolean {
-    return this.callbacks.has(callback);
+    return this._callbacks.has(callback);
   }
 
   /**
@@ -20,7 +20,7 @@ export class EventCallback {
    * @param args 触发参数
    */
   onEvent(callback: any): void {
-    this.callbacks.set(callback, callback);
+    this._callbacks.set(callback, callback);
   }
 
   /**
@@ -28,7 +28,7 @@ export class EventCallback {
    * @param callback 回调函数
    */
   offEvent(callback: any): void {
-    this.callbacks.delete(callback);
+    this._callbacks.delete(callback);
   }
 
   /**
@@ -36,7 +36,7 @@ export class EventCallback {
    * @param args 触发参数
    */
   triggerEvent(...args: any[]): void {
-    this.callbacks.forEach((callback) => callback(...args));
+    this._callbacks.forEach((callback) => callback(...args));
   }
 
   /**
@@ -51,6 +51,6 @@ export class EventCallback {
    * 清空回调函数
    */
   clearEvent(): void {
-    this.callbacks.clear();
+    this._callbacks.clear();
   }
 }

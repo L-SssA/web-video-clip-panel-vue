@@ -17,7 +17,7 @@ export class CanvasTileMap {
 
   public context: CanvasTileMapContext;
 
-  private grid: HTMLDivElement;
+  private _grid: HTMLDivElement;
   private _cacheMap: Map<string, TileCanvas> = new Map();
 
   get tiles(): TileCanvas[] {
@@ -25,8 +25,8 @@ export class CanvasTileMap {
   }
 
   constructor() {
-    this.grid = document.createElement("div");
-    this.grid.style.display = "grid";
+    this._grid = document.createElement("div");
+    this._grid.style.display = "grid";
 
     this.context = new CanvasTileMapContext(this);
   }
@@ -43,13 +43,13 @@ export class CanvasTileMap {
    * @param el 容器
    */
   setElement(el: HTMLElement) {
-    if (this.container) this.container.removeChild(this.grid);
+    if (this.container) this.container.removeChild(this._grid);
 
     this.container = el;
     if (!this.container) return;
 
     this.update();
-    this.container.appendChild(this.grid);
+    this.container.appendChild(this._grid);
   }
 
   /**
@@ -71,8 +71,8 @@ export class CanvasTileMap {
     this.containerRectInfo.height = clientHeight;
 
     // 设置 canvas 盒子宽高
-    this.grid.style.width = numberToStyleValue(clientWidth);
-    this.grid.style.height = numberToStyleValue(clientHeight);
+    this._grid.style.width = numberToStyleValue(clientWidth);
+    this._grid.style.height = numberToStyleValue(clientHeight);
   }
 
   /**
@@ -120,8 +120,8 @@ export class CanvasTileMap {
     this.batchRemoveCanvasTiles(keysToRemove);
 
     // 设置布局属性
-    this.grid.style.gridTemplateColumns = gridTemplateColumns.join(" ");
-    this.grid.style.gridTemplateRows = gridTemplateRows.join(" ");
+    this._grid.style.gridTemplateColumns = gridTemplateColumns.join(" ");
+    this._grid.style.gridTemplateRows = gridTemplateRows.join(" ");
   }
 
   /**
@@ -160,7 +160,7 @@ export class CanvasTileMap {
     const tile = this._cacheMap.get(key);
     if (!tile) return;
     const referenceTile = referenceKey && this._cacheMap.get(referenceKey);
-    this.grid.insertBefore(tile.canvas, referenceTile ? referenceTile.canvas : null);
+    this._grid.insertBefore(tile.canvas, referenceTile ? referenceTile.canvas : null);
   }
 
   /**

@@ -9,7 +9,7 @@ export type WebavClipCacheData = {
   id: string | symbol;
   type: SourceType;
   response: ImageBitmap | Response;
-  clip?: ImgClip | MP4Clip;
+  clip?: MediaClip;
 };
 
 // 绿幕抠像选项

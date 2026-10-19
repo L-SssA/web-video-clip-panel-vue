@@ -16,9 +16,9 @@ import { CanvasTileMapState } from "./CanvasTileMapState";
 export class CanvasTileMapContext {
   // ------------ 辅助属性 ------------
   public tileMap: CanvasTileMap;
-  private pathCommands: PathCommand[] = [];
-  private stateStack: CanvasTileMapState[] = [];
-  private currentState: CanvasTileMapState;
+  private _pathCommands: PathCommand[] = [];
+  private _stateStack: CanvasTileMapState[] = [];
+  private _currentState: CanvasTileMapState;
 
   get canvas() {
     return {
@@ -27,95 +27,95 @@ export class CanvasTileMapContext {
   }
   constructor(tileMap: CanvasTileMap) {
     this.tileMap = tileMap;
-    this.currentState = new CanvasTileMapState();
+    this._currentState = new CanvasTileMapState();
   }
 
   //#region 读写属性
   getStateValue<T extends keyof CanvasTileMapState>(key: T): CanvasTileMapState[T] {
-    return this.currentState[key];
+    return this._currentState[key];
   }
 
   setStateValue<T extends keyof CanvasTileMapState>(key: T, value: CanvasTileMapState[T]) {
-    this.currentState[key] = value;
+    this._currentState[key] = value;
   }
   //#endregion
 
   //#region save / restore
   save() {
-    const copiedState = this.currentState.clone();
-    this.stateStack.push(copiedState);
+    const copiedState = this._currentState.clone();
+    this._stateStack.push(copiedState);
   }
 
   restore() {
-    if (this.stateStack.length === 0) return;
-    this.currentState = this.stateStack.pop()!;
+    if (this._stateStack.length === 0) return;
+    this._currentState = this._stateStack.pop()!;
   }
   //#endregion
 
   //#region 变换矩阵 API
   translate(x: number, y: number) {
-    this.currentState.transform.translateSelf(x, y);
+    this._currentState.transform.translateSelf(x, y);
   }
 
   scale(x: number, y: number) {
-    this.currentState.transform.scaleSelf(x, y);
+    this._currentState.transform.scaleSelf(x, y);
   }
 
   rotate(angle: number) {
-    this.currentState.transform.rotateSelf(angle);
+    this._currentState.transform.rotateSelf(angle);
   }
 
   transform(a: number, b: number, c: number, d: number, e: number, f: number) {
-    this.currentState.transform.multiplySelf(new DOMMatrix([a, b, c, d, e, f]));
+    this._currentState.transform.multiplySelf(new DOMMatrix([a, b, c, d, e, f]));
   }
 
   setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
   setTransform(matrix: DOMMatrix): void;
   setTransform(...args: any[]) {
     if (args.length === 1 && args[0] instanceof DOMMatrix) {
-      this.currentState.transform = DOMMatrix.fromMatrix(args[0]);
+      this._currentState.transform = DOMMatrix.fromMatrix(args[0]);
     } else {
-      this.currentState.transform = new DOMMatrix(args.slice(0, 6));
+      this._currentState.transform = new DOMMatrix(args.slice(0, 6));
     }
   }
 
   resetTransform() {
-    this.currentState.transform = new DOMMatrix();
+    this._currentState.transform = new DOMMatrix();
   }
   //#endregion
 
   //#region 路径构建API（收集指令）
   beginPath() {
-    this.pathCommands = [];
-    this.pathCommands.push({ type: "beginPath", args: [] });
+    this._pathCommands = [];
+    this._pathCommands.push({ type: "beginPath", args: [] });
   }
 
   moveTo(x: number, y: number) {
-    this.pathCommands.push({ type: "moveTo", args: [x, y] });
+    this._pathCommands.push({ type: "moveTo", args: [x, y] });
   }
 
   lineTo(x: number, y: number) {
-    this.pathCommands.push({ type: "lineTo", args: [x, y] });
+    this._pathCommands.push({ type: "lineTo", args: [x, y] });
   }
 
   arc(x: number, y: number, r: number, sa: number, ea: number, ccw?: boolean) {
-    this.pathCommands.push({ type: "arc", args: [x, y, r, sa, ea, ccw] });
+    this._pathCommands.push({ type: "arc", args: [x, y, r, sa, ea, ccw] });
   }
 
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number) {
-    this.pathCommands.push({ type: "arcTo", args: [x1, y1, x2, y2, radius] });
+    this._pathCommands.push({ type: "arcTo", args: [x1, y1, x2, y2, radius] });
   }
 
   quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
-    this.pathCommands.push({ type: "quadraticCurveTo", args: [cpx, cpy, x, y] });
+    this._pathCommands.push({ type: "quadraticCurveTo", args: [cpx, cpy, x, y] });
   }
 
   bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number) {
-    this.pathCommands.push({ type: "bezierCurveTo", args: [cp1x, cp1y, cp2x, cp2y, x, y] });
+    this._pathCommands.push({ type: "bezierCurveTo", args: [cp1x, cp1y, cp2x, cp2y, x, y] });
   }
 
   rect(x: number, y: number, w: number, h: number) {
-    this.pathCommands.push({ type: "rect", args: [x, y, w, h] });
+    this._pathCommands.push({ type: "rect", args: [x, y, w, h] });
   }
 
   ellipse(
@@ -128,19 +128,19 @@ export class CanvasTileMapContext {
     ea: number,
     ccw?: boolean,
   ) {
-    this.pathCommands.push({ type: "ellipse", args: [x, y, rx, ry, rot, sa, ea, ccw] });
+    this._pathCommands.push({ type: "ellipse", args: [x, y, rx, ry, rot, sa, ea, ccw] });
   }
 
   closePath() {
-    this.pathCommands.push({ type: "closePath", args: [] });
+    this._pathCommands.push({ type: "closePath", args: [] });
   }
   //#endregion
 
   //#region 绘制提交API fill / stroke
   fill() {
-    const localAABB = getPathAABB(this.pathCommands);
+    const localAABB = getPathAABB(this._pathCommands);
     if (!localAABB) return;
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
 
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
@@ -154,19 +154,19 @@ export class CanvasTileMapContext {
       const tCtx = tile.getContext();
       if (!tCtx) return;
       tCtx.save();
-      syncTileStyle(tCtx, this.currentState);
+      syncTileStyle(tCtx, this._currentState);
       tCtx.setTransform(1, 0, 0, 1, -tile.x, -tile.y);
       tCtx.beginPath();
-      replayPath(tCtx, this.pathCommands);
+      replayPath(tCtx, this._pathCommands);
       tCtx.fill();
       tCtx.restore();
     }
   }
 
   stroke() {
-    const localAABB = getPathAABB(this.pathCommands);
+    const localAABB = getPathAABB(this._pathCommands);
     if (!localAABB) return;
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
 
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
@@ -180,10 +180,10 @@ export class CanvasTileMapContext {
       const tCtx = tile.getContext();
       if (!tCtx) return;
       tCtx.save();
-      syncTileStyle(tCtx, this.currentState);
+      syncTileStyle(tCtx, this._currentState);
       tCtx.setTransform(1, 0, 0, 1, -tile.x, -tile.y);
       tCtx.beginPath();
-      replayPath(tCtx, this.pathCommands);
+      replayPath(tCtx, this._pathCommands);
       tCtx.stroke();
       tCtx.restore();
     }
@@ -193,7 +193,7 @@ export class CanvasTileMapContext {
   //#region 快捷矩形绘制 fillRect / strokeRect / clearRect
   fillRect(x: number, y: number, w: number, h: number) {
     const localAABB: AABB = { minX: x, minY: y, maxX: x + w, maxY: y + h };
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
         minX: tile.x,
@@ -205,7 +205,7 @@ export class CanvasTileMapContext {
       const tCtx = tile.getContext();
       if (!tCtx) return;
       tCtx.save();
-      syncTileStyle(tCtx, this.currentState);
+      syncTileStyle(tCtx, this._currentState);
       tCtx.setTransform(1, 0, 0, 1, -tile.x, -tile.y);
       tCtx.fillRect(x, y, w, h);
       tCtx.restore();
@@ -214,7 +214,7 @@ export class CanvasTileMapContext {
 
   strokeRect(x: number, y: number, w: number, h: number) {
     const localAABB: AABB = { minX: x, minY: y, maxX: x + w, maxY: y + h };
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
         minX: tile.x,
@@ -226,7 +226,7 @@ export class CanvasTileMapContext {
       const tCtx = tile.getContext();
       if (!tCtx) return;
       tCtx.save();
-      syncTileStyle(tCtx, this.currentState);
+      syncTileStyle(tCtx, this._currentState);
       tCtx.setTransform(1, 0, 0, 1, -tile.x, -tile.y);
       tCtx.strokeRect(x, y, w, h);
       tCtx.restore();
@@ -235,7 +235,7 @@ export class CanvasTileMapContext {
 
   clearRect(x: number, y: number, w: number, h: number) {
     const localAABB: AABB = { minX: x, minY: y, maxX: x + w, maxY: y + h };
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
         minX: tile.x,
@@ -280,7 +280,7 @@ export class CanvasTileMapContext {
       [, , , , , dx, dy, dw, dh] = args;
     }
     const localAABB: AABB = { minX: dx, minY: dy, maxX: dx + dw, maxY: dy + dh };
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
 
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
@@ -293,7 +293,7 @@ export class CanvasTileMapContext {
       const tCtx = tile.getContext();
       if (!tCtx) return;
       tCtx.save();
-      syncTileStyle(tCtx, this.currentState);
+      syncTileStyle(tCtx, this._currentState);
       tCtx.setTransform(1, 0, 0, 1, -tile.x, -tile.y);
       (tCtx.drawImage as any)(image, ...args);
       tCtx.restore();
@@ -304,7 +304,7 @@ export class CanvasTileMapContext {
   //#region fillText / strokeText
   fillText(text: string, x: number, y: number, maxWidth?: number) {
     const tmpCtx = document.createElement("canvas").getContext("2d")!;
-    tmpCtx.font = this.currentState.font;
+    tmpCtx.font = this._currentState.font;
     const mt = tmpCtx.measureText(text);
     const w = maxWidth ?? mt.width;
     const localAABB: AABB = {
@@ -313,7 +313,7 @@ export class CanvasTileMapContext {
       maxX: x + w,
       maxY: y + mt.actualBoundingBoxDescent,
     };
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
 
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
@@ -326,7 +326,7 @@ export class CanvasTileMapContext {
       const tCtx = tile.getContext();
       if (!tCtx) return;
       tCtx.save();
-      syncTileStyle(tCtx, this.currentState);
+      syncTileStyle(tCtx, this._currentState);
       tCtx.setTransform(1, 0, 0, 1, -tile.x, -tile.y);
       tCtx.fillText(text, x, y, maxWidth);
       tCtx.restore();
@@ -335,7 +335,7 @@ export class CanvasTileMapContext {
 
   strokeText(text: string, x: number, y: number, maxWidth?: number) {
     const tmpCtx = document.createElement("canvas").getContext("2d")!;
-    tmpCtx.font = this.currentState.font;
+    tmpCtx.font = this._currentState.font;
     const mt = tmpCtx.measureText(text);
     const w = maxWidth ?? mt.width;
     const localAABB: AABB = {
@@ -344,7 +344,7 @@ export class CanvasTileMapContext {
       maxX: x + w,
       maxY: y + mt.actualBoundingBoxDescent,
     };
-    const worldAABB = transformAABB(localAABB, this.currentState.transform);
+    const worldAABB = transformAABB(localAABB, this._currentState.transform);
 
     for (const tile of this.tileMap.tiles) {
       const tileBox: AABB = {
@@ -357,7 +357,7 @@ export class CanvasTileMapContext {
       const tCtx = tile.getContext();
       if (!tCtx) return;
       tCtx.save();
-      syncTileStyle(tCtx, this.currentState);
+      syncTileStyle(tCtx, this._currentState);
       tCtx.setTransform(1, 0, 0, 1, -tile.x, -tile.y);
       tCtx.strokeText(text, x, y, maxWidth);
       tCtx.restore();
@@ -365,7 +365,7 @@ export class CanvasTileMapContext {
   }
 
   measureText(text: string): TextMetrics {
-    return measureText(text, this.currentState);
+    return measureText(text, this._currentState);
   }
   //#endregion
 }

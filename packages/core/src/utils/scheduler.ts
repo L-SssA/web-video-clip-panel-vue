@@ -1,19 +1,19 @@
 import type { Task } from "@/types/utils";
 
 export class SimpleScheduler {
-  private running: boolean = false;
-  private taskGroupQueue: Array<string | symbol> = [];
-  private queueMap: Map<string | symbol, Task[]> = new Map();
+  private _running: boolean = false;
+  private _taskGroupQueue: Array<string | symbol> = [];
+  private _queueMap: Map<string | symbol, Task[]> = new Map();
 
   /**
    * 启动任务循环
    */
 
   runloop() {
-    if (this.running || !this.taskGroupQueue.length) return;
-    this.running = true;
+    if (this._running || !this._taskGroupQueue.length) return;
+    this._running = true;
     requestIdleCallback(this.workloop.bind(this));
-    this.running = false;
+    this._running = false;
   }
 
   /**
@@ -35,32 +35,32 @@ export class SimpleScheduler {
 
   add(task: Task | Task[], groupId: string | symbol = "default") {
     const tasks = task instanceof Array ? task : [task];
-    const taskList = this.queueMap.get(groupId);
+    const taskList = this._queueMap.get(groupId);
     if (taskList) {
       taskList.push(...tasks);
     } else {
-      this.queueMap.set(groupId, tasks);
-      this.taskGroupQueue.push(groupId);
+      this._queueMap.set(groupId, tasks);
+      this._taskGroupQueue.push(groupId);
     }
     this.runloop();
   }
 
   pop() {
-    while (this.taskGroupQueue.length) {
-      const groupId = this.taskGroupQueue[0];
-      const taskList = this.queueMap.get(groupId);
+    while (this._taskGroupQueue.length) {
+      const groupId = this._taskGroupQueue[0];
+      const taskList = this._queueMap.get(groupId);
       if (taskList?.length) {
         return taskList.shift()!;
       } else {
-        this.taskGroupQueue.shift();
-        this.queueMap.delete(groupId);
+        this._taskGroupQueue.shift();
+        this._queueMap.delete(groupId);
       }
     }
     return null;
   }
 
   delete(groupId: string | symbol = "default") {
-    this.taskGroupQueue = this.taskGroupQueue.filter((id) => id !== groupId);
-    this.queueMap.delete(groupId);
+    this._taskGroupQueue = this._taskGroupQueue.filter((id) => id !== groupId);
+    this._queueMap.delete(groupId);
   }
 }

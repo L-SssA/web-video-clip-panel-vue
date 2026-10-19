@@ -15,9 +15,9 @@ import {
 
 import { BaseService } from "./BaseService";
 
-export class WebavService extends BaseService {
+export class WebavSourceService extends BaseService {
   // loader 缓存池，用于同步等待加载这一行为
-  private sourceLoaderCache: Map<string | symbol, Promise<void>> = new Map();
+  private _sourceLoaderCache: Map<string | symbol, Promise<void>> = new Map();
 
   /**
    * 添加MP4源
@@ -41,7 +41,7 @@ export class WebavService extends BaseService {
     trackitem.end = metadata.duration;
     Object.assign(trackitem, opts);
 
-    this.sourceLoaderCache.set(
+    this._sourceLoaderCache.set(
       trackitem.id,
       this._data.webav
         .loadClip(trackitem, source)
@@ -50,14 +50,12 @@ export class WebavService extends BaseService {
             .genWaveData(trackitem, this._data.ctx.timeline.fps)
             .then((audioData) => (trackitem.audioData = audioData));
         })
-        .then(() => {
-          trackitem.ready = true;
-          this._data.trackline.saveSnapshot();
-        }),
+        .then(() => {}),
     );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
+    this._data.trackline.saveSnapshot();
 
     return trackitem;
   }
@@ -87,16 +85,14 @@ export class WebavService extends BaseService {
     trackitem.end = 5;
     Object.assign(trackitem, opts);
 
-    this.sourceLoaderCache.set(
+    this._sourceLoaderCache.set(
       trackitem.id,
-      this._data.webav.loadClip(trackitem, source).then(() => {
-        trackitem.ready = true;
-        this._data.trackline.saveSnapshot();
-      }),
+      this._data.webav.loadClip(trackitem, source).then(() => {}),
     );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
+    this._data.trackline.saveSnapshot();
 
     return trackitem;
   }
@@ -124,7 +120,7 @@ export class WebavService extends BaseService {
     trackitem.end = metadata.duration;
     Object.assign(trackitem, opts);
 
-    this.sourceLoaderCache.set(
+    this._sourceLoaderCache.set(
       trackitem.id,
       this._data.webav
         .loadClip(trackitem, source)
@@ -133,14 +129,12 @@ export class WebavService extends BaseService {
             .genWaveData(trackitem, this._data.ctx.timeline.fps)
             .then((audioData) => (trackitem.audioData = audioData));
         })
-        .then(() => {
-          trackitem.ready = true;
-          this._data.trackline.saveSnapshot();
-        }),
+        .then(() => {}),
     );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
+    this._data.trackline.saveSnapshot();
 
     return trackitem;
   }
@@ -167,25 +161,33 @@ export class WebavService extends BaseService {
     trackitem.end = 5;
     Object.assign(trackitem, opts);
 
-    this.sourceLoaderCache.set(
+    this._sourceLoaderCache.set(
       trackitem.id,
-      this._data.webav.loadClip(trackitem, source).then(() => {
-        trackitem.ready = true;
-        this._data.trackline.saveSnapshot();
-      }),
+      this._data.webav.loadClip(trackitem, source).then(() => {}),
     );
 
     // 添加轨道数据
     this._data.trackline.addToTrackLine(trackitem);
+    this._data.trackline.saveSnapshot();
 
     return trackitem;
   }
 
   /**
+   * 根据 id 复制 loader
+   * @param id
+   * @param fromId
+   */
+  copyLoaderById(id: string | symbol, fromId: string | symbol) {
+    const loader = this.getLoaderById(fromId);
+    if (loader) this._sourceLoaderCache.set(id, loader);
+    return this.getLoaderById(id);
+  }
+  /**
    * 根据 id 获取 loader
    * @param id
    */
   getLoaderById(id: string | symbol) {
-    return this.sourceLoaderCache.get(id);
+    return this._sourceLoaderCache.get(id);
   }
 }

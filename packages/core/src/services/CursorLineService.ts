@@ -3,11 +3,11 @@ import type { CursorLineServiceContext } from "@/types/data";
 import { BaseService } from "./BaseService";
 
 export class CursorLineService extends BaseService {
-  private cursorMoving: boolean = false;
+  private _cursorMoving: boolean = false;
 
   get ctx(): CursorLineServiceContext {
     return {
-      cursorMoving: this.cursorMoving,
+      cursorMoving: this._cursorMoving,
     };
   }
 
@@ -22,14 +22,14 @@ export class CursorLineService extends BaseService {
    * 激活游标线移动
    */
   activateCursorLineMoving() {
-    this.cursorMoving = true;
+    this._cursorMoving = true;
   }
 
   /**
    * 停用游标线移动
    */
   deactivateCursorLineMoving() {
-    this.cursorMoving = false;
+    this._cursorMoving = false;
   }
 
   /**
@@ -37,7 +37,7 @@ export class CursorLineService extends BaseService {
    */
   triggerUpdateByTag() {
     // 处理游标线移动
-    if (this.cursorMoving && this._data.system.mouseEvent) {
+    if (this._cursorMoving && this._data.system.mouseEvent) {
       const movedX = this._data.system.mouseEvent.clientX;
       this._data.setCurrentTimeByPixel(movedX);
     }
