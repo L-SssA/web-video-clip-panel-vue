@@ -1,5 +1,5 @@
 import { EDGE_SIDE } from "@/config/constant";
-import { EventCallback } from "@/utils/EventCallback";
+import { EventCallback } from "@/utils/eventCallback.tmp";
 
 import type { DataManager } from "../managers/DataManager";
 

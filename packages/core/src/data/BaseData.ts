@@ -1,4 +1,4 @@
-import { EventCallback } from "@/utils/EventCallback";
+import { EventCallback } from "@/utils/eventCallback.tmp";
 
 export class BaseData {
   // 更新事件管理
