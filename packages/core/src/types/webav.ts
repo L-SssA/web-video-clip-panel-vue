@@ -1,6 +1,6 @@
 import { AudioClip, ImgClip, MP4Clip } from "@webav/av-cliper";
 
-import { WebavClipBuilder } from "@/webav/webavClipBuilder.tmp";
+import { WebavClipBuilder } from "@/webav/WebavClipBuilder";
 
 import type { SourceType, TrackItem } from "./data";
 

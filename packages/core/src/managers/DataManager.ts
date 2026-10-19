@@ -15,7 +15,7 @@ import { ElEventService } from "@/services/ElEventService";
 import { TrackItemService } from "@/services/TrackItemService";
 import { WebavService } from "@/services/WebavService.ts";
 import { timeToPixel } from "@/utils/tools";
-import WebavHelper from "@/webav/webavHelper.tmp";
+import WebavHelper from "@/webav/WebavHelper";
 
 export class DataManager extends BaseData {
   public timeline: TimelineData;

@@ -6,7 +6,7 @@ import type { MediaClip, WebavClipCacheData, WebavHelperOptions } from "@/types/
 import { DEFAULT_CHROMAKEY_OPTIONS } from "@/config/constant";
 import { generateUUID } from "@/utils/tools";
 
-import { WebavClipBuilder } from "./webavClipBuilder.tmp";
+import { WebavClipBuilder } from "./WebavClipBuilder";
 
 /**
  * WebAV 辅助类
