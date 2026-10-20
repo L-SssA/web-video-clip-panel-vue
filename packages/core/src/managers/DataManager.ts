@@ -13,21 +13,24 @@ import { TrackLineData } from "@/data/TrackLineData";
 import { CursorLineService } from "@/services/CursorLineService";
 import { ElEventService } from "@/services/ElEventService";
 import { TrackItemService } from "@/services/TrackItemService";
+import { WebavPlayService } from "@/services/WebavPlayService";
 import { WebavSourceService } from "@/services/WebavSourceService";
 import { timeToPixel } from "@/utils/tools";
 import WebavHelper from "@/webav/WebavHelper";
 
 export class DataManager extends BaseData {
-  public timeline: TimelineData;
-  public trackline: TrackLineData;
-  public system: SystemCommonData;
-  public theme: Ref<string>;
+  readonly timeline: TimelineData;
+  readonly trackline: TrackLineData;
+  readonly system: SystemCommonData;
+  readonly theme: Ref<string>;
+  readonly playState: Ref<"playing" | "loading" | "paused">;
 
   // webav 相关音视频解码工具
-  public webav: WebavHelper;
+  readonly webav: WebavHelper;
 
   // 音视频编解码相关逻辑
   private _sourceService: WebavSourceService;
+  private _playService: WebavPlayService;
   // 用户事件相关逻辑
   private _elEventService: ElEventService;
   // cursorline 相关逻辑
@@ -58,6 +61,10 @@ export class DataManager extends BaseData {
     ];
   }
 
+  get sourcesReady() {
+    return this._sourceService.allReady;
+  }
+
   constructor(options: Partial<DataManagerOptions> = {}) {
     super();
     // 数据处理器
@@ -70,9 +77,12 @@ export class DataManager extends BaseData {
 
     // service 实例
     this._sourceService = new WebavSourceService(this);
+    this._playService = new WebavPlayService(this);
     this._elEventService = new ElEventService(this);
     this._cursorLineService = new CursorLineService(this);
     this._trackitemService = new TrackItemService(this);
+
+    this.playState = this._playService.playState;
 
     this.theme = ref(options.theme || "light");
 
@@ -240,6 +250,20 @@ export class DataManager extends BaseData {
    */
   redo() {
     this.trackline.redo();
+  }
+
+  /**
+   * 播放轨道
+   */
+  play() {
+    this._playService.play(this.timeline.currentTime.value);
+  }
+
+  /**
+   * 暂停播放
+   */
+  pause() {
+    this._playService.pause();
   }
 
   /**

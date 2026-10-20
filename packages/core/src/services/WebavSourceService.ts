@@ -19,6 +19,10 @@ export class WebavSourceService extends BaseService {
   // loader 缓存池，用于同步等待加载这一行为
   private _sourceLoaderCache: Map<string | symbol, Promise<void>> = new Map();
 
+  get allReady() {
+    return Promise.allSettled(this._sourceLoaderCache.values());
+  }
+
   /**
    * 添加MP4源
    * @param source
@@ -46,9 +50,14 @@ export class WebavSourceService extends BaseService {
       this._data.webav
         .loadClip(trackitem, source)
         .then(() => {
-          return this._data.webav
-            .genWaveData(trackitem, this._data.ctx.timeline.fps)
-            .then((audioData) => (trackitem.audioData = audioData));
+          return Promise.allSettled([
+            this._data.webav
+              .genWaveData(trackitem, this._data.ctx.timeline.fps)
+              .then((audioData) => (trackitem.audioData = audioData)),
+            this._data.webav.tickFirstFrameBlobUrl(trackitem).then((url) => {
+              trackitem.previewUrl = url;
+            }),
+          ]);
         })
         .then(() => {}),
     );
@@ -87,7 +96,11 @@ export class WebavSourceService extends BaseService {
 
     this._sourceLoaderCache.set(
       trackitem.id,
-      this._data.webav.loadClip(trackitem, source).then(() => {}),
+      this._data.webav.loadClip(trackitem, source).then(() => {
+        return this._data.webav.tickFirstFrameBlobUrl(trackitem).then((url) => {
+          trackitem.previewUrl = url;
+        });
+      }),
     );
 
     // 添加轨道数据

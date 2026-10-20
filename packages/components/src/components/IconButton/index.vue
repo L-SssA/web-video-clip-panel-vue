@@ -69,5 +69,19 @@ const themeStyle = computed(() => themeStyles[props.effect] || "");
     position: absolute;
     inset: 0;
   }
+
+  &.loading {
+    animation: rotating 2s linear infinite;
+  }
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotateZ(360deg);
+  }
 }
 </style>

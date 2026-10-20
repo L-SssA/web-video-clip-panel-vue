@@ -110,12 +110,25 @@ export const useVcpToolbar = (ctx: VcpCtx) => {
       key: "play",
       component: IconButton,
       props: {
-        iconClass: "ri-play-large-line",
-        tipsText: "播放",
+        iconClass: {
+          paused: "ri-play-large-line",
+          loading: "ri-loader-2-line loading",
+          playing: "ri-pause-large-line",
+        }[ctx.manager.data.playState.value],
+        tipsText: {
+          paused: "播放",
+          loading: "加载中",
+          playing: "暂停",
+        }[ctx.manager.data.playState.value],
         effect: theme.value,
+        disabled: ctx.manager.data.playState.value === "loading",
       },
       events: {
-        onClick: () => console.log("play"),
+        click: () => {
+          const playState = ctx.manager.data.playState;
+          if (playState.value === "paused") ctx.manager.data.play();
+          else if (playState.value === "playing") ctx.manager.data.pause();
+        },
       },
     },
   ]);

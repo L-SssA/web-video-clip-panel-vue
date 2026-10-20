@@ -10,7 +10,7 @@
 import { computed, inject, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
 import type { VideoTrackItem } from "@web-vcp/core";
-import { debounce, numberToStyleValue, drawAudioPreview, getResizeImageBlob, CanvasTileMap } from '@web-vcp/core';
+import { debounce, numberToStyleValue, drawAudioPreview, CanvasTileMap } from '@web-vcp/core';
 
 import type { VcpCtx } from '@/types/vcpContext';
 import { vcpCtxSymbol } from '@/config/symbols';
@@ -59,12 +59,7 @@ const getPreviewImage = debounce(async () => {
   if (props.data.previewUrl && await isBlobUrlValid(props.data.previewUrl)) {
     previewUrl.value = props.data.previewUrl
   } else {
-    const { video } = await ctx.manager.data.webav.tick(props.data, 0) || {}
-    if (!video) return;
-    const { originWidth, originHeight } = props.data;
-    const blob = await getResizeImageBlob(video, originWidth, originHeight)
-    props.data.previewUrl = previewUrl.value = URL.createObjectURL(blob)
-    video.close()
+    previewUrl.value = await ctx.manager.data.webav.tickFirstFrameBlobUrl(props.data)
   }
 }, 50)
 const updatePrewview = () => {

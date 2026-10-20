@@ -33,9 +33,7 @@ const ready = ref(false)
 
 onMounted(() => {
   const loader = ctx.manager.data.getWebavSourceLoaderById(props.data.id)
-  if (loader) {
-    loader.then(() => ready.value = true)
-  }
+  if (loader) loader.then(() => ready.value = true)
 })
 </script>
 

@@ -21,11 +21,8 @@ const buildVideoClip = async (
   opts?: Record<string, any>,
 ) => {
   const { enableChromaKey } = trackitem as VideoTrackItem;
-  // 创建 MP4 视频片段，禁用音频轨道
-  const videoClip = new MP4Clip((sourceData as Response).body!, {
-    ...opts,
-    audio: false,
-  });
+  // 创建 MP4 视频片段
+  const videoClip = new MP4Clip((sourceData as Response).body!, opts);
 
   // 如果启用绿幕抠像，设置帧拦截器处理每一帧
   if (enableChromaKey) {

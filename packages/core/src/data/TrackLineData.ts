@@ -324,13 +324,13 @@ export class TrackLineData extends BaseData {
         targetId = this.audioList.value[0]?.id;
         direction = "top";
       }
-      this.moveTrackInList(trackline, this.audioList, targetId, direction);
+      this._moveTrackInList(trackline, this.audioList, targetId, direction);
     } else {
       if (targetId === MAIN_TRACK_ID) {
         targetId = this.pictureList.value[this.pictureList.value.length - 1]?.id;
         direction = "bottom";
       }
-      this.moveTrackInList(trackline, this.pictureList, targetId, direction);
+      this._moveTrackInList(trackline, this.pictureList, targetId, direction);
     }
   }
 
@@ -341,7 +341,7 @@ export class TrackLineData extends BaseData {
    * @param targetId 目标位置的临近轨道 id
    * @param direction 临近轨道的移动方向 top | bottom
    */
-  private moveTrackInList<T extends TrackLine>(
+  private _moveTrackInList<T extends TrackLine>(
     trackline: T,
     tracklist: Ref<T[]>,
     targetId?: string | symbol,

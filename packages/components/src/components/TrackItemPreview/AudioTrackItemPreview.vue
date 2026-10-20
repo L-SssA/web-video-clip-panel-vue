@@ -1,7 +1,6 @@
 <template>
   <div class="track-item-preview-audio" ref="previewBoxRef">
-    <div class="preview-audio-data" ref="audioDataRef" v-show="!data.mute">
-    </div>
+    <div class="preview-audio-data" ref="audioDataRef" v-show="!data.mute"></div>
   </div>
 </template>
 

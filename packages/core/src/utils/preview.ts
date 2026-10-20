@@ -44,7 +44,7 @@ export function drawImagePreview(
     const x = index * previewWidth;
     if (x > viewWidth) return;
     const task = async () => {
-      const { video } = (await dataManager.webav.tick(data, Math.floor(time * 1e6))) || {};
+      const { video } = await dataManager.webav.tick(data, Math.floor(time * 1e6));
       if (!video) return;
       renderCtx.drawImage(video, x, 0, previewWidth, viewHeight);
       video.close();

@@ -1,10 +1,10 @@
 import { AudioClip, type ImgClip } from "@webav/av-cliper";
 
-import type { AudioTrackItem, TrackItem, VideoTrackItem } from "@/types/data";
+import type { AudioTrackItem, ImageTrackItem, TrackItem, VideoTrackItem } from "@/types/data";
 import type { WebavClipCacheData, WebavHelperOptions } from "@/types/webav";
 
 import { DEFAULT_CHROMAKEY_OPTIONS } from "@/config/constant";
-import { generateUUID } from "@/utils/tools";
+import { generateUUID, getResizeImageBlob } from "@/utils/tools";
 
 import { WebavClipBuilder } from "./WebavClipBuilder";
 
@@ -136,11 +136,26 @@ export default class WebavHelper {
    * @param trackitem - 轨道项配置
    * @param time - 时间点（微秒）
    */
-  tick(trackitem: TrackItem, time: number) {
+  async tick(trackitem: TrackItem, time: number) {
     const cache = this._clipCache.get(trackitem.id);
-    if (!cache || !cache.clip) return null;
-    return cache.clip.tick(time);
+    if (!cache || !cache.clip) return { video: undefined, audio: undefined, state: "error" };
+    return cache.clip.tick(time).then((data) => ({ video: undefined, audio: undefined, ...data }));
   }
+
+  /**
+   * 获取轨道片段首帧blob地址
+   * @param trackitem - 轨道项配置
+   */
+  async tickFirstFrameBlobUrl(trackitem: VideoTrackItem | ImageTrackItem) {
+    const { video } = await this.tick(trackitem, 0);
+    if (!video) return "";
+    const { originWidth, originHeight } = trackitem;
+    const blob = await getResizeImageBlob(video, originWidth, originHeight);
+    const url = URL.createObjectURL(blob);
+    video.close();
+    return url;
+  }
+
   /**
    * 复制媒体片段到新ID
    * @param id - 新轨道项的ID
@@ -202,7 +217,7 @@ export default class WebavHelper {
     // 遍历每一帧，计算每一帧的音波数据
     for (let i = 0; i < totalFrames; i++) {
       const start = i * samplesPerFrame;
-      const end = Math.min(start + samplesPerFrame, pcmData.length);
+      const end = Math.min(start + samplesPerFrame, chan01Buf.length);
       if (start >= end) break;
       const sum =
         chan01Buf.slice(start, end).reduce((a, b) => a + b, 0) +
@@ -223,6 +238,7 @@ export default class WebavHelper {
 
     if (audioClip) {
       const [chan01Buf, chan02Buf] = (audioClip as AudioClip).getPCMData();
+
       // video 的 clip 是临时创建的，需要释放
       if (trackitem.type === "video") audioClip.destroy();
       return [[...chan01Buf], [...chan02Buf]];
