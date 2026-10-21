@@ -26,8 +26,4 @@ const addAudioSource = () => {
 }
 </script>
 
-<style scoped lang="scss">
-.el-button {
-  margin-left: 10px;
-}
-</style>
+<style scoped lang="scss"></style>
