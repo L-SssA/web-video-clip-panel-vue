@@ -23,6 +23,6 @@
     "remixicon": "^4.9.1"
   },
   "peerDependencies": {
-    "vue": "^3.5.39"
+    "vue": "catalog:"
   }
 }

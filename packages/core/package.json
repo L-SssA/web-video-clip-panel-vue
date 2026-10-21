@@ -20,6 +20,6 @@
     "@webav/av-cliper": "^1.2.8"
   },
   "peerDependencies": {
-    "vue": "^3.5.39"
+    "vue": "catalog:"
   }
 }
