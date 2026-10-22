@@ -24,7 +24,7 @@ export class WebVcpManager {
    * @param source
    * @param opts
    */
-  async addSource(type: string, source: string, opts: any = {}) {
+  async addSource(type: string, source: string | File, opts: any = {}) {
     return await this.data.addSource(type, source, opts);
   }
 

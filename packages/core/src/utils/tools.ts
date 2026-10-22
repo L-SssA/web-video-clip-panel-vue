@@ -204,6 +204,21 @@ export function loadVideoUrlMetadata(url: string) {
 }
 
 /**
+ * 加载视频资源元数据
+ * @param source 视频资源
+ */
+export async function loadVideoMetadata(source: string | File) {
+  if (source instanceof File) {
+    const url = URL.createObjectURL(source);
+    const meta = await loadVideoUrlMetadata(url);
+    URL.revokeObjectURL(url);
+    return meta;
+  } else {
+    return loadVideoUrlMetadata(source);
+  }
+}
+
+/**
  * 加载音频地址元数据
  * @param url 资源地址
  */
@@ -231,34 +246,63 @@ export function loadAudioUrlMetadata(url: string) {
 }
 
 /**
+ * 加载音频资源元数据
+ * @param source 音频资源
+ */
+export async function loadAudioMetadata(source: string | File) {
+  if (source instanceof File) {
+    const url = URL.createObjectURL(source);
+    const meta = await loadAudioUrlMetadata(url);
+    URL.revokeObjectURL(url);
+    return meta;
+  } else {
+    return loadAudioUrlMetadata(source);
+  }
+}
+
+/**
  * 加载图片地址元数据
  * @param url 资源地址
- */ export function loadImageMetadata(url: string | ImageBitmap) {
-  if (url instanceof ImageBitmap) {
+ */
+export function loadImageUrlMetadata(url: string) {
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const image = document.createElement("img");
+    image.src = url;
+
+    // 成功加载元数据
+    image.addEventListener("load", () => {
+      const meta = {
+        width: image.width,
+        height: image.height,
+      };
+      image.remove();
+      resolve(meta);
+    });
+
+    image.addEventListener("error", (e) => {
+      image.remove();
+      reject(e);
+    });
+  });
+}
+
+/**
+ * 加载图片资源元数据
+ * @param source 图片资源
+ */
+export async function loadImageMetadata(source: string | ImageBitmap | File) {
+  if (source instanceof ImageBitmap) {
     return Promise.resolve({
-      width: url.width,
-      height: url.height,
+      width: source.width,
+      height: source.height,
     });
+  } else if (source instanceof File) {
+    const url = URL.createObjectURL(source);
+    const meta = await loadImageUrlMetadata(url);
+    URL.revokeObjectURL(url);
+    return meta;
   } else {
-    return new Promise<{ width: number; height: number }>((resolve, reject) => {
-      const image = document.createElement("img");
-      image.src = url;
-
-      // 成功加载元数据
-      image.addEventListener("load", () => {
-        const meta = {
-          width: image.width,
-          height: image.height,
-        };
-        image.remove();
-        resolve(meta);
-      });
-
-      image.addEventListener("error", (e) => {
-        image.remove();
-        reject(e);
-      });
-    });
+    return loadImageUrlMetadata(source);
   }
 }
 
@@ -361,4 +405,33 @@ export function deepCopy<T>(source: T, cache = new WeakMap<object, object>()): T
   }
 
   return copy as T;
+}
+
+/**
+ * 单选文件选择器
+ * @param {string} accept 例如：image/*,.pdf,.json
+ * @returns {Promise<File|null>} 选中文件，取消返回 null
+ */
+export function openSingleFilePicker(accept = "*") {
+  return new Promise<File | null>((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = accept;
+
+    input.onchange = () => {
+      if (input.files && input.files.length > 0) {
+        resolve(input.files[0]);
+      } else {
+        resolve(null);
+      }
+      input.value = "";
+    };
+
+    // 唤起
+    if ("showPicker" in HTMLInputElement.prototype) {
+      input.showPicker();
+    } else {
+      input.click();
+    }
+  });
 }

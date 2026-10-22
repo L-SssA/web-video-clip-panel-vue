@@ -5,7 +5,7 @@ import { reactive } from "vue";
 
 import type { AudioTrackItem, ImageTrackItem, TextTrackItem, VideoTrackItem } from "@/types/data";
 
-import { loadAudioUrlMetadata, loadImageMetadata, loadVideoUrlMetadata } from "@/utils/tools";
+import { loadAudioMetadata, loadImageMetadata, loadVideoMetadata } from "@/utils/tools";
 import {
   defineAudioTrackItemConfig,
   defineImageTrackItemConfig,
@@ -30,14 +30,16 @@ export class WebavSourceService extends BaseService {
    * @param opts
    * @returns
    */
-  async addMP4Source(source: string, opts: Partial<VideoTrackItem> = {}): Promise<VideoTrackItem> {
+  async addMP4Source(
+    source: string | File,
+    opts: Partial<VideoTrackItem> = {},
+  ): Promise<VideoTrackItem> {
     // 获取视频元数据
-    const metadata = await loadVideoUrlMetadata(source);
+    const metadata = await loadVideoMetadata(source);
     if (!metadata) throw new Error("加载资源失败");
 
     // 创建空的轨道数据
     const trackitem = reactive(defineVideoTrackItemConfig());
-    trackitem.source = source;
     trackitem.originWidth = metadata.width;
     trackitem.originHeight = metadata.height;
     trackitem.duration = metadata.duration;
@@ -78,7 +80,7 @@ export class WebavSourceService extends BaseService {
    */
   // 添加图片资源
   async addImageSource(
-    source: string,
+    source: string | File,
     opts: Partial<ImageTrackItem> = {},
   ): Promise<ImageTrackItem> {
     // 获取图片元数据
@@ -87,7 +89,6 @@ export class WebavSourceService extends BaseService {
 
     // 创建空的轨道数据
     const trackitem = reactive(defineImageTrackItemConfig());
-    trackitem.source = source;
     trackitem.originWidth = metadata.width;
     trackitem.originHeight = metadata.height;
     trackitem.start = 0;
@@ -118,16 +119,15 @@ export class WebavSourceService extends BaseService {
    * @returns
    */
   async addAudioSource(
-    source: string,
+    source: string | File,
     opts: Partial<AudioTrackItem> = {},
   ): Promise<AudioTrackItem> {
     // 解码图片获取元数据
-    const metadata = await loadAudioUrlMetadata(source);
+    const metadata = await loadAudioMetadata(source);
     if (!metadata) throw new Error("加载资源失败");
 
     // 创建空的轨道数据
     const trackitem = reactive(defineAudioTrackItemConfig());
-    trackitem.source = source;
     trackitem.duration = metadata.duration;
     trackitem.start = 0;
     trackitem.end = metadata.duration;

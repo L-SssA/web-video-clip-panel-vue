@@ -134,16 +134,20 @@ export class DataManager extends BaseData {
    * @param source
    * @param opts
    */
-  async addSource(type: string, source: string, opts: any = {}) {
-    const processor = {
-      [TRACKLINE_SOURCE_TYPE.VIDEO]: this._sourceService.addMP4Source.bind(this._sourceService),
-      [TRACKLINE_SOURCE_TYPE.IMAGE]: this._sourceService.addImageSource.bind(this._sourceService),
-      [TRACKLINE_SOURCE_TYPE.AUDIO]: this._sourceService.addAudioSource.bind(this._sourceService),
-      [TRACKLINE_SOURCE_TYPE.TEXT]: this._sourceService.addTextSource.bind(this._sourceService),
-    }[type];
-
-    if (processor) return await processor(source, opts);
-    throw new Error(`Invalid source type: ${String(type)}`);
+  async addSource(type: string, source: string | File, opts: any = {}) {
+    switch (type) {
+      case TRACKLINE_SOURCE_TYPE.VIDEO:
+        return this._sourceService.addMP4Source(source, opts);
+      case TRACKLINE_SOURCE_TYPE.IMAGE:
+        return this._sourceService.addImageSource(source, opts);
+      case TRACKLINE_SOURCE_TYPE.AUDIO:
+        return this._sourceService.addAudioSource(source, opts);
+      case TRACKLINE_SOURCE_TYPE.TEXT:
+        if (source instanceof File) throw new Error(`${TRACKLINE_SOURCE_TYPE.TEXT} 不支持文件输入`);
+        return this._sourceService.addTextSource(source, opts);
+      default:
+        throw new Error(`不支持的资源类型: ${String(type)}`);
+    }
   }
 
   /**

@@ -130,7 +130,6 @@ export interface BaseTrackItem {
 
 export interface ImageTrackItem extends BaseTrackItem {
   type: "image";
-  source: string; // 图片源
   previewUrl?: string;
   // 图片信息
   originWidth: number;
@@ -145,7 +144,7 @@ export interface TextTrackItem extends BaseTrackItem {
 
 export interface AudioTrackItem extends BaseTrackItem {
   type: "audio";
-  source: string; // 音频源
+  // 音频源
   audioData: number[];
   /* 音频信息 */
   duration: number;
@@ -156,7 +155,6 @@ export interface AudioTrackItem extends BaseTrackItem {
 
 export interface VideoTrackItem extends BaseTrackItem {
   type: "video";
-  source: string; // 视频源
   previewUrl?: string;
   audioData: number[];
   /* 视频信息 */

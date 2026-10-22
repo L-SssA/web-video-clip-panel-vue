@@ -44,7 +44,6 @@ export function defineVideoTrackItemConfig(): VideoTrackItem {
   return {
     ...baseConfig,
     type: "video",
-    source: "", // 视频源
     audioData: [],
     /* 视频信息 */
     duration: 0,
@@ -68,7 +67,6 @@ export function defineAudioTrackItemConfig(): AudioTrackItem {
   return {
     ...baseConfig,
     type: "audio",
-    source: "", // 音频源
     audioData: [],
     /* 音频信息 */
     duration: 0,
@@ -105,7 +103,6 @@ export function defineImageTrackItemConfig(): ImageTrackItem {
   return {
     ...baseConfig,
     type: "image",
-    source: "", // 图片源
     /* 图片信息 */
     originWidth: 0,
     originHeight: 0,

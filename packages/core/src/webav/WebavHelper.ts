@@ -34,7 +34,11 @@ export default class WebavHelper {
    * @param source - 媒体数据源
    * @param opts - 额外选项
    */
-  async loadClip(trackitem: TrackItem, source: string | ImageBitmap, opts?: Record<string, any>) {
+  async loadClip(
+    trackitem: TrackItem,
+    source: string | ImageBitmap | File,
+    opts?: Record<string, any>,
+  ) {
     if (!trackitem.id) {
       console.warn("trackitem 缺少 id, 系统将自动创建。");
       trackitem.id = generateUUID();
@@ -46,6 +50,8 @@ export default class WebavHelper {
     // 根据数据源类型选择加载方式
     if (source instanceof ImageBitmap) {
       return this.loadImageBitmapClip(trackitem, source, opts);
+    } else if (source instanceof File) {
+      return this.loadFileClip(trackitem, source, opts);
     } else {
       return this.loadUrlClip(trackitem, source, opts);
     }
@@ -60,6 +66,19 @@ export default class WebavHelper {
    */
   async loadImageBitmapClip(trackitem: TrackItem, source: ImageBitmap, opts?: Record<string, any>) {
     const clip = (await this.createClip(trackitem, source, opts)) as ImgClip;
+
+    this._clipCache.set(trackitem.id, {
+      id: trackitem.id,
+      type: trackitem.type,
+      response: source,
+      clip: clip,
+    });
+
+    return clip;
+  }
+
+  async loadFileClip(trackitem: TrackItem, source: File, opts?: Record<string, any>) {
+    const clip = await this.createClip(trackitem, source, opts);
 
     this._clipCache.set(trackitem.id, {
       id: trackitem.id,
@@ -118,13 +137,13 @@ export default class WebavHelper {
    */
   async createClip(
     trackitem: TrackItem,
-    response: Response | ImageBitmap,
+    source: Response | ImageBitmap | File,
     opts?: Record<string, any>,
   ) {
     // 提取源数据：Response 需克隆，ImageBitmap 直接使用
-    const sourceData = response instanceof Response ? response.clone() : response;
+    const sourceData = source instanceof Response ? source.clone() : source;
 
-    if (!sourceData || !(sourceData instanceof Response && sourceData.body)) {
+    if (!sourceData) {
       throw new Error("Unsupported source data type");
     }
 

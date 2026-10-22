@@ -16,15 +16,18 @@ import type { ChromaKeyOptions, ChromaKeyProcessor, WebavClipBuilderFunction } f
  */
 const buildVideoClip = async (
   ctx: WebavClipBuilder,
-  sourceData: Response | ImageBitmap,
+  sourceData: Response | ImageBitmap | File,
   trackitem: TrackItem,
   opts?: Record<string, any>,
 ) => {
-  const { enableChromaKey } = trackitem as VideoTrackItem;
+  if (sourceData instanceof ImageBitmap) return;
+  const stream = sourceData instanceof Response ? sourceData.body : sourceData.stream();
+  if (!stream) return;
   // 创建 MP4 视频片段
-  const videoClip = new MP4Clip((sourceData as Response).body!, opts);
+  const videoClip = new MP4Clip(stream, opts);
 
   // 如果启用绿幕抠像，设置帧拦截器处理每一帧
+  const { enableChromaKey } = trackitem as VideoTrackItem;
   if (enableChromaKey) {
     videoClip.tickInterceptor = async (_, tickRet) => {
       if (tickRet.video == null) return tickRet;
@@ -49,11 +52,14 @@ const buildVideoClip = async (
  */
 const buildAudioClip = async (
   _ctx: WebavClipBuilder,
-  sourceData: Response | ImageBitmap,
+  sourceData: Response | ImageBitmap | File,
   _trackitem: TrackItem,
   opts?: Record<string, any>,
 ) => {
-  const audioClip = new AudioClip((sourceData as Response).body!, opts);
+  if (sourceData instanceof ImageBitmap) return;
+  const stream = sourceData instanceof Response ? sourceData.body : sourceData.stream();
+  if (!stream) return;
+  const audioClip = new AudioClip(stream, opts);
   await audioClip.ready;
   return audioClip;
 };
@@ -68,7 +74,7 @@ const buildAudioClip = async (
  */
 const buildImageClip = async (
   _ctx: WebavClipBuilder,
-  sourceData: Response | ImageBitmap,
+  sourceData: Response | ImageBitmap | File,
   _trackitem: TrackItem,
   _opts?: Record<string, any>,
 ) => {
@@ -92,7 +98,13 @@ const buildImageClip = async (
       stream: sourceData.body!,
     });
   } else {
-    const stream = sourceData instanceof Response ? sourceData.body! : sourceData;
+    const stream =
+      sourceData instanceof Response
+        ? sourceData.body
+        : sourceData instanceof File
+          ? sourceData.stream()
+          : sourceData;
+    if (!stream) return;
     // 普通图片直接使用数据源
     imageClip = new ImgClip(stream);
   }
@@ -111,11 +123,17 @@ const buildImageClip = async (
  */
 const buildTextClip = async (
   _ctx: WebavClipBuilder,
-  sourceData: Response | ImageBitmap,
+  sourceData: Response | ImageBitmap | File,
   _trackitem: TrackItem,
   _opts?: Record<string, any>,
 ) => {
-  const stream = sourceData instanceof Response ? sourceData.body! : sourceData;
+  const stream =
+    sourceData instanceof Response
+      ? sourceData.body
+      : sourceData instanceof File
+        ? sourceData.stream()
+        : sourceData;
+  if (!stream) return;
   const textClip = new ImgClip(stream);
   await textClip.ready;
   return textClip;
@@ -144,9 +162,13 @@ export class WebavClipBuilder {
    * @param opts - 额外选项
    * @returns 返回构建好的媒体片段实例，如果类型不支持则返回
    */
-  buildClip(source: Response | ImageBitmap, trackitem: TrackItem, opts?: Record<string, any>) {
+  buildClip(
+    source: Response | ImageBitmap | File,
+    trackitem: TrackItem,
+    opts?: Record<string, any>,
+  ) {
     const builder = this._builders[trackitem.type];
-    if (!builder) return;
+    if (!builder) return Promise.resolve(undefined);
     return builder(this, source, trackitem, opts);
   }
 }

@@ -8,7 +8,7 @@ import type { SourceType, TrackItem } from "./data";
 export type WebavClipCacheData = {
   id: string | symbol;
   type: SourceType;
-  response: ImageBitmap | Response;
+  response: ImageBitmap | Response | File;
   clip?: MediaClip;
 };
 
@@ -38,10 +38,10 @@ export type MediaClip = ImgClip | MP4Clip | AudioClip;
 // webav clip 构建器函数
 export type WebavClipBuilderFunction = (
   ctx: WebavClipBuilder,
-  sourceData: Response | ImageBitmap,
+  sourceData: Response | ImageBitmap | File,
   trackitem: TrackItem,
   opts?: Record<string, any>,
-) => Promise<MediaClip>;
+) => Promise<MediaClip | undefined>;
 
 // webav 缩略图构建器函数
 export type WebavThumbnailsBuilderFunction = (
