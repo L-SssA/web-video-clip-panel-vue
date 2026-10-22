@@ -10,7 +10,7 @@ import type {
 } from "@/types/data";
 
 import { MAIN_TRACK_ID } from "@/config/constant";
-import deepCopy from "@/utils/tools";
+import { deepCopy } from "@/utils/tools";
 
 export class TrackLineList {
   // 当前活跃的轨道

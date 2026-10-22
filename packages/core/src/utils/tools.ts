@@ -287,7 +287,7 @@ export function isDescendantElement(parent: HTMLElement, child: HTMLElement) {
  * @param source 待拷贝数据
  * @param cache 循环引用缓存，外部不要传
  */
-function deepCopy<T>(source: T, cache = new WeakMap<object, object>()): T {
+export function deepCopy<T>(source: T, cache = new WeakMap<object, object>()): T {
   // 1. 基础类型 / null 直接返回
   if (source === null || typeof source !== "object") {
     return source;
@@ -362,5 +362,3 @@ function deepCopy<T>(source: T, cache = new WeakMap<object, object>()): T {
 
   return copy as T;
 }
-
-export default deepCopy;

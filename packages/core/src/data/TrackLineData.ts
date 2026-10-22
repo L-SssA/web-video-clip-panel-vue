@@ -28,7 +28,7 @@ import {
   DEFAULT_TRACKLINE_STYLES,
   TRACKLINE_STYLES_MAP,
 } from "@/config/theme";
-import deepCopy, { generateUUID, isNumberInside } from "@/utils/tools";
+import { generateUUID, isNumberInside, deepCopy } from "@/utils/tools";
 import { defineTrackLineConfig } from "@/utils/trackline";
 
 import { BaseData } from "./BaseData";
