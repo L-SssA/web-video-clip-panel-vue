@@ -38,7 +38,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: pnpm Install
+        run: pnpm install
 
       - name: Build
         run: pnpm run build:page
