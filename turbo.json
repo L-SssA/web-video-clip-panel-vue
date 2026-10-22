@@ -14,6 +14,10 @@
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
+    },
+    "build:page": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
     }
   }
 }

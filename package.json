@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "turbo run dev --filter=./apps/frontend",
     "build": "turbo run build --filter=./packages/*",
+    "build:page": "turbo run build:page --filter=./apps/frontend",
     "watch": "turbo run watch --filter=./packages/*",
     "newpack": "turbo gen newpack --args",
     "fmt": "oxfmt",
