@@ -29,7 +29,7 @@ pnpm dev
 
 ### 在线体验
 
-暂未提供在线体验地址。
+[在线体验地址](https://l-sssa.github.io/web-video-clip-panel-vue/)
 
 ## 快速开始
 
