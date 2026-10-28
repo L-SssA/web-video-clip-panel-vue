@@ -1,0 +1,25 @@
+{
+  "name": "web-vcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "scripts": {
+    "build": "vue-tsc -b && vite build",
+    "watch": "vue-tsc -b && vite build --watch"
+  },
+  "dependencies": {
+    "@web-vcp/core": "workspace:*",
+    "@web-vcp/video-clip-canvas": "workspace:*",
+    "@web-vcp/video-clip-panel": "workspace:*"
+  }
+}

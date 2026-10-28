@@ -23,7 +23,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: "src/index.ts",
-      name: "components",
+      name: "video-clip-panel",
       fileName: (format) => `index.${format}.js`,
       cssFileName: "style",
     },

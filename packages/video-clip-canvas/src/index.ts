@@ -1,1 +1,1 @@
-console.log("hello newpack: video-clip-canvas")
+export { default as VideoClipCanvas } from "@/components/VideoClipCanvas/index.vue";

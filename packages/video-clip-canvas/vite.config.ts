@@ -1,3 +1,4 @@
+import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 import dts from "unplugin-dts/vite";
 import { defineConfig } from "vite";
@@ -6,8 +7,11 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [
     dts({
-      bundleTypes: true,
+      processor: "vue",
+      tsconfigPath: "./tsconfig.app.json",
+      // bundleTypes: true,
     }),
+    vue(),
   ],
   resolve: {
     alias: {
@@ -20,6 +24,20 @@ export default defineConfig({
       name: "video-clip-canvas",
       fileName: (format) => `index.${format}.js`,
       cssFileName: "style",
+    },
+    rolldownOptions: {
+      external: ["vue", "@web-vcp/core"],
+      output: {
+        globals: {
+          vue: "Vue",
+          "@web-vcp/core": "@web-vcp/core",
+        },
+      },
+      // 忽略无效的 PURE 注释警告
+      onwarn(warning, defaultHandler) {
+        if (warning.code === "INVALID_ANNOTATION") return;
+        defaultHandler(warning);
+      },
     },
   },
 });

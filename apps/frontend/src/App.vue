@@ -1,12 +1,12 @@
 <template>
-  <VideoClipPanel :manager="manager"></VideoClipPanel>
   <ElButton @click="addVideoSource">添加视频</ElButton>
   <ElButton @click="addImageSource">添加图片</ElButton>
   <ElButton @click="addAudioSource">添加音频</ElButton>
+  <VideoClipPanel :manager="manager"></VideoClipPanel>
 </template>
 
 <script setup lang="ts">
-import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker } from "@web-vcp/video-clip-panel";
+import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker } from "web-vcp";
 import { ElButton } from "element-plus";
 
 const manager = new WebVcpManager({

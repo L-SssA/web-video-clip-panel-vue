@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@web-vcp/video-clip-panel": "workspace:*",
     "element-plus": "^2.14.2",
     "pinia": "^3.0.4",
-    "vue": "catalog:"
+    "vue": "catalog:",
+    "web-vcp": "workspace:*"
   }
 }

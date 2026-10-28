@@ -220,9 +220,6 @@ importers:
 
   apps/frontend:
     dependencies:
-      '@web-vcp/video-clip-panel':
-        specifier: workspace:*
-        version: link:../../packages/video-clip-panel
       element-plus:
         specifier: ^2.14.2
         version: 2.14.7(vue@3.5.44(typescript@6.0.3))
@@ -232,6 +229,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
+      web-vcp:
+        specifier: workspace:*
+        version: link:../../packages/web-vcp
 
   packages/core:
     dependencies:
@@ -241,6 +241,18 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
+
+  packages/video-clip-canvas:
+    dependencies:
+      '@web-vcp/core':
+        specifier: workspace:*
+        version: link:../core
+      konva:
+        specifier: ^10.9.0
+        version: 10.9.0
+      vue-konva:
+        specifier: ^4.0.1
+        version: 4.0.1(konva@10.9.0)(vue@3.5.44(typescript@6.0.3))
 
   packages/video-clip-panel:
     dependencies:
@@ -256,6 +268,18 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.44(typescript@6.0.3)
+
+  packages/web-vcp:
+    dependencies:
+      '@web-vcp/core':
+        specifier: workspace:*
+        version: link:../core
+      '@web-vcp/video-clip-canvas':
+        specifier: workspace:*
+        version: link:../video-clip-canvas
+      '@web-vcp/video-clip-panel':
+        specifier: workspace:*
+        version: link:../video-clip-panel
 
 packages:
 
@@ -1418,6 +1442,17 @@ packages:
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
+  konva@10.9.0:
+    resolution: {integrity: sha512-3NOOlcbimFDp4+/DfXGTBkfn3cn3VP1BESPySQ6ayCzgMA9JSMGJNNxeIKw5jpHL6SAl6gHsrv10DUEjNRL0Qg==}
+    peerDependencies:
+      canvas: ^3.0.0
+      skia-canvas: ^3.0.0
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+      skia-canvas:
+        optional: true
+
   lightningcss-android-arm64@1.33.0:
     resolution: {integrity: sha512-gEpRTalKdosp4Bb8qWtc2iOgE5SeIHlpS1up9bFq2wAyYhl1UdTObYiHe98zEM9SQvSoqQZ1IQD0JNpg3Ml5pg==}
     engines: {node: '>= 12.0.0'}
@@ -1990,6 +2025,13 @@ packages:
 
   vue-component-type-helpers@3.3.13:
     resolution: {integrity: sha512-02KCxSmKDhIITjKyJ4QT5csP6L0WoRborLqY/34a40+S9uvMvdNgMV0yVjO3p2Gkz3ZoPmFz/0JsGHacwJYTxw==}
+
+  vue-konva@4.0.1:
+    resolution: {integrity: sha512-y38dwDxGU+ZmWFcCLdCqG8OOvBnUXt6wDp5sRHD+gADzu3JUxVVg4vri1cw+4S+zjL3NW1Kr6lKoB72YitqClw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      konva: '>7'
+      vue: ^3
 
   vue-tsc@3.3.13:
     resolution: {integrity: sha512-jE4/bXdOMSHVxEGgQCqNllJy+9N3Gx6tfSAsg0yhFK/MAN6eXqISihupnDEKSCt12VVnjN2gI3AqLYcqoh5x/A==}
@@ -2973,6 +3015,8 @@ snapshots:
 
   kolorist@1.8.0: {}
 
+  konva@10.9.0: {}
+
   lightningcss-android-arm64@1.33.0:
     optional: true
 
@@ -3445,6 +3489,11 @@ snapshots:
   vscode-uri@3.2.0: {}
 
   vue-component-type-helpers@3.3.13: {}
+
+  vue-konva@4.0.1(konva@10.9.0)(vue@3.5.44(typescript@6.0.3)):
+    dependencies:
+      konva: 10.9.0
+      vue: 3.5.44(typescript@6.0.3)
 
   vue-tsc@3.3.13(typescript@6.0.3):
     dependencies:
