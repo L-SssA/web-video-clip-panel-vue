@@ -33,7 +33,7 @@ pnpm dev
 
 ## 快速开始
 
-以下示例展示如何在 Vue 3 项目中创建管理器、渲染剪辑面板并添加素材。示例依赖本仓库的 `@web-vcp/components` workspace 包。
+以下示例展示如何在 Vue 3 项目中创建管理器、渲染剪辑面板并添加素材。示例依赖本仓库的 `@web-vcp/video-clip-panel` workspace 包。
 
 ```vue
 <template>
@@ -49,7 +49,7 @@ import {
   TRACKLINE_SOURCE_TYPE,
   VideoClipPanel,
   WebVcpManager,
-} from "@web-vcp/components";
+} from "@web-vcp/video-clip-panel";
 import { ElButton } from "element-plus";
 
 const manager = new WebVcpManager({

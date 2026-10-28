@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker } from "@web-vcp/components";
+import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker } from "@web-vcp/video-clip-panel";
 import { ElButton } from "element-plus";
 
 const manager = new WebVcpManager({
