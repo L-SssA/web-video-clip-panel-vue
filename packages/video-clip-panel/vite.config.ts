@@ -29,11 +29,10 @@ export default defineConfig(({ mode }) => {
         cssFileName: "style",
       },
       rolldownOptions: {
-        external: ["vue", "@web-vcp/core"],
+        external: ["vue"],
         output: {
           globals: {
             vue: "Vue",
-            "@web-vcp/core": "@web-vcp/core",
           },
         },
         // 忽略无效的 PURE 注释警告
