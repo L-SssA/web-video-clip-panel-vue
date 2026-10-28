@@ -39,9 +39,9 @@ pnpm dev
 <template>
   <VideoClipPanel :manager="manager" />
 
-  <ElButton @click="addVideo">添加视频</ElButton>
-  <ElButton @click="addImage">添加图片</ElButton>
-  <ElButton @click="addAudio">添加音频</ElButton>
+  <ElButton @click="addVideoSource">添加视频</ElButton>
+  <ElButton @click="addImageSource">添加图片</ElButton>
+  <ElButton @click="addAudioSource">添加音频</ElButton>
 </template>
 
 <script setup lang="ts">
@@ -59,14 +59,35 @@ const manager = new WebVcpManager({
   },
 });
 
-const addVideo = () =>
-  manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, "http://127.0.0.1:5500/video.mp4");
+const addVideoSource = async () => {
+  // 添加网络地址
+  // manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, 'http://127.0.0.1:5500/video.mp4')
 
-const addImage = () =>
-  manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, "http://127.0.0.1:5500/pic1.jpg");
+  // 添加本地文件
+  const file = await openSingleFilePicker("video/*")
+  if (!file) return
+  manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, file)
+}
 
-const addAudio = () =>
-  manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, "http://127.0.0.1:5500/audio.mp3");
+const addImageSource = async () => {
+  // 添加网络地址
+  // manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, 'http://127.0.0.1:5500/pic1.jpg')
+
+  // 添加本地文件
+  const file = await openSingleFilePicker("image/*")
+  if (!file) return
+  manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, file)
+}
+
+const addAudioSource = async () => {
+  // 添加网络地址
+  // manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, 'http://127.0.0.1:5500/audio.mp3')
+
+  // 添加本地文件
+  const file = await openSingleFilePicker("audio/*")
+  if (!file) return
+  manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, file)
+}
 </script>
 ```
 
