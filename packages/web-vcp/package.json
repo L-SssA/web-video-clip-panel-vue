@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "vue-tsc -b && vite build",
-    "watch": "vue-tsc -b && vite build --watch"
+    "watch": "vue-tsc -b && vite build --mode development --watch"
   },
   "dependencies": {
     "@web-vcp/core": "workspace:*",

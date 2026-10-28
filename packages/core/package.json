@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "vue-tsc -b && vite build",
-    "watch": "vue-tsc -b && vite build --watch"
+    "watch": "vue-tsc -b && vite build --mode development --watch"
   },
   "dependencies": {
     "@webav/av-cliper": "^1.2.8"
