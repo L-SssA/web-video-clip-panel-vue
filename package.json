@@ -7,7 +7,7 @@
     "dev": "turbo run dev --filter=./apps/frontend",
     "build": "turbo run build --filter=./packages/*",
     "build:page": "turbo run build:page --filter=./apps/frontend",
-    "watch": "turbo run build --filter=./packages/* && turbo run watch --filter=./packages/*",
+    "watch:dev": "turbo run build:dev --filter=./packages/* && turbo run watch:dev --filter=./packages/*",
     "newpack": "turbo gen newpack --args",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"

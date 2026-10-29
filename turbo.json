@@ -10,7 +10,11 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "watch": {
+    "build:dev": {
+      "dependsOn": ["^build:dev"],
+      "outputs": ["dist/**"]
+    },
+    "watch:dev": {
       "cache": false,
       "persistent": true
     },
