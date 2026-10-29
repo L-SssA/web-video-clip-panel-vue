@@ -2,6 +2,11 @@
   "name": "@web-vcp/core",
   "version": "0.0.0",
   "private": true,
+  "files": [
+    "dist",
+    "lib",
+    "README.md"
+  ],
   "type": "module",
   "main": "./dist/index.umd.js",
   "module": "./dist/index.es.js",
