@@ -14,7 +14,7 @@
           scaleY: frameData.scaleY,
           draggable: playState === 'paused'
         }" @transformend="handleTransformEnd" @dragend="handleTransformEnd" />
-        <KTransformer ref="TransformerRef" />
+        <KTransformer :config="{ rotateMode: 'corners' }" ref="TransformerRef" />
       </KLayer>
     </KStage>
   </div>

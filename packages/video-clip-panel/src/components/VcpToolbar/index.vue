@@ -46,7 +46,7 @@ const {
 
     :deep() {
       .el-slider__runway {
-        background-color: var(--vcp-color-light);
+        background-color: var(--vcp-background-color-light);
       }
 
       .el-slider__bar {

@@ -64,14 +64,14 @@ export const TRACKLINE_STYLES_MAP: Record<string, Partial<TrackLineStyles>> = {
 // ==================== 通用样式 ====================
 export const DEFAULT_SYSTEM_COMMON_STYLES = {
   color: "#333333",
-  colorLight: "#cccccc",
+  backgroundColorLight: "#cccccc",
   backgroundColor: "#f5f5f5",
   colorActive: "#409eff",
 };
 
 export const DARK_SYSTEM_COMMON_STYLES = {
   color: "#f5f5f5",
-  colorLight: "#454545",
+  backgroundColorLight: "#454545",
   backgroundColor: "#333333",
   colorActive: "#409eff",
 };

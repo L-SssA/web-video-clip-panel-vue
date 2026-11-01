@@ -6,7 +6,7 @@ export const useThemeProps = (systemData: SystemCommonData) => {
   const cssProps = computed(() => {
     return {
       "--vcp-color": systemData.styles.value.color,
-      "--vcp-color-light": systemData.styles.value.colorLight,
+      "--vcp-background-color-light": systemData.styles.value.backgroundColorLight,
       "--vcp-background-color": systemData.styles.value.backgroundColor,
       "--vcp-color-active": systemData.styles.value.colorActive,
     };

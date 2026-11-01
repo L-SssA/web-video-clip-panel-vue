@@ -54,7 +54,7 @@ const themeStyle = computed(() => themeStyles[props.effect] || "");
 
   &.icon-btn-disabled {
     cursor: not-allowed;
-    color: var(--vcp-color-light);
+    color: var(--vcp-background-color-light);
   }
 
   &:not(.icon-btn-disabled):hover {

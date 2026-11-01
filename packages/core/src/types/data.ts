@@ -3,7 +3,7 @@
  */
 export interface SystemCommonStyles {
   color: string;
-  colorLight: string;
+  backgroundColorLight: string;
   backgroundColor: string;
   colorActive: string;
 }
