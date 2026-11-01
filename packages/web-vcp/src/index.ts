@@ -2,6 +2,7 @@
 export * from "@web-vcp/core";
 
 // canvas 库
+import "@web-vcp/video-clip-canvas/style.css";
 export * from "@web-vcp/video-clip-canvas";
 
 // clip-panel 库

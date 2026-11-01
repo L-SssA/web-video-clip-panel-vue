@@ -1,16 +1,21 @@
 <template>
-  <ElButton @click="addVideoSource">添加视频</ElButton>
-  <ElButton @click="addImageSource">添加图片</ElButton>
-  <ElButton @click="addAudioSource">添加音频</ElButton>
-  <VideoClipPanel :manager="manager"></VideoClipPanel>
+  <div class="page-container">
+    <VideoClipCanvas class="page-canvas" :manager="manager"></VideoClipCanvas>
+    <div class="page-utils">
+      <ElButton @click="addVideoSource">添加视频</ElButton>
+      <ElButton @click="addImageSource">添加图片</ElButton>
+      <ElButton @click="addAudioSource">添加音频</ElButton>
+    </div>
+    <VideoClipPanel class="page-panel" :manager="manager"></VideoClipPanel>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker } from "web-vcp";
+import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker, VideoClipCanvas } from "web-vcp";
 import { ElButton } from "element-plus";
 
 const manager = new WebVcpManager({
-  data: { timeline: { scale: 50 }, theme: "dark" }
+  data: { timeline: { scale: 50 }, theme: "dark", system: { panelHeight: 400 } },
 });
 const addVideoSource = async () => {
   // 添加网络地址
@@ -41,4 +46,14 @@ const addAudioSource = async () => {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.page-container {
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+
+  .page-canvas {
+    height: calc(100vh - 32px - 400px);
+  }
+}
+</style>

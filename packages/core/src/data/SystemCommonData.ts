@@ -55,7 +55,7 @@ export class SystemCommonData extends BaseData {
     this.styles = ref(DEFAULT_SYSTEM_COMMON_STYLES);
     this.updateStyles(styles);
 
-    this.unwatch = watch(this.observeList, () => {
+    this._unwatch = watch(this.observeList, () => {
       this.triggerUpdate();
     });
   }

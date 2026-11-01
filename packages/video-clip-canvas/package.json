@@ -28,5 +28,8 @@
     "@web-vcp/core": "workspace:*",
     "konva": "^10.9.0",
     "vue-konva": "^4.0.1"
+  },
+  "peerDependencies": {
+    "vue": "catalog:"
   }
 }

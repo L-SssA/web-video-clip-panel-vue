@@ -6,6 +6,7 @@ import type {
   TextTrackItem,
   TrackItem,
   TrackLine,
+  TransformData,
   VideoTrackItem,
 } from "@/types/data";
 
@@ -34,6 +35,23 @@ export function defineBaseTrackItemConfig(id: string, type: SourceType): BaseTra
 }
 
 /**
+ * 变换相关信息
+ * @param id 唯一 id
+ */
+export function defineTransformConfig(): TransformData {
+  return {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    opacity: 1,
+    rotation: 0,
+    scaleX: 1,
+    scaleY: 1,
+  };
+}
+
+/**
  * 生成一份视频轨道片段数据，包含基础的默认值
  * @returns 视频轨道片段数据
  */
@@ -53,6 +71,8 @@ export function defineVideoTrackItemConfig(): VideoTrackItem {
     mute: false,
     volume: 1.0, // 音量
     enableChromaKey: false,
+    /* transform 配置项 */
+    transform: defineTransformConfig(),
   };
 }
 
@@ -89,6 +109,8 @@ export function defineTextTrackItemConfig(): TextTrackItem {
     type: "text",
     text: "",
     style: "",
+    /* transform 配置项 */
+    transform: defineTransformConfig(),
   };
 }
 
@@ -106,6 +128,8 @@ export function defineImageTrackItemConfig(): ImageTrackItem {
     /* 图片信息 */
     originWidth: 0,
     originHeight: 0,
+    /* transform 配置项 */
+    transform: defineTransformConfig(),
   };
 }
 

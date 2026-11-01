@@ -2,7 +2,7 @@ import type { AudioClip, ImgClip, MP4Clip } from "@webav/av-cliper";
 
 import { ref, type Ref } from "vue";
 
-import type { TrackItem } from "@/types/data";
+import type { PictureTrackItem, PreviewData, TrackItem } from "@/types/data";
 
 import { BaseService } from "./BaseService";
 
@@ -22,11 +22,13 @@ export class WebavPlayService extends BaseService {
   // 当前渲染的时间点（微秒）
   private _renderTime: number = 0;
   // 渲染函数
-  private _render?: (frames: (VideoFrame | ImageBitmap)[], time: number) => Promise<void>;
+  private _render?: (frames: PreviewData[], time: number) => Promise<void> | void;
   // 首次循环标识
   private _firstLoop = true;
   // 定时器
   private _timer?: number;
+  // 上次的帧
+  private _lastFrames: PreviewData[] = [];
 
   /**
    * 播放当前列表
@@ -80,14 +82,15 @@ export class WebavPlayService extends BaseService {
 
     // tick
     const { frames, audios } = await this._tick();
-
     // render
     if (this._render) await this._render(frames, this._renderTime);
+
+    // 先渲染，再释放资源，避免屏幕闪烁
+    this._lastFrames.forEach((frame) => frame.video.close());
+    this._lastFrames = frames;
+
     this._applyAudioData(audios);
     this._data.timeline.currentTime.value = this._renderTime / 1e6;
-
-    // 释放资源
-    frames.forEach((frame) => frame.close());
 
     this._renderTime += this._step;
   }
@@ -104,7 +107,7 @@ export class WebavPlayService extends BaseService {
     // 提前 tick 一次相当于确定截取的开始时间点
     const { frames } = await this._tick();
     // 不需要渲染，直接关闭即可
-    frames.forEach((frame) => frame.close());
+    frames.forEach((frame) => frame.video.close());
   }
 
   /**
@@ -125,10 +128,15 @@ export class WebavPlayService extends BaseService {
     });
     const res = await Promise.all(tickTasks);
 
-    const frames: (VideoFrame | ImageBitmap)[] = [];
+    const frames: PreviewData[] = [];
     const audios: Float32Array<ArrayBufferLike>[][] = [];
-    res.forEach(({ video, audio }) => {
-      video && frames.push(video);
+    res.forEach(({ trackitem, video, audio }) => {
+      video &&
+        frames.push({
+          id: trackitem.id,
+          video,
+          ...(trackitem as PictureTrackItem).transform,
+        });
       audio && audios.push(audio);
     });
 
@@ -141,7 +149,11 @@ export class WebavPlayService extends BaseService {
    * @param time 时间点（微秒）
    */
   private async _tickFromTrackItem(trackitem: TrackItem, time: number) {
-    const data: { video?: VideoFrame | ImageBitmap; audio?: Float32Array<ArrayBufferLike>[] } = {};
+    const data: {
+      trackitem: TrackItem;
+      video?: VideoFrame | ImageBitmap;
+      audio?: Float32Array<ArrayBufferLike>[];
+    } = { trackitem };
     // 获取 clip
     const clip = await this._data.webav.createClipFromCache(trackitem);
     if (!clip) return data;

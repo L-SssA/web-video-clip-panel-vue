@@ -1,5 +1,5 @@
 <template>
-  <div class="vcp-container" :style="styleList">
+  <div class="vcp-container" :style="cssProps">
     <VcpToolbar class="vcp-toolbar" />
     <VcpTracksPanel class="vcp-tracks-panel" />
   </div>
@@ -26,11 +26,7 @@ const props = defineProps({
 });
 
 const { cssProps } = useThemeProps(props.manager.data.system)
-
-const styleList = computed(() => ({
-  height: numberToStyleValue(props.manager.data.system.panelHeight.value),
-  ...cssProps.value
-}));
+const cssPanelHeight = computed(() => numberToStyleValue(props.manager.data.system.panelHeight.value))
 
 provide<VcpCtx>(vcpCtxSymbol, {
   manager: props.manager,
@@ -44,6 +40,7 @@ provide<VcpCtx>(vcpCtxSymbol, {
   display: flex;
   flex-direction: column;
   min-height: 120px;
+  height: v-bind(cssPanelHeight);
 
   .vcp-toolbar {
     flex-shrink: 0;

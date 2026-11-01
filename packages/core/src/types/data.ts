@@ -112,6 +112,17 @@ export interface TrackLineDataOptions {
   maxSnapshotSize: number;
 }
 
+export interface TransformData {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  scaleX: number;
+  scaleY: number;
+}
+
 export type SourceType = "video" | "audio" | "text" | "image";
 
 export interface BaseTrackItem {
@@ -134,23 +145,14 @@ export interface ImageTrackItem extends BaseTrackItem {
   // 图片信息
   originWidth: number;
   originHeight: number;
+  transform: TransformData;
 }
 
 export interface TextTrackItem extends BaseTrackItem {
   type: "text";
   text: string;
   style: string;
-}
-
-export interface AudioTrackItem extends BaseTrackItem {
-  type: "audio";
-  // 音频源
-  audioData: number[];
-  /* 音频信息 */
-  duration: number;
-  /* 配置项 */
-  mute: boolean;
-  volume: number; // 音量
+  transform: TransformData;
 }
 
 export interface VideoTrackItem extends BaseTrackItem {
@@ -165,9 +167,22 @@ export interface VideoTrackItem extends BaseTrackItem {
   mute: boolean;
   volume: number; // 音量
   enableChromaKey: boolean; // 是否启用色键，即是否使用绿色屏幕
+  transform: TransformData;
+}
+
+export interface AudioTrackItem extends BaseTrackItem {
+  type: "audio";
+  // 音频源
+  audioData: number[];
+  /* 音频信息 */
+  duration: number;
+  /* 配置项 */
+  mute: boolean;
+  volume: number; // 音量
 }
 
 export type TrackItem = ImageTrackItem | TextTrackItem | AudioTrackItem | VideoTrackItem;
+export type PictureTrackItem = ImageTrackItem | TextTrackItem | VideoTrackItem;
 
 export interface BaseTrackLine<T extends TrackItem = TrackItem> {
   id: string | symbol;
@@ -189,7 +204,7 @@ export type TrackLine<T extends TrackItem = TrackItem> = {
   [K in T["type"]]: BaseTrackLine<T>;
 }[T["type"]];
 
-export type PictureTrackLine = ImageTrackLine | VideoTrackLine;
+export type PictureTrackLine = ImageTrackLine | VideoTrackLine | TextTrackLine;
 
 export interface TrackItemServiceContext {
   trackitemDraging: boolean;
@@ -208,4 +223,9 @@ export interface TrackLineListSnapshot {
   audio: AudioTrackLine[];
   activeLineId?: string | symbol;
   activeItemId?: string | symbol;
+}
+
+export interface PreviewData extends TransformData {
+  id: string | symbol;
+  video: VideoFrame | ImageBitmap;
 }

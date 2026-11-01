@@ -125,7 +125,7 @@ export class TimelineData extends BaseData {
     });
 
     // 监听 scale 和 fps 变化，更新各项指标
-    this.unwatch = watch(this.observeList, () => {
+    this._unwatch = watch(this.observeList, () => {
       this.triggerUpdate();
     });
   }

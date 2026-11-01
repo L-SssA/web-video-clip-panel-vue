@@ -41,7 +41,9 @@ export class WebavSourceService extends BaseService {
     // 创建空的轨道数据
     const trackitem = reactive(defineVideoTrackItemConfig());
     trackitem.originWidth = metadata.width;
+    trackitem.transform.width = metadata.width;
     trackitem.originHeight = metadata.height;
+    trackitem.transform.height = metadata.height;
     trackitem.duration = metadata.duration;
     trackitem.start = 0;
     trackitem.end = metadata.duration;
@@ -90,7 +92,9 @@ export class WebavSourceService extends BaseService {
     // 创建空的轨道数据
     const trackitem = reactive(defineImageTrackItemConfig());
     trackitem.originWidth = metadata.width;
+    trackitem.transform.width = metadata.width;
     trackitem.originHeight = metadata.height;
+    trackitem.transform.height = metadata.height;
     trackitem.start = 0;
     trackitem.end = 5;
     Object.assign(trackitem, opts);
@@ -172,6 +176,8 @@ export class WebavSourceService extends BaseService {
     trackitem.name = text;
     trackitem.start = 0;
     trackitem.end = 5;
+    trackitem.transform.width = metadata.width;
+    trackitem.transform.height = metadata.height;
     Object.assign(trackitem, opts);
 
     this._sourceLoaderCache.set(

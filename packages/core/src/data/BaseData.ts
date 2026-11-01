@@ -5,7 +5,7 @@ export class BaseData {
   protected updateEvent = new EventCallback();
 
   // 监听器，用于停止watch
-  protected unwatch?: Function;
+  protected _unwatch?: Function;
 
   public get ctx(): any {
     return {};
@@ -38,7 +38,7 @@ export class BaseData {
    * 释放资源
    */
   release(): void {
-    this.unwatch?.();
+    this._unwatch?.();
     this.updateEvent.clearEvent();
   }
 }

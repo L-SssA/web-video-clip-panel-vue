@@ -19,7 +19,7 @@ export class EventCallback {
    * @param trigger 是否立即触发
    * @param args 触发参数
    */
-  onEvent(callback: any): void {
+  onEvent(callback: Function): void {
     this._callbacks.set(callback, callback);
   }
 

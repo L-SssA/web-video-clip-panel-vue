@@ -152,7 +152,7 @@ export class TrackLineData extends BaseData {
     this.activeTrackLine = this._trackLineList.activeTrackLine;
     this.activeTrackItem = this._trackLineList.activeTrackItem;
 
-    this.unwatch = watch(this.observeList, () => {
+    this._unwatch = watch(this.observeList, () => {
       this.triggerUpdate();
     });
   }
@@ -407,6 +407,19 @@ export class TrackLineData extends BaseData {
    */
   redo() {
     this._trackLineList.redo();
+  }
+
+  /**
+   * 通过 id 查找 trackitem
+   * @param id trackitem id
+   */
+  getTrackItemById(id: string | symbol) {
+    for (const tl of this.mergeList.value) {
+      for (const ti of tl.data) {
+        if (ti.id === id) return ti;
+      }
+    }
+    return null;
   }
 
   /**

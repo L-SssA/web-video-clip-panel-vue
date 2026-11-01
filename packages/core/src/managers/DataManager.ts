@@ -1,8 +1,8 @@
 import type { Ref } from "vue";
 
-import { ref, watch } from "vue";
+import { ref, toRaw, watch } from "vue";
 
-import type { TrackItem } from "@/types/data";
+import type { PictureTrackItem, PreviewData, TrackItem, TransformData } from "@/types/data";
 import type { DataManagerOptions, DataManagerContext } from "@/types/manager";
 
 import { TRACKLINE_SOURCE_TYPE, PANEL_EVENT_TYPE } from "@/config/constant";
@@ -15,7 +15,7 @@ import { ElEventService } from "@/services/ElEventService";
 import { TrackItemService } from "@/services/TrackItemService";
 import { WebavPlayService } from "@/services/WebavPlayService";
 import { WebavSourceService } from "@/services/WebavSourceService";
-import { timeToPixel } from "@/utils/tools";
+import { debounce, deepCopy, timeToPixel } from "@/utils/tools";
 import WebavHelper from "@/webav/WebavHelper";
 
 export class DataManager extends BaseData {
@@ -24,6 +24,7 @@ export class DataManager extends BaseData {
   readonly system: SystemCommonData;
   readonly theme: Ref<string>;
   readonly playState: Ref<"playing" | "loading" | "paused">;
+  readonly tickFrames: Ref<PreviewData[]> = ref([]);
 
   // webav 相关音视频解码工具
   readonly webav: WebavHelper;
@@ -40,6 +41,13 @@ export class DataManager extends BaseData {
 
   // 监听主题变化
   private _unwatchTheme: Function;
+
+  // 监听影响预览画面的变化
+  private _unwatchPreviewUpdate: Function;
+  private _lastTime: number = -1;
+  private _lastMatchItems: TrackItem[] = [];
+  private _tickLock: boolean = false;
+  private _tickCurrentFrameDebounce: Function;
 
   get ctx(): DataManagerContext {
     return {
@@ -86,13 +94,28 @@ export class DataManager extends BaseData {
 
     this.theme = ref(options.theme || "light");
 
-    this.unwatch = watch(this.observeList, () => this.triggerUpdate(), {
+    this._unwatch = watch(this.observeList, () => this.triggerUpdate(), {
       immediate: true,
     });
 
     this._unwatchTheme = watch(this.theme, (themeTag) => this.setTheme(themeTag), {
       immediate: true,
     });
+
+    this._tickCurrentFrameDebounce = debounce(
+      this.tickCurrentFrame.bind(this),
+      1000 / this.timeline.fps.value,
+    );
+
+    this._unwatchPreviewUpdate = watch(
+      [this.timeline.currentTime, this.trackline.pictureList],
+      () => {
+        // 如果是播放状态，切换成播放的tick逻辑
+        if (this.playState.value === "playing") return;
+        this._tickCurrentFrameDebounce();
+      },
+      { deep: true },
+    );
   }
 
   /**
@@ -260,7 +283,13 @@ export class DataManager extends BaseData {
    * 播放轨道
    */
   play() {
-    this._playService.play(this.timeline.currentTime.value);
+    // 先清除
+    this.tickFrames.value.forEach(({ video }) => video.close());
+    this.tickFrames.value = [];
+    const renderFrames = (frames: PreviewData[], _time: number) => {
+      this.tickFrames.value = frames;
+    };
+    this._playService.play(this.timeline.currentTime.value, renderFrames);
   }
 
   /**
@@ -268,6 +297,89 @@ export class DataManager extends BaseData {
    */
   pause() {
     this._playService.pause();
+  }
+
+  /**
+   * 获取当前时间点的命中帧画面
+   * @param time 时间
+   */
+  async tickCurrentFrame() {
+    if (this._tickLock) return;
+    this._tickLock = true;
+    await this.sourcesReady;
+    let doUpdate = false;
+    const time = this.timeline.currentTime.value;
+    doUpdate = doUpdate || time !== this._lastTime;
+
+    const matchItems: PictureTrackItem[] = [];
+    this.trackline.pictureList.value.forEach((tl) => {
+      tl.data.forEach((ti) => {
+        if (ti.start <= time && time <= ti.end) matchItems.push(toRaw(ti));
+      });
+    });
+    // 如果确定要更新，则不做耗时对比，如果不确定，则对比
+    doUpdate = doUpdate || this._diffPreviewFrames(time, matchItems, this._lastMatchItems);
+
+    if (doUpdate) {
+      // 先清除
+      this.tickFrames.value.forEach(({ video }) => video.close());
+
+      const frames = [];
+
+      for (const matchItem of matchItems) {
+        const { video } = await this.webav.tick(
+          matchItem,
+          (time - matchItem.start + matchItem.clipStart) * 1e6,
+        );
+        if (video) {
+          const { id, transform } = matchItem;
+          frames.push({ id, ...transform, video });
+        }
+      }
+
+      this.tickFrames.value = frames.filter((f) => f && f.video);
+      this._lastTime = time;
+      this._lastMatchItems = deepCopy(matchItems);
+    }
+
+    this._tickLock = false;
+  }
+
+  /**
+   * 对比两列表将要被预览的时间点，检查是否需要更新
+   * @param time 要
+   * @param newList 新列表
+   * @param oldList 就列表
+   */
+  private _diffPreviewFrames(time: number, newList: TrackItem[], oldList: TrackItem[]): boolean {
+    if (newList.length !== oldList.length) return true;
+
+    const lastMatchItemsMap = oldList.reduce(
+      (res, it) => Object.assign(res, { [it.id]: it }),
+      {} as Record<string | symbol, TrackItem>,
+    );
+    for (const trackitem of newList) {
+      const lastMatchItem = lastMatchItemsMap[trackitem.id];
+      // 新增 item
+      if (!lastMatchItem) return true;
+      const oldTickTime = time - lastMatchItem.start + lastMatchItem.clipStart;
+      const newTickTime = time - trackitem.start + trackitem.clipStart;
+      // 偏移 item
+      if (oldTickTime !== newTickTime) return true;
+      delete lastMatchItemsMap[trackitem.id];
+    }
+    // 删除 item
+    return Object.keys(lastMatchItemsMap).length > 0;
+  }
+
+  /**
+   * 通过 trackitem id 设置 transform
+   * @param id trackitem id
+   */
+  setTransformById(id: string | symbol, transformData: Partial<TransformData>) {
+    const targetItem = this.trackline.getTrackItemById(id);
+    if (!targetItem || targetItem.type === "audio") return;
+    Object.assign(targetItem.transform, transformData);
   }
 
   /**
@@ -337,6 +449,7 @@ export class DataManager extends BaseData {
     this._elEventService.release();
 
     this._unwatchTheme();
+    this._unwatchPreviewUpdate();
 
     super.release();
   }
