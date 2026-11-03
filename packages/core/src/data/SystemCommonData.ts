@@ -1,14 +1,15 @@
-import type { Ref } from "vue";
+import type { Reactive, Ref } from "vue";
 
-import { ref, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 
 import type {
+  Rect,
   SystemCommonContext,
   SystemCommonDataOptions,
   SystemCommonStyles,
 } from "@/types/data";
 
-import { DEFAULT_CLOSE_EDGE_DISTANCE, DEFAULT_PANEL_HEIGHT } from "@/config/constant";
+import { DEFAULT_CLOSE_EDGE_DISTANCE } from "@/config/constant";
 import { DEFAULT_SYSTEM_COMMON_STYLES, SYSTEM_COMMON_STYLES_MAP } from "@/config/theme";
 
 import { BaseData } from "./BaseData";
@@ -20,7 +21,9 @@ export class SystemCommonData extends BaseData {
   public closeEdgeDistance: number;
 
   // 面板高度
-  readonly panelHeight: Ref<number>;
+  readonly panelRect: Rect = reactive({ width: 0, height: 0 });
+  // 画布高度
+  readonly canvasRect: Rect = reactive({ width: 0, height: 0 });
 
   // 样式
   readonly styles: Ref<SystemCommonStyles>;
@@ -31,7 +34,8 @@ export class SystemCommonData extends BaseData {
   get ctx(): SystemCommonContext {
     return {
       styles: this.styles.value,
-      panelHeight: this.panelHeight.value,
+      panelRect: this.panelRect,
+      canvasRect: this.canvasRect,
       closeEdgeDistance: this.closeEdgeDistance,
     };
   }
@@ -43,13 +47,8 @@ export class SystemCommonData extends BaseData {
   constructor(options: Partial<SystemCommonDataOptions> = {}) {
     super();
 
-    const {
-      styles,
-      panelHeight = DEFAULT_PANEL_HEIGHT,
-      closeEdgeDistance = DEFAULT_CLOSE_EDGE_DISTANCE,
-    } = options;
+    const { styles, closeEdgeDistance = DEFAULT_CLOSE_EDGE_DISTANCE } = options;
 
-    this.panelHeight = ref(panelHeight);
     this.closeEdgeDistance = closeEdgeDistance;
 
     this.styles = ref(DEFAULT_SYSTEM_COMMON_STYLES);

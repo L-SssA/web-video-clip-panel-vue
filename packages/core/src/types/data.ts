@@ -8,12 +8,18 @@ export interface SystemCommonStyles {
   colorActive: string;
 }
 
+export interface Rect {
+  width: number;
+  height: number;
+}
+
 /**
  * 轨道线上下文数据
  */
 export interface SystemCommonContext {
   styles: SystemCommonStyles;
-  panelHeight: number;
+  panelRect: Rect;
+  canvasRect: Rect;
   closeEdgeDistance: number;
 }
 
@@ -22,7 +28,6 @@ export interface SystemCommonContext {
  */
 export interface SystemCommonDataOptions {
   styles: Partial<SystemCommonStyles>;
-  panelHeight: number;
   closeEdgeDistance: number;
 }
 

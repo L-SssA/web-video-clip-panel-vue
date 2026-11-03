@@ -11,13 +11,13 @@
 </template>
 
 <script setup lang="ts">
-import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker, VideoClipCanvas, numberToStyleValue } from "web-vcp";
+import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker, VideoClipCanvas } from "web-vcp";
 import { ElButton } from "element-plus";
 import { Files } from '@element-plus/icons-vue';
 import { toRef } from "vue";
 
 const manager = new WebVcpManager({
-  data: { timeline: { scale: 50 }, theme: "dark", system: { panelHeight: 300 } },
+  data: { timeline: { scale: 50 }, theme: "dark" },
 });
 
 const systemStyles = manager.data.system.styles
@@ -33,6 +33,7 @@ const addVideoSource = async () => {
   if (!file) return
   manager.addSource(TRACKLINE_SOURCE_TYPE.VIDEO, file)
 }
+
 const addImageSource = async () => {
   // 添加网络地址
   // manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, 'http://127.0.0.1:5500/pic1.jpg')
@@ -42,6 +43,7 @@ const addImageSource = async () => {
   if (!file) return
   manager.addSource(TRACKLINE_SOURCE_TYPE.IMAGE, file)
 }
+
 const addAudioSource = async () => {
   // 添加网络地址
   // manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, 'http://127.0.0.1:5500/audio.mp3')
@@ -75,6 +77,10 @@ const addAudioSource = async () => {
         background-color: v-bind(backgroundColorLight);
       }
     }
+  }
+
+  .page-panel {
+    height: 300px;
   }
 }
 </style>

@@ -18,3 +18,6 @@ export * from "./canvas/CanvasTileMap";
 
 // 默认值导出
 export * from "./config/constant";
+
+// hooks 导出
+export * from "./hooks/useResize";

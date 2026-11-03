@@ -5,7 +5,12 @@ import { reactive } from "vue";
 
 import type { AudioTrackItem, ImageTrackItem, TextTrackItem, VideoTrackItem } from "@/types/data";
 
-import { loadAudioMetadata, loadImageMetadata, loadVideoMetadata } from "@/utils/tools";
+import {
+  fitImageContain,
+  loadAudioMetadata,
+  loadImageMetadata,
+  loadVideoMetadata,
+} from "@/utils/tools";
 import {
   defineAudioTrackItemConfig,
   defineImageTrackItemConfig,
@@ -41,12 +46,14 @@ export class WebavSourceService extends BaseService {
     // 创建空的轨道数据
     const trackitem = reactive(defineVideoTrackItemConfig());
     trackitem.originWidth = metadata.width;
-    trackitem.transform.width = metadata.width;
     trackitem.originHeight = metadata.height;
-    trackitem.transform.height = metadata.height;
     trackitem.duration = metadata.duration;
     trackitem.start = 0;
     trackitem.end = metadata.duration;
+
+    const fitedTransform = fitImageContain(this._data.system.canvasRect, metadata);
+    Object.assign(trackitem.transform, fitedTransform);
+
     Object.assign(trackitem, opts);
 
     this._sourceLoaderCache.set(
@@ -92,11 +99,13 @@ export class WebavSourceService extends BaseService {
     // 创建空的轨道数据
     const trackitem = reactive(defineImageTrackItemConfig());
     trackitem.originWidth = metadata.width;
-    trackitem.transform.width = metadata.width;
     trackitem.originHeight = metadata.height;
-    trackitem.transform.height = metadata.height;
     trackitem.start = 0;
     trackitem.end = 5;
+
+    const fitedTransform = fitImageContain(this._data.system.canvasRect, metadata);
+    Object.assign(trackitem.transform, fitedTransform);
+
     Object.assign(trackitem, opts);
 
     this._sourceLoaderCache.set(
@@ -176,8 +185,10 @@ export class WebavSourceService extends BaseService {
     trackitem.name = text;
     trackitem.start = 0;
     trackitem.end = 5;
-    trackitem.transform.width = metadata.width;
-    trackitem.transform.height = metadata.height;
+
+    const fitedTransform = fitImageContain(this._data.system.canvasRect, metadata);
+    Object.assign(trackitem.transform, fitedTransform);
+
     Object.assign(trackitem, opts);
 
     this._sourceLoaderCache.set(

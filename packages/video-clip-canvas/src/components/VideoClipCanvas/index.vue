@@ -21,10 +21,10 @@
 </template>
 
 <script setup lang="ts">
-import { WebVcpManager } from '@web-vcp/core';
+import { WebVcpManager, useResizeObserver } from '@web-vcp/core';
 import type { KonvaEventObject, Node } from 'konva/lib/Node';
 import type { Stage } from 'konva/lib/Stage';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { Stage as KStage, Layer as KLayer, Image as KImage, Transformer as KTransformer } from 'vue-konva';
 
 const props = defineProps({
@@ -37,6 +37,7 @@ const props = defineProps({
 const manager = props.manager
 const tickFrames = manager.data.tickFrames
 const playState = manager.data.playState
+let unuseResizeObserver: Function | null = null
 
 const VideoClipCanvasRef = ref<HTMLDivElement>()
 const TransformerRef = ref<typeof KTransformer>();
@@ -47,6 +48,10 @@ const stageSize = reactive({
 })
 const selectedShapeId = ref("")
 
+/**
+ * 场景点击事件
+ * @param e 事件
+ */
 function handleStageMouseDown(e: KonvaEventObject<Stage, MouseEvent>) {
   if (playState.value !== "paused") return
   // 点击到场景，取消 Transformer
@@ -74,6 +79,9 @@ function handleStageMouseDown(e: KonvaEventObject<Stage, MouseEvent>) {
   updateTransformer();
 };
 
+/**
+ * 更新 Transformer
+ */
 function updateTransformer() {
   if (!TransformerRef.value) return
   const transformerNode = TransformerRef.value.getNode();
@@ -90,6 +98,10 @@ function updateTransformer() {
   else transformerNode.nodes([]);
 };
 
+/**
+ * 处理元素变换事件（包含拖放）
+ * @param e 元素 transform 事件
+ */
 function handleTransformEnd(e: KonvaEventObject<Node, MouseEvent>) {
   manager.data.setTransformById(selectedShapeId.value, {
     x: e.target.x(),
@@ -102,16 +114,29 @@ function handleTransformEnd(e: KonvaEventObject<Node, MouseEvent>) {
   })
 }
 
+/**
+ * 更新画布大小
+ */
 function updateStageSize() {
   if (VideoClipCanvasRef.value) {
     const { clientWidth, clientHeight } = VideoClipCanvasRef.value
     stageSize.width = clientWidth
     stageSize.height = clientHeight
+    const canvasRect = manager.data.system.canvasRect
+    canvasRect.width = clientWidth
+    canvasRect.height = clientHeight
   }
 }
 
+// 页面挂载时更新画布大小
 onMounted(() => {
-  updateStageSize()
+  // 容器大小变化时更新画布大小
+  if (VideoClipCanvasRef.value)
+    unuseResizeObserver = useResizeObserver(VideoClipCanvasRef.value, updateStageSize)
+})
+
+onUnmounted(() => {
+  unuseResizeObserver?.()
 })
 
 </script>

@@ -1,6 +1,6 @@
 # Web Video Clip Panel Vue
 
-一个基于 Vue 3 的 Web 视频剪辑面板组件，提供时间线及视频、图片、音频等素材的管理能力。
+一个基于 Vue 3 的 Web 视频剪辑面板，提供时间线以及视频、图片、音频和文本素材的管理能力。
 
 ## 技术栈
 
@@ -8,6 +8,7 @@
 - [WebAV](https://github.com/WebAV-Tech/WebAV)：基于 WebCodecs 的 Web 音视频处理 SDK。
 - [Element Plus](https://github.com/element-plus/element-plus)：基于 Vue 3 的组件库。
 - [Remix Icon](https://github.com/Remix-Design/RemixIcon)：开源图标库。
+- [Vue Konva](https://github.com/konvajs/vue-konva)：用于在 Vue 中集成 Konva 2D 画布的组件库。
 
 ## 本地体验
 
@@ -33,15 +34,19 @@ pnpm dev
 
 ## 快速开始
 
-以下示例展示如何在 Vue 3 项目中创建管理器、渲染剪辑面板并添加素材。示例依赖本仓库的 `@web-vcp/video-clip-panel` workspace 包。
+以下示例展示如何在 Vue 3 项目中创建管理器、渲染画布和剪辑面板并添加素材。示例使用本仓库的 `web-vcp` 聚合包；该包统一导出核心功能、画布和剪辑面板。
 
 ```vue
 <template>
-  <VideoClipPanel :manager="manager" />
-
-  <ElButton @click="addVideoSource">添加视频</ElButton>
-  <ElButton @click="addImageSource">添加图片</ElButton>
-  <ElButton @click="addAudioSource">添加音频</ElButton>
+  <div class="page-container">
+    <VideoClipCanvas class="page-canvas" :manager="manager"></VideoClipCanvas>
+    <div class="page-utils">
+      <ElButton type="primary" text round :icon="Files" @click="addVideoSource">添加视频</ElButton>
+      <ElButton type="primary" text round :icon="Files" @click="addImageSource">添加图片</ElButton>
+      <ElButton type="primary" text round :icon="Files" @click="addAudioSource">添加音频</ElButton>
+    </div>
+    <VideoClipPanel class="page-panel" :manager="manager"></VideoClipPanel>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -49,15 +54,20 @@ import {
   TRACKLINE_SOURCE_TYPE,
   VideoClipPanel,
   WebVcpManager,
-} from "@web-vcp/video-clip-panel";
+  openSingleFilePicker,
+  VideoClipCanvas,
+} from "web-vcp";
 import { ElButton } from "element-plus";
+import { Files } from "@element-plus/icons-vue";
+import { toRef } from "vue";
 
 const manager = new WebVcpManager({
-  data: {
-    timeline: { scale: 50 },
-    theme: "dark",
-  },
+  data: { timeline: { scale: 50 }, theme: "dark" },
 });
+
+const systemStyles = manager.data.system.styles;
+const backgroundColor = toRef(() => systemStyles.value.backgroundColor);
+const backgroundColorLight = toRef(() => systemStyles.value.backgroundColorLight);
 
 const addVideoSource = async () => {
   // 添加网络地址
@@ -89,6 +99,42 @@ const addAudioSource = async () => {
   manager.addSource(TRACKLINE_SOURCE_TYPE.AUDIO, file)
 }
 </script>
+
+<style scoped lang="scss">
+.page-container {
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  background-color: v-bind(backgroundColor);
+
+  .page-canvas {
+    height: calc(100vh - 32px - 16px - 300px);
+    background-color: #eeeeee;
+  }
+
+  .page-utils {
+    padding: 8px 10px;
+
+    :deep(.el-button.is-text:not(.is-disabled)) {
+
+      &:active,
+      &:hover {
+        background-color: v-bind(backgroundColorLight);
+      }
+    }
+  }
+}
+</style>
+```
+
+在应用入口（例如 `main.ts`）中引入组件样式：
+
+```ts
+import "web-vcp/style.css";
 ```
 
 请将示例中的素材地址替换为实际可访问的视频、图片或音频地址。`TRACKLINE_SOURCE_TYPE` 还支持 `TEXT` 类型。
+
+## 许可证
+
+[MIT](./LICENSE)

@@ -1,3 +1,5 @@
+import type { Rect } from "@/types/data";
+
 /**
  * 生成指定长度的随机 UUID 字符串
  * @param length - UUID 长度，默认为 16
@@ -434,4 +436,41 @@ export function openSingleFilePicker(accept = "*") {
       input.click();
     }
   });
+}
+
+/**
+ * object-fit: contain
+ * 图片等比缩放，完整放入容器，居中，不超出容器
+ * @param container 容器rect
+ * @param image 原图rect
+ * @returns 适配后图片的rect（x,y是相对容器左上角的偏移）
+ */
+export function fitImageContain(container: Rect, image: Rect): Rect & { x: number; y: number } {
+  if (!container.width || !container.height) return { x: 0, y: 0, ...image };
+  const containerRatio = container.width / container.height;
+  const imageRatio = image.width / image.height;
+
+  let fitW: number;
+  let fitH: number;
+
+  if (imageRatio > containerRatio) {
+    // 图片更宽，以宽度为准
+    fitW = container.width;
+    fitH = container.width / imageRatio;
+  } else {
+    // 图片更高，以高度为准
+    fitH = container.height;
+    fitW = container.height * imageRatio;
+  }
+
+  // 居中偏移
+  const x = (container.width - fitW) / 2;
+  const y = (container.height - fitH) / 2;
+
+  return {
+    x,
+    y,
+    width: fitW,
+    height: fitH,
+  };
 }
