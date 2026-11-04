@@ -1,7 +1,6 @@
 {
   "name": "@web-vcp/core",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
   "files": [
     "dist",
     "lib",
@@ -16,6 +15,9 @@
       "import": "./dist/index.es.js",
       "types": "./dist/index.d.ts"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "vue-tsc -b && vite build",

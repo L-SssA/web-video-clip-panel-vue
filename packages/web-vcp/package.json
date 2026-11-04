@@ -1,7 +1,6 @@
 {
   "name": "web-vcp",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
   "files": [
     "dist",
     "lib",
@@ -17,6 +16,9 @@
       "types": "./dist/index.d.ts"
     },
     "./style.css": "./dist/style.css"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "vue-tsc -b && vite build",
