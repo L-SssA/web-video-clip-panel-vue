@@ -34,40 +34,45 @@ pnpm dev
 
 ## 快速开始
 
-以下示例展示如何在 Vue 3 项目中创建管理器、渲染画布和剪辑面板并添加素材。示例使用本仓库的 `web-vcp` 聚合包；该包统一导出核心功能、画布和剪辑面板。
+在已有 Vue 3 项目中安装：
 
+```bash
+npm install web-vcp
+# 或使用 pnpm
+pnpm add web-vcp
+```
+
+在应用入口（例如 `main.ts`）中引入组件样式：
+
+```ts
+import "web-vcp/style.css";
+```
+
+以下示例展示如何创建管理器、渲染画布和剪辑面板并添加素材。`web-vcp` 聚合导出核心功能、画布和剪辑面板。
 ```vue
 <template>
   <div class="page-container">
     <VideoClipCanvas class="page-canvas" :manager="manager"></VideoClipCanvas>
     <div class="page-utils">
-      <ElButton type="primary" text round :icon="Files" @click="addVideoSource">添加视频</ElButton>
-      <ElButton type="primary" text round :icon="Files" @click="addImageSource">添加图片</ElButton>
-      <ElButton type="primary" text round :icon="Files" @click="addAudioSource">添加音频</ElButton>
+      <button @click="addVideoSource">添加视频</button>
+      <button @click="addImageSource">添加图片</button>
+      <button @click="addAudioSource">添加音频</button>
     </div>
     <VideoClipPanel class="page-panel" :manager="manager"></VideoClipPanel>
   </div>
 </template>
 
 <script setup lang="ts">
-import {
-  TRACKLINE_SOURCE_TYPE,
-  VideoClipPanel,
-  WebVcpManager,
-  openSingleFilePicker,
-  VideoClipCanvas,
-} from "web-vcp";
-import { ElButton } from "element-plus";
-import { Files } from "@element-plus/icons-vue";
+import { TRACKLINE_SOURCE_TYPE, VideoClipPanel, WebVcpManager, openSingleFilePicker, VideoClipCanvas } from "web-vcp";
 import { toRef } from "vue";
 
 const manager = new WebVcpManager({
   data: { timeline: { scale: 50 }, theme: "dark" },
 });
 
-const systemStyles = manager.data.system.styles;
-const backgroundColor = toRef(() => systemStyles.value.backgroundColor);
-const backgroundColorLight = toRef(() => systemStyles.value.backgroundColorLight);
+const systemStyles = manager.data.system.styles
+const backgroundColor = toRef(() => systemStyles.value.backgroundColor)
+const backgroundColorLight = toRef(() => systemStyles.value.backgroundColorLight)
 
 const addVideoSource = async () => {
   // 添加网络地址
@@ -123,17 +128,13 @@ const addAudioSource = async () => {
       }
     }
   }
+
+  .page-panel {
+    height: 300px;
+  }
 }
 </style>
-```
-
-在应用入口（例如 `main.ts`）中引入组件样式：
-
-```ts
-import "web-vcp/style.css";
-```
-
-请将示例中的素材地址替换为实际可访问的视频、图片或音频地址。`TRACKLINE_SOURCE_TYPE` 还支持 `TEXT` 类型。
+``` 
 
 ## 许可证
 
