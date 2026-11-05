@@ -1,6 +1,6 @@
 {
   "name": "web-video-clip-panel-vue",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "watch:dev": "turbo run build:dev --filter=./packages/* && turbo run watch:dev --filter=./packages/*",
     "newpack": "turbo gen newpack --args",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "pub": "pnpm build && pnpm publish -F ./packages/*"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.58.9",
