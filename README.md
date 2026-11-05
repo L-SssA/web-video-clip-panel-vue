@@ -10,28 +10,6 @@
 - [Remix Icon](https://github.com/Remix-Design/RemixIcon)：开源图标库。
 - [Vue Konva](https://github.com/konvajs/vue-konva)：用于在 Vue 中集成 Konva 2D 画布的组件库。
 
-## 本地体验
-
-### 环境要求
-
-- Node.js
-- pnpm
-
-### 启动项目
-
-```bash
-git clone https://github.com/L-SssA/web-video-clip-panel-vue.git
-cd web-video-clip-panel-vue
-pnpm install
-pnpm dev
-```
-
-启动后，在浏览器中打开 [http://localhost:5173/](http://localhost:5173/)。
-
-### 在线体验
-
-[在线体验地址](https://l-sssa.github.io/web-video-clip-panel-vue/)
-
 ## 快速开始
 
 在已有 Vue 3 项目中安装：
@@ -135,6 +113,29 @@ const addAudioSource = async () => {
 }
 </style>
 ``` 
+
+## 本地体验
+
+### 环境要求
+
+- Node.js
+- pnpm
+
+### 启动项目
+
+```bash
+git clone https://github.com/L-SssA/web-video-clip-panel-vue.git
+cd web-video-clip-panel-vue
+pnpm install
+pnpm dev
+```
+
+启动后，在浏览器中打开 [http://localhost:5173/](http://localhost:5173/)。
+
+### 在线体验
+
+[在线体验地址](https://l-sssa.github.io/web-video-clip-panel-vue/)
+
 
 ## 许可证
 
